@@ -2,7 +2,6 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.mpi-dortmund.ij.mpitools</groupId>
   <artifactId>ij_helical_picker</artifactId>
-  <version>0.0.3</version>
   
   <repositories>
 		  <repository>
@@ -45,4 +44,5 @@
 		</dependency>
 	</dependencies>
 	
+  <version>1.0.0-alpha.1</version>
 </project>

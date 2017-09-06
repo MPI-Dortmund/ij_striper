@@ -18,7 +18,7 @@ public class FilamentEnhancer_ implements PlugInFilter {
 	ArrayList<FHT> fftOfFilters = null;
 	int filament_width;
 	int mask_width;
-	int angle_stack;
+	int angle_step;
 	boolean show_mask;
 	public int setup(String arg, ImagePlus imp) {
 		GenericDialog gd = new GenericDialog("Mask creator");
@@ -35,7 +35,7 @@ public class FilamentEnhancer_ implements PlugInFilter {
 		
 		filament_width = (int) gd.getNextNumber();
 		mask_width = (int )gd.getNextNumber();
-		angle_stack = (int) gd.getNextNumber();
+		angle_step = (int) gd.getNextNumber();
 		show_mask = gd.getNextBoolean();
 		
 		
@@ -45,7 +45,7 @@ public class FilamentEnhancer_ implements PlugInFilter {
 		return IJ.setupDialog(imp, DOES_ALL+PARALLELIZE_STACKS);
 	}
 	
-	public synchronized  void fillFFTFilters(){
+	public synchronized  void fillFFTFilters(int filament_width, int mask_width, int angle_step,boolean show_mask){
 		if(fftOfFilters==null){
 			MaskCreator_ maskCreator = new MaskCreator_();
 			fftOfFilters = new ArrayList<FHT>();
@@ -56,13 +56,13 @@ public class FilamentEnhancer_ implements PlugInFilter {
 			h.transform();
 			fftOfFilters.add(h);
 			
-			int N = 180/angle_stack;
+			int N = 180/angle_step;
 			
 			for(int i = 1; i < N; i++){
 				FloatProcessor fpdub = (FloatProcessor) fp.duplicate();
 				fpdub.setInterpolationMethod(FloatProcessor.BICUBIC);
 				
-				fpdub.rotate(i*angle_stack);
+				fpdub.rotate(i*angle_step);
 				
 				maskStack.addSlice(fpdub);
 				h = new FHT(fpdub);
@@ -78,7 +78,11 @@ public class FilamentEnhancer_ implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
-		fillFFTFilters();
+		enhance_filaments(ip, filament_width, mask_width, angle_step, show_mask);
+	}
+	
+	public void enhance_filaments(ImageProcessor ip, int filament_width, int mask_width, int angle_step,boolean show_mask){
+		fillFFTFilters(filament_width,mask_width,angle_step,show_mask);
 		ip.invert();
 		FHT h1, h2=null;
 		h1 = new FHT(ip);
@@ -109,9 +113,6 @@ public class FilamentEnhancer_ implements PlugInFilter {
 				ip.set(x, y,bp.get(x, y));
 			}
 		}
-		
-		
-		
 	}
 	
 	

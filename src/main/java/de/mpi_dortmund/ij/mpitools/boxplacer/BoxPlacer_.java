@@ -45,15 +45,14 @@ public class BoxPlacer_ implements PlugInFilter {
 
 	public void run(ImageProcessor ip) {
 		
-		placeBoxes(ip, targetImage, boxsize, box_distance);
-		
+		placeBoxes(ip, targetImage, ip.getSliceNumber(), boxsize, box_distance);
 	}
 	
 	public synchronized void increaseID(){
 		running_id++;
 	}
 	
-	public ArrayList<Line> placeBoxes(ImageProcessor lineImage, ImagePlus targetImage, int boxsize, int box_distance){
+	public ArrayList<Line> placeBoxes(ImageProcessor lineImage, ImagePlus targetImage, int slicePosition, int boxsize, int box_distance){
 		ArrayList<Line> allLines = new ArrayList<Line>();
 		Overlay ov = targetImage.getOverlay();
 		if(ov==null){
@@ -64,7 +63,6 @@ public class BoxPlacer_ implements PlugInFilter {
 		LineTracer tracer = new LineTracer();
 		
 		ArrayList<Polygon> lines = tracer.extractLines((ByteProcessor) lineImage);
-		
 		int distancesq = box_distance*box_distance;
 		Color[] colors = {Color.red,Color.BLUE,Color.GREEN,Color.yellow,Color.CYAN,Color.ORANGE, Color.magenta};
 		
@@ -77,7 +75,7 @@ public class BoxPlacer_ implements PlugInFilter {
 			
 			Roi r = new Roi(x, y, boxsize, boxsize);
 			r.setProperty("id", ""+running_id);
-			r.setPosition(lineImage.getSliceNumber());
+			r.setPosition(slicePosition);
 			r.setStrokeColor(c);
 			ov.add(r);
 			l.add(r);
@@ -93,7 +91,7 @@ public class BoxPlacer_ implements PlugInFilter {
 					r.setProperty("id", ""+running_id);
 					r.setStrokeColor(c);
 					
-					r.setPosition(lineImage.getSliceNumber());
+					r.setPosition(slicePosition);
 					ov.add(r);
 					l.add(r);
 				}

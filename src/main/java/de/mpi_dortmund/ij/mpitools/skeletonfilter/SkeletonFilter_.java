@@ -83,16 +83,16 @@ public class SkeletonFilter_ implements PlugInFilter {
 	public void run(ImageProcessor ip) {
 		
 		
-		ArrayList<Polygon> lines = filterLineImage(ip, input_image.getStack().getProcessor(ip.getSliceNumber()),  response.getStack().getProcessor(ip.getSliceNumber()), border_diameter, min_distance, min_straightness, min_length, max_response, min_response);
+		ArrayList<Polygon> lines = filterLineImage(ip, input_image.getStack().getProcessor(ip.getSliceNumber()),  response.getStack().getProcessor(ip.getSliceNumber()), border_diameter, min_distance, radius, min_straightness, min_length, max_response, min_response,double_filament_insensitivity);
 		drawLines(lines, ip);
 		
 		
 		
 	}
 	
-	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, int border_diameter, int min_distance, double min_straightness, int min_length, double max_response, double min_response){
+	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, int border_diameter, int min_distance, int removementRadius, double min_straightness, int min_length, double max_response, double min_response, double double_filament_insensitivity){
 		setBorderToZero((ByteProcessor)line_image,  border_diameter);
-		removeJunctions((ByteProcessor) line_image);
+		removeJunctions((ByteProcessor) line_image,removementRadius);
 		setCarbonEdgeToZero(input_image, line_image, 100);
 		LineTracer tracer = new LineTracer();
 		ArrayList<Polygon> lines = tracer.extractLines((ByteProcessor) line_image);
@@ -193,7 +193,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 	
 	
 	
-	private void drawLines(ArrayList<Polygon> lines, ImageProcessor ip){
+	public void drawLines(ArrayList<Polygon> lines, ImageProcessor ip){
 		for (Polygon p : lines) {
 			for(int i = 0; i < p.npoints; i++){
 				ip.putPixel(p.xpoints[i], p.ypoints[i], 255);
@@ -304,8 +304,8 @@ public class SkeletonFilter_ implements PlugInFilter {
 		
 		double threshold_max = mean_response + sd*sigmafactor_max;
 		double threshold_min = mean_response - sd*sigmafactor_min;
-		IJ.log("sigmamin: " + sigmafactor_min + " sigmamax: " + sigmafactor_max );
-		IJ.log("MEAN: " + mean_response + " sigma: " + sd + " TMAX: " + threshold_max + " TMIN: " + threshold_min);
+
+		//IJ.log("MEAN: " + mean_response + " sigma: " + sd + " TMAX: " + threshold_max + " TMIN: " + threshold_min);
 		
 		for (Polygon p : lines) {
 			int nOver = 0;
@@ -343,7 +343,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 	
 	
 	
-	private void removeJunctions(ByteProcessor ip){
+	private void removeJunctions(ByteProcessor ip, int removementRadius){
 		ArrayList<Point> juncPos = new ArrayList<Point>();
 		for(int x = 0; x < ip.getWidth(); x++){
 			for(int y = 0; y < ip.getHeight(); y++){
@@ -354,7 +354,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 		}
 		
 		for (Point point : juncPos) {
-			setRegionToBlack(point.x, point.y, ip, radius);
+			setRegionToBlack(point.x, point.y, ip, removementRadius);
 		}
 	}
 	

@@ -4,7 +4,12 @@ import java.awt.AWTEvent;
 import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import com.opencsv.CSVWriter;
 
 import de.biomedical_imaging.ij.steger.Line;
 import de.biomedical_imaging.ij.steger.LineDetector;
@@ -13,6 +18,7 @@ import de.biomedical_imaging.ij.steger.Lines_;
 import de.biomedical_imaging.ij.steger.OverlapOption;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer_;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
+import de.mpi_dortmund.ij.mpitools.boxplacer.HeliconParticleExporter_;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilter_;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
@@ -42,13 +48,17 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 	ImagePlus input_imp;
 	boolean isPreview = false;
 	boolean updateResponseMap = false;
+	boolean sliceChanged = false;
 	ImageProcessor lastResponseMap;
+	HashMap<Integer,ImageProcessor> calculatedResponseMaps;
 	
 	public int setup(String arg, ImagePlus imp) {
 		if(arg.equals("final")){
 			IJ.run("Helicon_Exporter", "");
+			saveSettings(HeliconParticleExporter_.last_path);
 			return DONE;
 		}
+		calculatedResponseMaps = new HashMap<Integer, ImageProcessor>();
 		this.input_imp = imp;
 		return DOES_8G;
 	}
@@ -58,17 +68,20 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			enhancer = new FilamentEnhancer_();
 		}
 		ImageProcessor response_map = null;
-		if( isPreview && lastResponseMap!=null && updateResponseMap==false ){
+		if( isPreview && calculatedResponseMaps.get(input_imp.getCurrentSlice()) != null && updateResponseMap==false ){
 			this.input_imp.setOverlay(null);
 			this.input_imp.updateAndRepaintWindow();
-			response_map = lastResponseMap;
+			response_map = calculatedResponseMaps.get(input_imp.getCurrentSlice());
 		}
 		else {
 			response_map = ip.duplicate();
 			int angle_step =2;
 			boolean show_mask = false;
+			if(updateResponseMap){
+				calculatedResponseMaps = new HashMap<Integer, ImageProcessor>();
+			}
 			enhancer.enhance_filaments(response_map, filament_width, mask_width, angle_step, show_mask);
-			lastResponseMap = response_map.duplicate();
+			calculatedResponseMaps.put(input_imp.getCurrentSlice(), response_map.duplicate());
 			updateResponseMap=false;
 		}
 		LineDetector detect = new LineDetector();
@@ -98,6 +111,37 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		input_imp.updateAndRepaintWindow();
 	}
 	
+	public void saveSettings(String path){
+		try {
+			CSVWriter writer = new CSVWriter(new FileWriter(path), '\t','\0');
+			String[] next = {"FILAMENT_WIDTH=" + filament_width};
+			writer.writeNext(next);
+			next = new String[]{"MASK_WIDTH=" + mask_width};
+			writer.writeNext(next);
+			next = new String[]{"RIDGE_LT=" + ridge_lt};
+			writer.writeNext(next);
+			next = new String[]{"RIDGE_UT=" + ridge_ut};
+			writer.writeNext(next);
+			next = new String[]{"REMOVEMENT_RADIUS=" + removement_radius};
+			writer.writeNext(next);
+			next = new String[]{"MIN_FILAMENT_LENGTH=" + min_filament_length};
+			writer.writeNext(next);
+			next = new String[]{"SIGMA_MIN_RESPONSE=" + sigma_min_response};
+			writer.writeNext(next);
+			next = new String[]{"SIGMA_MAX_RESPONSE=" + sigma_max_response};
+			writer.writeNext(next);
+			next = new String[]{"DOUBLE_FILAMENT_DETECTION_INSENSITIVITY=" + double_filament_detection_insensitivity};
+			writer.writeNext(next);
+			next = new String[]{"BOX_SIZE=" + box_size};
+			writer.writeNext(next);
+			next = new String[]{"BOX_DISTANCE=" + box_distance};
+			writer.writeNext(next);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 
 	
 	public ImageProcessor generateBinaryImage(Lines lines, int imageWdith, int imageHeight){
@@ -135,7 +179,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		gd.addNumericField("Lower threshold (RidgeDetection)", 0.7, 2);
 		gd.addNumericField("Upper threshold (RidgeDetection)", 1.2, 2);
 		gd.addMessage("Line filtering parameters: ");
-		gd.addNumericField("Junction safty distance", 20, 0);
+		gd.addNumericField("Junction safety distance", 20, 0);
 		gd.addNumericField("Min line length", min_filament_length, 0);
 		gd.addNumericField("Sigma_min._response", 5, 0);
 		gd.addNumericField("Sigma_max._response", 2, 0);
@@ -149,7 +193,8 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 				
 				if(input_imp.getCurrentSlice()!=1){
 					input_imp.setSlice(input_imp.getCurrentSlice()-1);
-					updateResponseMap=true;
+					input_imp.setOverlay(null);
+					sliceChanged = true;
 					gd.getPreviewCheckbox().setState(false);
 					isPreview = false;
 				}
@@ -162,7 +207,8 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 				
 				if(input_imp.getCurrentSlice()!=input_imp.getStackSize()){
 					input_imp.setSlice(input_imp.getCurrentSlice()+1);
-					updateResponseMap=true;
+					input_imp.setOverlay(null);
+					sliceChanged = true;
 					gd.getPreviewCheckbox().setState(false);
 					isPreview = false;
 				}

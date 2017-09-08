@@ -18,6 +18,8 @@ import ij.plugin.PlugIn;
 public class HeliconParticleExporter_ implements PlugIn {
 	double scale = 0.25;
 	ImagePlus imp;
+	
+	public static String last_path;
 	public void run(String arg) {
 		this.imp = IJ.getImage();
 		ArrayList<Line> lines = getLinesFromOverlay(imp.getOverlay());
@@ -33,7 +35,7 @@ public class HeliconParticleExporter_ implements PlugIn {
 		}
 		scale = gd.getNextNumber();
 		String path = gd.getNextString();
-		
+		last_path = path;
 		export(lines, labels, path, imp.getStackSize(), imp.getHeight(), scale);
 		
 	}
@@ -62,7 +64,6 @@ public class HeliconParticleExporter_ implements PlugIn {
 	
 	public void export(ArrayList<Line> lines, String[] labels, String path, int numberOfImages, int imageHeight, double scale){
 		
-		System.out.println("L: " + labels.length);
 		for (int i = 0; i < numberOfImages; i++) {
 			ArrayList<Line> sliceLines = getLinesFromSlice(lines, i+1);
 			Line oneLine = sliceLines.get(0);

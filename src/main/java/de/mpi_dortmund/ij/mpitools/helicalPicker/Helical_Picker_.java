@@ -138,6 +138,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			writer.writeNext(next);
 			next = new String[]{"BOX_DISTANCE=" + box_distance};
 			writer.writeNext(next);
+			writer.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -55,7 +55,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 	public int setup(String arg, ImagePlus imp) {
 		if(arg.equals("final")){
 			IJ.run("Helicon_Exporter", "");
-			saveSettings(HeliconParticleExporter_.last_path);
+			saveSettings(HeliconParticleExporter_.last_path + "/_helica_picker_settings.txt");
 			return DONE;
 		}
 		calculatedResponseMaps = new HashMap<Integer, ImageProcessor>();
@@ -114,7 +114,9 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 	public void saveSettings(String path){
 		try {
 			CSVWriter writer = new CSVWriter(new FileWriter(path), '\t','\0');
-			String[] next = {"FILAMENT_WIDTH=" + filament_width};
+			String[] next = {"IMAGE_NAME=" + input_imp.getTitle()};
+			writer.writeNext(next);
+			next = new String[]{"FILAMENT_WIDTH=" + filament_width};
 			writer.writeNext(next);
 			next = new String[]{"MASK_WIDTH=" + mask_width};
 			writer.writeNext(next);

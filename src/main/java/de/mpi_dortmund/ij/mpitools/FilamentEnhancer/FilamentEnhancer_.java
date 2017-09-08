@@ -20,6 +20,8 @@ public class FilamentEnhancer_ implements PlugInFilter {
 	int mask_width;
 	int angle_step;
 	boolean show_mask;
+	int last_fft_mask_width=0;
+	int last_fft_filament_width=0;
 	public int setup(String arg, ImagePlus imp) {
 		GenericDialog gd = new GenericDialog("Mask creator");
 		gd.addNumericField("Filament width", 16, 0);
@@ -46,7 +48,8 @@ public class FilamentEnhancer_ implements PlugInFilter {
 	}
 	
 	public synchronized  void fillFFTFilters(int filament_width, int mask_width, int angle_step,boolean show_mask){
-		if(fftOfFilters==null){
+		if(fftOfFilters==null || (filament_width != last_fft_filament_width) || (mask_width != last_fft_mask_width)){
+			
 			MaskCreator_ maskCreator = new MaskCreator_();
 			fftOfFilters = new ArrayList<FHT>();
 			FloatProcessor fp = maskCreator.generateMask(filament_width, mask_width);
@@ -74,6 +77,8 @@ public class FilamentEnhancer_ implements PlugInFilter {
 				ImagePlus mask = new ImagePlus("Mask", maskStack);
 				mask.show();
 			}
+			last_fft_filament_width = filament_width;
+			last_fft_mask_width = mask_width;
 		}
 	}
 
@@ -98,9 +103,9 @@ public class FilamentEnhancer_ implements PlugInFilter {
 			enhancedStack.addSlice(result);
 		}
 		
-		ImagePlus imp = new ImagePlus("enhanced", enhancedStack);
+		ImagePlus imp = new ImagePlus("enhancedstack", enhancedStack);
 		
-		//imp.show();
+	//	imp.show();
 		ZProjector zproj = new ZProjector();
 		zproj.setImage(imp);
 		zproj.setMethod(ZProjector.MAX_METHOD);

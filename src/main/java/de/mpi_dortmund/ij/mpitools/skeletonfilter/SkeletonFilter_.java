@@ -92,14 +92,20 @@ public class SkeletonFilter_ implements PlugInFilter {
 	
 	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, int border_diameter, int min_distance, int removementRadius, double min_straightness, int min_length, double max_response, double min_response, double double_filament_insensitivity){
 		setBorderToZero((ByteProcessor)line_image,  border_diameter);
+		//(new ImagePlus("after border to zero", line_image.duplicate())).show();
 		removeJunctions((ByteProcessor) line_image,removementRadius);
+		//(new ImagePlus("after remove junction", line_image.duplicate())).show();
 		setCarbonEdgeToZero(input_image, line_image, 100);
+		//(new ImagePlus("after carbon edge removed", line_image.duplicate())).show();
 		LineTracer tracer = new LineTracer();
 		ArrayList<Polygon> lines = tracer.extractLines((ByteProcessor) line_image);
+		IJ.log("DIST: " + min_distance);
 		removeParallelLines((ByteProcessor) line_image, lines, min_distance);
+		//(new ImagePlus("after remove para lines", line_image.duplicate())).show();
 		lines = tracer.extractLines((ByteProcessor) line_image);
-		lines = splitByStraightness(lines,min_straightness,25);
-
+		
+		lines = splitByStraightness2(lines,(ByteProcessor)line_image,min_straightness,25,removementRadius);
+		//(new ImagePlus("after straightness ", line_image.duplicate())).show();
 		lines = filterByLength(lines, min_length);
 
 		line_image.setRoi(new Rectangle(0, 0, line_image.getWidth(), line_image.getHeight()));
@@ -107,7 +113,8 @@ public class SkeletonFilter_ implements PlugInFilter {
 		line_image.resetRoi();
 		
 		//lines = filterByResponseFixThresholds(lines, response.getProcessor(), min_response, max_response);
-		lines = filterByResponseMeanStd(lines, response_image,max_response, min_response,double_filament_insensitivity);
+		//lines = filterByResponseMeanStd(lines, response_image,max_response, min_response,double_filament_insensitivity);
+
 		return lines;
 	}
 	
@@ -161,7 +168,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 	}
 	
 	private void removeParallelLines(ByteProcessor ip, ArrayList<Polygon> lines, int radius){
-		
+		IJ.log("Lines:" + lines.size());
 		for (Polygon p : lines) {
 			
 			for(int i = 0; i < p.npoints; i++){
@@ -201,6 +208,23 @@ public class SkeletonFilter_ implements PlugInFilter {
 		}
 	}
 	
+	private ArrayList<Polygon> splitByStraightness2(ArrayList<Polygon> lines, ByteProcessor line_image, double min_straightness, int window_length, int radius){
+		for (Polygon p : lines) {
+			
+			for(int i = 0; i < p.npoints-window_length; i++){
+				double s = getStraightness(p, i, i+window_length);
+
+				if(s<min_straightness){
+					int index = i + window_length/2 + 1;
+					setRegionToBlack(p.xpoints[index], p.ypoints[index], line_image, radius);
+				}
+			}
+		}
+		LineTracer tracer = new LineTracer();
+		ArrayList<Polygon> filtered = tracer.extractLines((ByteProcessor) line_image);
+		
+		return filtered;
+	}
 	
 	private ArrayList<Polygon> splitByStraightness(ArrayList<Polygon> lines, double min_straightness, int window_length){
 		ArrayList<Polygon> filtered = new ArrayList<Polygon>();

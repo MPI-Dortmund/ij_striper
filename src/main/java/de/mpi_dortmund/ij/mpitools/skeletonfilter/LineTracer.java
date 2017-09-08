@@ -22,6 +22,17 @@ public class LineTracer {
 		for(int x = 0; x < ip.getWidth(); x++){
 			for(int y = 0; y < ip.getHeight(); y++){
 				if( isStartPoint(x,y,(ByteProcessor)ip,true) && map.getPixel(x, y)==0 ){
+					map.putPixel(x, y, 1);
+					Polygon p = tracer.traceLine(x, y, ip, map);
+					
+					lines.add(p);
+				}
+			}
+		}
+		for(int x = 0; x < ip.getWidth(); x++){
+			for(int y = 0; y < ip.getHeight(); y++){
+				if(ip.get(x, y)==255 &&  map.getPixel(x, y)==0){
+					map.putPixel(x, y, 1);
 					Polygon p = tracer.traceLine(x, y, ip, map);
 					
 					lines.add(p);
@@ -34,9 +45,12 @@ public class LineTracer {
 	}
 	
 	public boolean isStartPoint(int x, int y, ByteProcessor ip, boolean connected8){
-		int n = countNeighbors(x, y, ip, connected8);
-		
-		return n==1;
+		int n_8 = countNeighbors(x, y, ip, connected8);
+		int n_4 = countNeighbors(x, y, ip, false);
+		if(n_8>=2){
+			return false;
+		}
+		return n_8==1;// || n_4==1;
 	}
 
 	

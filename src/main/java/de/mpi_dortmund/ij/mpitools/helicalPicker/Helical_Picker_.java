@@ -1,7 +1,9 @@
 package de.mpi_dortmund.ij.mpitools.helicalPicker;
 
 import java.awt.AWTEvent;
+import java.awt.Color;
 import java.awt.Polygon;
+import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileWriter;
@@ -25,10 +27,14 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.DialogListener;
 import ij.gui.GenericDialog;
+import ij.gui.ImageRoi;
+import ij.gui.Overlay;
+import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ByteProcessor;
+import ij.process.FloatPolygon;
 import ij.process.ImageProcessor;
 
 public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
@@ -49,13 +55,14 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 	boolean isPreview = false;
 	boolean updateResponseMap = false;
 	boolean sliceChanged = false;
+	String previewMode = "Boxes";
 	ImageProcessor lastResponseMap;
 	HashMap<Integer,ImageProcessor> calculatedResponseMaps;
 	
 	public int setup(String arg, ImagePlus imp) {
 		if(arg.equals("final")){
 			IJ.run("Helicon_Exporter", "");
-			saveSettings(HeliconParticleExporter_.last_path + "/_helica_picker_settings.txt");
+			saveSettings(HeliconParticleExporter_.last_path + "/helica_picker_settings.txt");
 			return DONE;
 		}
 		calculatedResponseMaps = new HashMap<Integer, ImageProcessor>();
@@ -68,6 +75,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			enhancer = new FilamentEnhancer_();
 		}
 		ImageProcessor response_map = null;
+		
 		if( isPreview && calculatedResponseMaps.get(input_imp.getCurrentSlice()) != null && updateResponseMap==false ){
 			this.input_imp.setOverlay(null);
 			this.input_imp.updateAndRepaintWindow();
@@ -80,7 +88,10 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			if(updateResponseMap){
 				calculatedResponseMaps = new HashMap<Integer, ImageProcessor>();
 			}
+
 			enhancer.enhance_filaments(response_map, filament_width, mask_width, angle_step, show_mask);
+			calculatedResponseMaps.remove(input_imp.getCurrentSlice());
+	
 			calculatedResponseMaps.put(input_imp.getCurrentSlice(), response_map.duplicate());
 			updateResponseMap=false;
 		}
@@ -92,23 +103,91 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		boolean doExtendLine = true;
 		double sigma = filament_width/(2*Math.sqrt(3)) + 0.5;
 		Lines lines = detect.detectLines(response_map, sigma, ridge_ut, ridge_lt, min_filament_length,max_filament_length, isDarkLine, doCorrectPosition, doEstimateWidth, doExtendLine, OverlapOption.NONE);
-		ImageProcessor line_image = generateBinaryImage(lines, ip.getWidth(), ip.getHeight());
+		
+		if(isPreview && previewMode.equals("Enhanced+Ridges") ){
+			
+			response_map = calculatedResponseMaps.get(input_imp.getCurrentSlice());
+			ImageRoi imgRoi = new ImageRoi(0, 0, response_map);
+			imgRoi.setPosition(input_imp.getCurrentSlice());
+			Overlay ov = input_imp.getOverlay();
+			if(ov==null){
+				ov = new Overlay();
+				input_imp.setOverlay(ov);
+			}
+			ov.add(imgRoi);
 
-		SkeletonFilter_ skeleton_filter = new SkeletonFilter_();
-		int border_diameter = box_size/2;
-		int line_distance = (int) Math.sqrt(Math.pow(box_size/2,2)+Math.pow(box_size/2,2));
-		double min_straightness = 0.9;
-
-		ArrayList<Polygon> filteredLines = skeleton_filter.filterLineImage(line_image, ip, response_map, border_diameter, line_distance, removement_radius, min_straightness, min_filament_length, sigma_max_response, sigma_min_response,double_filament_detection_insensitivity);
-		skeleton_filter.drawLines(filteredLines, line_image);
-
-		BoxPlacer_ placer = new BoxPlacer_();
-		int sliceNumber = ip.getSliceNumber();
-		if(isPreview){
-			sliceNumber = input_imp.getCurrentSlice();
+			
+			showLinesAsPreview(lines);
+			//ip.setPixels(response_map.getPixels());
 		}
-		placer.placeBoxes(line_image, input_imp, sliceNumber, box_size, box_distance);
+		else{
+			ImageProcessor line_image = generateBinaryImage(lines, ip.getWidth(), ip.getHeight());
+
+			SkeletonFilter_ skeleton_filter = new SkeletonFilter_();
+			int border_diameter =  box_size/2;
+			int line_distance = (int) Math.sqrt(Math.pow(1.0*box_size/2,2)+Math.pow(1.0*box_size/2,2))/2;
+	
+			double min_straightness = 0.9;
+
+			ArrayList<Polygon> filteredLines = skeleton_filter.filterLineImage(line_image, ip, response_map, border_diameter, line_distance, removement_radius, min_straightness, min_filament_length, sigma_max_response, sigma_min_response,double_filament_detection_insensitivity);
+			skeleton_filter.drawLines(filteredLines, line_image);
+
+			BoxPlacer_ placer = new BoxPlacer_();
+			int sliceNumber = ip.getSliceNumber();
+			if(isPreview){
+				sliceNumber = input_imp.getCurrentSlice();
+			}
+			placer.placeBoxes(line_image, input_imp, sliceNumber, box_size, box_distance);
+			input_imp.updateAndRepaintWindow();
+		}
+		
+		
+	}
+	
+	 
+	public void showLinesAsPreview(Lines lines){
+
+		Overlay ovpoly = input_imp.getOverlay();
+		if(ovpoly==null){
+			ovpoly = new Overlay();
+			input_imp.setOverlay(ovpoly);
+		}
+		double px, py;
+
+		// Print contour
+		for (Line line : lines) {
+			
+		
+				FloatPolygon polyMitte = new FloatPolygon();
+
+				Line cont = line;
+				
+				int num_points =  cont.getNumber();
+
+				float col[] = cont.getXCoordinates();
+				float row[] = cont.getYCoordinates();
+				for (int j = 0; j < num_points; j++) {
+					
+					px = col[j];
+					py = row[j];					
+					polyMitte.addPoint((px + 0.5), (py + 0.5));
+
+				}
+				
+				
+				PolygonRoi polyRoiMitte = new PolygonRoi(polyMitte,
+						Roi.POLYLINE);
+				
+				polyRoiMitte.setStrokeColor(Color.red);
+				int position = input_imp.getCurrentSlice();
+			
+			
+				polyRoiMitte.setPosition(position);
+				ovpoly.add(polyRoiMitte);
+				
+		}
 		input_imp.updateAndRepaintWindow();
+
 	}
 	
 	public void saveSettings(String path){
@@ -218,6 +297,8 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 				
 			}
 		});
+		
+		gd.addChoice("Preview mode:", new String[]{"Boxes","Enhanced+Ridges"}, "Boxes");
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
 		
@@ -238,7 +319,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		double_filament_detection_insensitivity = 1- gd.getNextNumber();
 		box_size = (int) gd.getNextNumber();
 		box_distance = (int) gd.getNextNumber();
-		
+		previewMode = gd.getNextChoice();
 		return IJ.setupDialog(imp, DOES_8G+PARALLELIZE_STACKS+FINAL_PROCESSING);
 	}
 
@@ -251,8 +332,11 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		
 		isPreview = gd.isPreviewActive();
 		int new_filament_width = (int) gd.getNextNumber();
+		boolean filamant_width_changed = false;
 		if(new_filament_width != filament_width){
 			updateResponseMap = true;
+			filamant_width_changed = true;
+
 		}
 		filament_width = new_filament_width;
 		
@@ -261,6 +345,34 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			updateResponseMap = true;
 		}
 		mask_width = new_mask_width;
+		
+		/*
+		 * Estimating parameters
+		 */
+		if(filamant_width_changed){
+			int clow = 100;
+			
+			double estimatedSigma = filament_width/(2*Math.sqrt(3)) + 0.5;
+			double estimatedLowerThresh = Math.floor(Math.abs(-2
+					* clow
+					* (filament_width / 2.0)
+					/ (Math.sqrt(2 * Math.PI) * estimatedSigma * estimatedSigma * estimatedSigma)
+					* Math.exp(-((filament_width / 2.0) * (filament_width / 2.0))
+							/ (2 * estimatedSigma * estimatedSigma))));
+			estimatedLowerThresh = estimatedLowerThresh*0.17;
+			((TextField)gd.getNumericFields().get(2)).setText(""+estimatedLowerThresh);
+			int chigh = 255;
+			double estimatedUpperThresh = Math.floor(Math.abs(-2
+					* chigh
+					* (filament_width / 2.0)
+					/ (Math.sqrt(2 * Math.PI) * estimatedSigma * estimatedSigma * estimatedSigma)
+					* Math.exp(-((filament_width / 2.0) * (filament_width / 2.0))
+							/ (2 * estimatedSigma * estimatedSigma))));
+			estimatedUpperThresh = estimatedUpperThresh * 0.17;
+			((TextField)gd.getNumericFields().get(3)).setText(""+estimatedUpperThresh);
+		}
+		
+		
 		ridge_lt = gd.getNextNumber();
 		ridge_ut = gd.getNextNumber();
 		removement_radius = (int) gd.getNextNumber();
@@ -270,6 +382,8 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		double_filament_detection_insensitivity = 1- gd.getNextNumber();
 		box_size = (int) gd.getNextNumber();
 		box_distance = (int) gd.getNextNumber();
+		previewMode = gd.getNextChoice();
+		
 		
 		return true;
 	}

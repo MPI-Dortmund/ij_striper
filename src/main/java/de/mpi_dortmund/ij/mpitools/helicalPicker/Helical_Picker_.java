@@ -3,6 +3,7 @@ package de.mpi_dortmund.ij.mpitools.helicalPicker;
 import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,6 +23,7 @@ import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer_;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
 import de.mpi_dortmund.ij.mpitools.boxplacer.HeliconParticleExporter_;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilter_;
+import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import ij.ImagePlus;
@@ -50,15 +52,22 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 	int box_size = 64;
 	int box_distance = 10;
 	int removement_radius = 20;
+	double min_straightness = 0.9;
+	int straightness_windowsize = 25;
 	FilamentEnhancer_ enhancer;
 	ImagePlus input_imp;
 	boolean isPreview = false;
 	boolean updateResponseMap = false;
 	boolean sliceChanged = false;
+	boolean removeCarbonEdge = false;
+	boolean applyUserFilter = true;
 	String previewMode = "Boxes";
 	ImageProcessor lastResponseMap;
 	HashMap<Integer,ImageProcessor> calculatedResponseMaps;
-	
+	private static ArrayList<IUserFilter> userFilters = new ArrayList<IUserFilter>();
+	ProgressBar progressBar;
+	int runPassed = 0;
+	int nPasses;
 	public int setup(String arg, ImagePlus imp) {
 		if(arg.equals("final")){
 			IJ.run("Helicon_Exporter", "");
@@ -126,10 +135,11 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			SkeletonFilter_ skeleton_filter = new SkeletonFilter_();
 			int border_diameter =  box_size/2;
 			int line_distance = (int) Math.sqrt(Math.pow(1.0*box_size/2,2)+Math.pow(1.0*box_size/2,2))/2;
-	
-			double min_straightness = 0.9;
-
-			ArrayList<Polygon> filteredLines = skeleton_filter.filterLineImage(line_image, ip, response_map, border_diameter, line_distance, removement_radius, min_straightness, min_filament_length, sigma_max_response, sigma_min_response,double_filament_detection_insensitivity);
+			ArrayList<IUserFilter> filters = userFilters;
+			if(applyUserFilter==false){
+				filters = null;
+			}
+			ArrayList<Polygon> filteredLines = skeleton_filter.filterLineImage(line_image, ip, response_map, border_diameter, line_distance, removement_radius, min_straightness, straightness_windowsize, min_filament_length, sigma_max_response, sigma_min_response, double_filament_detection_insensitivity, removeCarbonEdge,filters);
 			skeleton_filter.drawLines(filteredLines, line_image);
 
 			BoxPlacer_ placer = new BoxPlacer_();
@@ -139,9 +149,35 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			}
 			placer.placeBoxes(line_image, input_imp, sliceNumber, box_size, box_distance);
 			input_imp.updateAndRepaintWindow();
+			increaseRunPasseAndUpdateProgress();
 		}
 		
 		
+	}
+	
+	public synchronized void increaseRunPasseAndUpdateProgress(){
+		runPassed++;
+
+		if(isPreview==false){
+			progressBar = ProgressBar.getInstance();
+			int progress =  (int) (100.0*runPassed/nPasses);
+			progressBar.updateProgress(progress, "% slices processed");
+			if(progress==100){
+				progressBar.setVisible(false);
+			}
+		}
+	}
+	
+	public static void registerUserFilter(IUserFilter filter){
+		if(userFilters==null){
+			userFilters = new ArrayList<IUserFilter>();
+		}
+		for (IUserFilter iUserFilter : userFilters) {
+			if(iUserFilter.getFilterName().equals(filter.getFilterName())){
+				userFilters.remove(iUserFilter);
+			}
+		}
+		userFilters.add(filter);
 	}
 	
 	 
@@ -254,21 +290,23 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
 		
-		final GenericDialogPlus gd = new GenericDialogPlus("Helical Picker");
+		final GenericDialogPlus gd = new GenericDialogPlus("Helical Picker V"+getClass().getPackage().getImplementationVersion());
 		gd.addMessage("Line detection parameters:");
-		gd.addNumericField("Filament width", filament_width, 0);
-		gd.addNumericField("Mask width", mask_width, 0);
-		gd.addNumericField("Lower threshold (RidgeDetection)", 0.7, 2);
-		gd.addNumericField("Upper threshold (RidgeDetection)", 1.2, 2);
+		gd.addNumericField("Filament width", filament_width, 0,4,"pixels");
+		gd.addNumericField("Mask width", mask_width, 0,5,"pixels");
+		gd.addNumericField("Lower threshold (RidgeDetection)", ridge_lt, 2);
+		gd.addNumericField("Upper threshold (RidgeDetection)", ridge_ut, 2);
 		gd.addMessage("Line filtering parameters: ");
-		gd.addNumericField("Junction safety distance", 20, 0);
-		gd.addNumericField("Min line length", min_filament_length, 0);
+		gd.addNumericField("Junction safety distance", 20, 0,5,"pixels");
+		gd.addNumericField("Min line length", min_filament_length, 0,5,"pixels");
 		gd.addNumericField("Sigma_min._response", 5, 0);
 		gd.addNumericField("Sigma_max._response", 2, 0);
 		gd.addSlider("Double_filament_detection_sensitivity", 0.01, 0.99, 0.9);
+		gd.addNumericField("Min_straightness", 0.9, 2);
+		gd.addNumericField("Straightness_window_size", 25, 0,5,"pixels");
 		gd.addMessage("Box extraction parameters");
-		gd.addNumericField("Box size", 64, 0);
-		gd.addNumericField("Box distance", 10, 0);
+		gd.addNumericField("Box size", 64, 0,5,"pixels");
+		gd.addNumericField("Box distance", 10, 0,5,"pixels");
 		gd.addButton("Previous slice", new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -298,6 +336,8 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			}
 		});
 		
+		gd.addCheckbox("Remove carbon edge", removeCarbonEdge);
+		gd.addCheckbox("Apply user filter", applyUserFilter);
 		gd.addChoice("Preview mode:", new String[]{"Boxes","Enhanced+Ridges"}, "Boxes");
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
@@ -317,14 +357,23 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		sigma_min_response = gd.getNextNumber();
 		sigma_max_response = gd.getNextNumber();
 		double_filament_detection_insensitivity = 1- gd.getNextNumber();
+		min_straightness = gd.getNextNumber();
+		straightness_windowsize = (int) gd.getNextNumber();
 		box_size = (int) gd.getNextNumber();
 		box_distance = (int) gd.getNextNumber();
+		removeCarbonEdge = gd.getNextBoolean();
+		applyUserFilter = gd.getNextBoolean();
 		previewMode = gd.getNextChoice();
 		return IJ.setupDialog(imp, DOES_8G+PARALLELIZE_STACKS+FINAL_PROCESSING);
 	}
 
 	public void setNPasses(int nPasses) {
-		// TODO Auto-generated method stub
+		this.nPasses = nPasses;
+		if(isPreview==false){
+			progressBar = ProgressBar.getInstance();
+			int progress =  (int) (100.0*runPassed/nPasses);
+			progressBar.updateProgress(progress, "% slices processed");
+		}
 		
 	}
 
@@ -380,8 +429,12 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		sigma_min_response = gd.getNextNumber();
 		sigma_max_response = gd.getNextNumber();
 		double_filament_detection_insensitivity = 1- gd.getNextNumber();
+		min_straightness = gd.getNextNumber();
+		straightness_windowsize = (int) gd.getNextNumber();
 		box_size = (int) gd.getNextNumber();
 		box_distance = (int) gd.getNextNumber();
+		removeCarbonEdge = gd.getNextBoolean();
+		applyUserFilter = gd.getNextBoolean();
 		previewMode = gd.getNextChoice();
 		
 		

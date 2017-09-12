@@ -59,6 +59,7 @@ public class BoxPlacer_ implements PlugInFilter {
 			ov = new Overlay();
 			targetImage.setOverlay(ov);
 		}
+		targetImage.setProperty("line_image", lineImage.convertToByteProcessor());
 		
 		LineTracer tracer = new LineTracer();
 		
@@ -75,6 +76,7 @@ public class BoxPlacer_ implements PlugInFilter {
 			
 			Roi r = new Roi(x, y, boxsize, boxsize);
 			r.setProperty("id", ""+running_id);
+			
 			r.setPosition(slicePosition);
 			r.setStrokeColor(c);
 			ov.add(r);

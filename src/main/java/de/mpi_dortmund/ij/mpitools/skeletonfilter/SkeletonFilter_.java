@@ -6,6 +6,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import ij.ImagePlus;
@@ -29,10 +30,11 @@ public class SkeletonFilter_ implements PlugInFilter {
 	double min_response;
 	double max_response;
 	double min_straightness;
+	int window_straightness;
 	int min_distance;
 	int border_diameter;
 	double double_filament_insensitivity;
-	
+	boolean remove_carbon_edge;
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
 		
@@ -49,10 +51,12 @@ public class SkeletonFilter_ implements PlugInFilter {
 		gd.addMessage("Line filter:");
 		gd.addNumericField("Minimum_length:", 10, 0);
 		gd.addSlider("Minimum_straightness:", 0.0, 1.0, 0.90);
+		gd.addNumericField("Straightness window size", 25, 0);
 		gd.addNumericField("Minimum_line_distance:", 20, 0);
 		gd.addNumericField("Minimum_response:", 0, 2);
 		gd.addNumericField("Maximum_response:", 0, 2);
 		gd.addSlider("Double_filament_detection_sensitivity:", 0.01, 0.99, 0.9); 
+		gd.addCheckbox("Remove_carbon_edge", false);
 		
 		gd.showDialog();
 	
@@ -66,11 +70,12 @@ public class SkeletonFilter_ implements PlugInFilter {
 		border_diameter = (int) gd.getNextNumber();
 		min_length = (int) gd.getNextNumber();
 		min_straightness = gd.getNextNumber();
+		window_straightness = (int) gd.getNextNumber();
 		min_distance = (int) gd.getNextNumber();
 		min_response =  gd.getNextNumber();
 		max_response =  gd.getNextNumber();
 		double_filament_insensitivity = 1-gd.getNextNumber();
-		
+		remove_carbon_edge = gd.getNextBoolean();
 		if(response.getImageStackSize() != input_image.getImageStackSize()){
 			IJ.error("Response image and input image must have the same number of slices");
 		}
@@ -83,29 +88,41 @@ public class SkeletonFilter_ implements PlugInFilter {
 	public void run(ImageProcessor ip) {
 		
 		
-		ArrayList<Polygon> lines = filterLineImage(ip, input_image.getStack().getProcessor(ip.getSliceNumber()),  response.getStack().getProcessor(ip.getSliceNumber()), border_diameter, min_distance, radius, min_straightness, min_length, max_response, min_response,double_filament_insensitivity);
+		ArrayList<Polygon> lines = filterLineImage(ip, input_image.getStack().getProcessor(ip.getSliceNumber()),  response.getStack().getProcessor(ip.getSliceNumber()), border_diameter, min_distance, radius, min_straightness, window_straightness, min_length, max_response, min_response,double_filament_insensitivity,remove_carbon_edge, null);
 		drawLines(lines, ip);
 		
 		
 		
 	}
 	
-	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, int border_diameter, int min_distance, int removementRadius, double min_straightness, int min_length, double max_response, double min_response, double double_filament_insensitivity){
+	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, int border_diameter, int min_distance, int removementRadius, double min_straightness, int window_straightness, int min_length, double max_response, double min_response, double double_filament_insensitivity, boolean removeCarbonEdge, ArrayList<IUserFilter> userFilters){
 		setBorderToZero((ByteProcessor)line_image,  border_diameter);
 		//(new ImagePlus("after border to zero", line_image.duplicate())).show();
 		removeJunctions((ByteProcessor) line_image,removementRadius);
 		//(new ImagePlus("after remove junction", line_image.duplicate())).show();
-		setCarbonEdgeToZero(input_image, line_image, 100);
+		if(removeCarbonEdge){
+			setCarbonEdgeToZero(input_image, line_image, 100);
+		}
 		//(new ImagePlus("after carbon edge removed", line_image.duplicate())).show();
 		LineTracer tracer = new LineTracer();
 		ArrayList<Polygon> lines = tracer.extractLines((ByteProcessor) line_image);
-		IJ.log("DIST: " + min_distance);
 		removeParallelLines((ByteProcessor) line_image, lines, min_distance);
 		//(new ImagePlus("after remove para lines", line_image.duplicate())).show();
 		lines = tracer.extractLines((ByteProcessor) line_image);
 		
-		lines = splitByStraightness2(lines,(ByteProcessor)line_image,min_straightness,25,removementRadius);
+		lines = splitByStraightness2(lines,(ByteProcessor)line_image,min_straightness,window_straightness,removementRadius);
 		//(new ImagePlus("after straightness ", line_image.duplicate())).show();
+		
+		if(userFilters!=null){
+			for (IUserFilter filter : userFilters) {
+				lines = filter.apply(input_image, response_image, line_image);
+				line_image.setRoi(new Rectangle(0, 0, line_image.getWidth(), line_image.getHeight()));
+				line_image.set(0);
+				line_image.resetRoi();
+				drawLines(lines, line_image);
+			}
+		}
+		
 		lines = filterByLength(lines, min_length);
 
 		line_image.setRoi(new Rectangle(0, 0, line_image.getWidth(), line_image.getHeight()));
@@ -113,7 +130,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 		line_image.resetRoi();
 		
 		//lines = filterByResponseFixThresholds(lines, response.getProcessor(), min_response, max_response);
-		//lines = filterByResponseMeanStd(lines, response_image,max_response, min_response,double_filament_insensitivity);
+		lines = filterByResponseMeanStd(lines, response_image,max_response, min_response,double_filament_insensitivity);
 
 		return lines;
 	}
@@ -168,7 +185,6 @@ public class SkeletonFilter_ implements PlugInFilter {
 	}
 	
 	private void removeParallelLines(ByteProcessor ip, ArrayList<Polygon> lines, int radius){
-		IJ.log("Lines:" + lines.size());
 		for (Polygon p : lines) {
 			
 			for(int i = 0; i < p.npoints; i++){

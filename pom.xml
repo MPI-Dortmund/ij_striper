@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.mpi-dortmund.ij.mpitools</groupId>
   <artifactId>ij_helical_picker</artifactId>
-  
+  <version>1.0.0-alpha.4</version>
   <repositories>
 		  <repository>
 		    <id>imagej.public</id>
@@ -36,6 +36,11 @@
 		    <artifactId>commons-io</artifactId>
 		    <version>2.5</version>
 		</dependency>
+		<dependency>
+		    <groupId>de.biomedical-imaging.ij</groupId>
+		    <artifactId>ij_blob</artifactId>
+		    <version>1.4.9</version>
+		</dependency>
 		<!--      mvn install:install-file -Dfile=ij_ridge_detect-1.4.0.jar -DgroupId=de.biomedical-imaging.imagej -DartifactId=ij_ridge_detect -Dversion=1.4.0 -Dpackaging=jar -->
 		<dependency>
 		    <groupId>de.biomedical-imaging.imagej</groupId>
@@ -44,5 +49,31 @@
 		</dependency>
 	</dependencies>
 	
-  <version>1.0.0-alpha.1</version>
+  
+  <build>
+	<plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.1</version>
+        <configuration>
+          <!-- or whatever version you use -->
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+      </plugin>
+      <plugin>
+	    <groupId>org.apache.maven.plugins</groupId>
+	    <artifactId>maven-jar-plugin</artifactId>
+	    <configuration>
+	        <archive>                   
+	            <manifest>
+	                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+	                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+	            </manifest>
+	        </archive>
+	    </configuration>
+	  </plugin>	
+    </plugins>
+  </build>
 </project>

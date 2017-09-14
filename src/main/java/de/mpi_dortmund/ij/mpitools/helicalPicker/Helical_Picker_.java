@@ -61,6 +61,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 	boolean sliceChanged = false;
 	boolean removeCarbonEdge = false;
 	boolean applyUserFilter = true;
+	boolean equalize = true;
 	String previewMode = "Boxes";
 	ImageProcessor lastResponseMap;
 	HashMap<Integer,ImageProcessor> calculatedResponseMaps;
@@ -98,7 +99,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 				calculatedResponseMaps = new HashMap<Integer, ImageProcessor>();
 			}
 
-			enhancer.enhance_filaments(response_map, filament_width, mask_width, angle_step, show_mask);
+			enhancer.enhance_filaments(response_map, filament_width, mask_width, angle_step, show_mask,equalize,1);
 			calculatedResponseMaps.remove(input_imp.getCurrentSlice());
 	
 			calculatedResponseMaps.put(input_imp.getCurrentSlice(), response_map.duplicate());
@@ -146,6 +147,9 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			int sliceNumber = ip.getSliceNumber();
 			if(isPreview){
 				sliceNumber = input_imp.getCurrentSlice();
+			}
+			if(isPreview && previewMode.equals("Points")){
+				box_size = 1;
 			}
 			placer.placeBoxes(line_image, input_imp, sliceNumber, box_size, box_distance);
 			input_imp.updateAndRepaintWindow();
@@ -338,7 +342,8 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		
 		gd.addCheckbox("Remove carbon edge", removeCarbonEdge);
 		gd.addCheckbox("Apply user filter", applyUserFilter);
-		gd.addChoice("Preview mode:", new String[]{"Boxes","Enhanced+Ridges"}, "Boxes");
+		gd.addCheckbox("Equalize", equalize);
+		gd.addChoice("Preview mode:", new String[]{"Boxes","Points","Enhanced+Ridges"}, "Boxes");
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
 		
@@ -363,6 +368,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		box_distance = (int) gd.getNextNumber();
 		removeCarbonEdge = gd.getNextBoolean();
 		applyUserFilter = gd.getNextBoolean();
+		equalize = gd.getNextBoolean();
 		previewMode = gd.getNextChoice();
 		return IJ.setupDialog(imp, DOES_8G+PARALLELIZE_STACKS+FINAL_PROCESSING);
 	}
@@ -435,6 +441,11 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		box_distance = (int) gd.getNextNumber();
 		removeCarbonEdge = gd.getNextBoolean();
 		applyUserFilter = gd.getNextBoolean();
+		boolean new_equalize = gd.getNextBoolean();
+		if(new_equalize != equalize){
+			updateResponseMap = true;
+			equalize = new_equalize;
+		}
 		previewMode = gd.getNextChoice();
 		
 		

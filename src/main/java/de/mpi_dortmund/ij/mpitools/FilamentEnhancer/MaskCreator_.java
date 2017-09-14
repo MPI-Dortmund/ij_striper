@@ -15,6 +15,7 @@ public class MaskCreator_ implements PlugIn {
 		gd.addNumericField("Filament width", 16, 0);
 		gd.addNumericField("Mask width", 128, 0);
 	//	gd.addNumericField("Blurring radius", 10, 0);
+		gd.addChoice("Type", new String[]{"First","Second"}, "Second");
 		gd.showDialog();
 		
 		if(gd.wasCanceled()){
@@ -23,8 +24,9 @@ public class MaskCreator_ implements PlugIn {
 		
 		int filament_width = (int) gd.getNextNumber();
 		int mask_width = (int )gd.getNextNumber();
+		int type = gd.getNextChoiceIndex();
 	//	int blurring_radius = (int) gd.getNextNumber();
-		FloatProcessor fp = generateMask(filament_width,mask_width);//generateMask(filament_width, mask_width, blurring_radius);
+		FloatProcessor fp = generateMask(filament_width,mask_width,type);//generateMask(filament_width, mask_width, blurring_radius);
 
 		ImagePlus mask = new ImagePlus("Mask", fp);
 		mask.show();
@@ -58,7 +60,7 @@ public class MaskCreator_ implements PlugIn {
 		
 	}
 	
-	public FloatProcessor generateMask(int filamentwidth, int maskwidth){
+	public FloatProcessor generateMask(int filamentwidth, int maskwidth, int type){
 		FloatProcessor fp = new FloatProcessor(1024, 1024);
 		int x0 = fp.getWidth()/2;
 		int y0 = fp.getHeight()/2;
@@ -66,15 +68,17 @@ public class MaskCreator_ implements PlugIn {
 		double varx = sigmax*sigmax;
 		double sigmay = filamentwidth/2.355;
 		double vary = sigmay*sigmay;
-		double normConstant = 1.0/(2*Math.PI*sigmax*sigmay);
 
 		for(int i = 0; i < 1024; i++){
 			for(int j = 0; j < 1024; j++){
-			//	float value = (float) (normConstant*Math.exp( -1.0*( Math.pow(i-x0, 2)/(2*varx) + Math.pow(j-y0, 2)/(2*vary)  )));
-			//	double value =  (Math.PI*(varx-Math.pow(x0-i,2))*(vary-Math.pow(y0-j,2)))/(2*varx*sigmax*vary*sigmay) * Math.exp( -1.0*( Math.pow(i-x0, 2)/(2*varx) + Math.pow(j-y0, 2)/(2*vary)  )) ;
-				double value = -1.0*Math.PI*sigmax*(vary- Math.pow(j-y0,2))/(2*vary*sigmay) * Math.exp( -1.0*( Math.pow(i-x0, 2)/(2*varx) + Math.pow(j-y0, 2)/(2*vary)  ));
-				
-				fp.setf(i, j, (float) (1000*value));
+				double value = 0;
+				if(type==1){
+					value= -1.0*Math.PI*sigmax*(vary- Math.pow(j-y0,2))/(2*vary*sigmay) * Math.exp( -1.0*( Math.pow(i-x0, 2)/(2*varx) + Math.pow(j-y0, 2)/(2*vary)  ));
+				}
+				else if(type==0){
+					value = (i-x0)*Math.exp( -1.0 * ( Math.pow(i-x0,2)/(2*varx) + Math.pow(j-y0,2)/(2*vary) ) );
+				}
+				fp.setf(i, j, (float) (value));
 			}
 		}
 		fp.invert();

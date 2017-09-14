@@ -95,6 +95,16 @@ public class SkeletonFilter_ implements PlugInFilter {
 		
 	}
 	
+	/*
+	 *  1. Set border to zero
+	 *  2. Remove junctions
+	 *  3. (remove Carbon edge)
+	 *  4. Straightness
+	 *  5. User filter
+	 *  6. length filter
+	 *  7. Remove parallel lines
+	 *  8. Length filter 2
+	 */
 	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, int border_diameter, int min_distance, int removementRadius, double min_straightness, int window_straightness, int min_length, double max_response, double min_response, double double_filament_insensitivity, boolean removeCarbonEdge, ArrayList<IUserFilter> userFilters){
 		setBorderToZero((ByteProcessor)line_image,  border_diameter);
 		//(new ImagePlus("after border to zero", line_image.duplicate())).show();
@@ -106,9 +116,8 @@ public class SkeletonFilter_ implements PlugInFilter {
 		//(new ImagePlus("after carbon edge removed", line_image.duplicate())).show();
 		LineTracer tracer = new LineTracer();
 		ArrayList<Polygon> lines = tracer.extractLines((ByteProcessor) line_image);
-		removeParallelLines((ByteProcessor) line_image, lines, min_distance);
-		//(new ImagePlus("after remove para lines", line_image.duplicate())).show();
-		lines = tracer.extractLines((ByteProcessor) line_image);
+		
+		
 		
 		lines = splitByStraightness2(lines,(ByteProcessor)line_image,min_straightness,window_straightness,removementRadius);
 		//(new ImagePlus("after straightness ", line_image.duplicate())).show();
@@ -116,21 +125,23 @@ public class SkeletonFilter_ implements PlugInFilter {
 		if(userFilters!=null){
 			for (IUserFilter filter : userFilters) {
 				lines = filter.apply(input_image, response_image, line_image);
-				line_image.setRoi(new Rectangle(0, 0, line_image.getWidth(), line_image.getHeight()));
-				line_image.set(0);
-				line_image.resetRoi();
+
 				drawLines(lines, line_image);
 			}
 		}
 		
 		lines = filterByLength(lines, min_length);
-
-		line_image.setRoi(new Rectangle(0, 0, line_image.getWidth(), line_image.getHeight()));
-		line_image.set(0);
-		line_image.resetRoi();
+		drawLines(lines, line_image);
 		
 		//lines = filterByResponseFixThresholds(lines, response.getProcessor(), min_response, max_response);
 		lines = filterByResponseMeanStd(lines, response_image,max_response, min_response,double_filament_insensitivity);
+		
+		drawLines(lines, line_image);
+		
+		removeParallelLines((ByteProcessor) line_image, lines, min_distance);
+		lines = tracer.extractLines((ByteProcessor) line_image);
+		
+		lines = filterByLength(lines, min_length);
 
 		return lines;
 	}
@@ -217,6 +228,9 @@ public class SkeletonFilter_ implements PlugInFilter {
 	
 	
 	public void drawLines(ArrayList<Polygon> lines, ImageProcessor ip){
+		ip.setRoi(new Rectangle(0, 0, ip.getWidth(), ip.getHeight()));
+		ip.set(0);
+		ip.resetRoi();
 		for (Polygon p : lines) {
 			for(int i = 0; i < p.npoints; i++){
 				ip.putPixel(p.xpoints[i], p.ypoints[i], 255);
@@ -345,7 +359,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 		double threshold_max = mean_response + sd*sigmafactor_max;
 		double threshold_min = mean_response - sd*sigmafactor_min;
 
-		//IJ.log("MEAN: " + mean_response + " sigma: " + sd + " TMAX: " + threshold_max + " TMIN: " + threshold_min);
+	//	IJ.log("MEAN: " + mean_response + " sigma: " + sd + " TMAX: " + threshold_max + " TMIN: " + threshold_min);
 		
 		for (Polygon p : lines) {
 			int nOver = 0;

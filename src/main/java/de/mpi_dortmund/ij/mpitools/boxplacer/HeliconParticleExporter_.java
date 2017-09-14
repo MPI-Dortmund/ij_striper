@@ -66,43 +66,46 @@ public class HeliconParticleExporter_ implements PlugIn {
 		
 		for (int i = 0; i < numberOfImages; i++) {
 			ArrayList<Line> sliceLines = getLinesFromSlice(lines, i+1);
-			Line oneLine = sliceLines.get(0);
-			Roi oneRoi = oneLine.get(0);
-			int boxsize = (int) (oneRoi.getBounds().getWidth());
-			String filename = labels[i];
-			CSVWriter writer;
-			try {
-				String filepath = path + "/" + filename.substring(0, filename.length()-4) + "_ptcl_coords.box";
-				writer = new CSVWriter(new FileWriter(filepath), '\t','\0');
-				String add = "#micrograph: " + filename;
-				writer.writeNext(new String[]{add});
-				add = "#segment length: " + boxsize/scale;
-				writer.writeNext(new String[]{add});
-				add = "#segment width: " + boxsize/scale;
-				writer.writeNext(new String[]{add});
-				
-				
-				for (Line l : sliceLines) {
-					double[] startpoint = ct((int)l.get(0).getBounds().getCenterX(),(int)l.get(0).getBounds().getCenterY(),imageHeight,scale);
-					double[] endpoint = ct((int)l.get(l.size()-1).getBounds().getCenterX(),(int)l.get(l.size()-1).getBounds().getCenterY(),imageHeight,scale);
-					add = "#helix: (" + startpoint[0] + ", " + startpoint[1] + "),(" + endpoint[0] + ", " + endpoint[1] + "),"+boxsize/scale;
+			if(sliceLines != null && sliceLines.size()>1){
+				Line oneLine = sliceLines.get(0);
+				Roi oneRoi = oneLine.get(0);
+				int boxsize = (int) (oneRoi.getBounds().getWidth());
+				String filename = labels[i];
+				CSVWriter writer;
+				try {
+					String filepath = path + "/" + filename.substring(0, filename.length()-4) + "_ptcl_coords.box";
+					writer = new CSVWriter(new FileWriter(filepath), '\t','\0');
+					String add = "#micrograph: " + filename;
+					writer.writeNext(new String[]{add});
+					add = "#segment length: " + boxsize/scale;
+					writer.writeNext(new String[]{add});
+					add = "#segment width: " + boxsize/scale;
 					writer.writeNext(new String[]{add});
 					
-					for (Roi box : l) {
-						String[] values = new String[2];
-						double[] pos = ct((int)box.getBounds().x+boxsize/2, (int)(box.getBounds().y+boxsize/2),imageHeight,scale);
-						values[0] = "" + pos[0];
-						values[1] = "" + pos[1];
-					    writer.writeNext(values);
-					}
 					
+					for (Line l : sliceLines) {
+						double[] startpoint = ct((int)l.get(0).getBounds().getCenterX(),(int)l.get(0).getBounds().getCenterY(),imageHeight,scale);
+						double[] endpoint = ct((int)l.get(l.size()-1).getBounds().getCenterX(),(int)l.get(l.size()-1).getBounds().getCenterY(),imageHeight,scale);
+						add = "#helix: (" + startpoint[0] + ", " + startpoint[1] + "),(" + endpoint[0] + ", " + endpoint[1] + "),"+boxsize/scale;
+						writer.writeNext(new String[]{add});
+						
+						for (Roi box : l) {
+							String[] values = new String[2];
+							double[] pos = ct((int)box.getBounds().x+boxsize/2, (int)(box.getBounds().y+boxsize/2),imageHeight,scale);
+							values[0] = "" + pos[0];
+							values[1] = "" + pos[1];
+						    writer.writeNext(values);
+						}
+						
+					}
+
+					writer.close();
+
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-
-				writer.close();
-
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
+			
 			
 		}
 	}

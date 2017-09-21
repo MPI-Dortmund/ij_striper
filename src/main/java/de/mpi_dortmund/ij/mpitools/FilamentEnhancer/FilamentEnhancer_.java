@@ -23,6 +23,7 @@ public class FilamentEnhancer_ implements PlugInFilter {
 	int mask_width;
 	int angle_step;
 	boolean show_mask;
+	boolean show_response_stack;
 	int last_fft_mask_width=0;
 	int last_fft_filament_width=0;
 	int type;
@@ -35,6 +36,7 @@ public class FilamentEnhancer_ implements PlugInFilter {
 		
 		gd.addChoice("Type", new String[]{"First","Second"}, "Second");
 		gd.addCheckbox("Show mask", false);
+		gd.addCheckbox("Show reponse stack", false);
 		gd.addCheckbox("Equalize", false);
 	//	gd.addNumericField("Blurring radius", 10, 0);
 		gd.showDialog();
@@ -48,6 +50,7 @@ public class FilamentEnhancer_ implements PlugInFilter {
 		angle_step = (int) gd.getNextNumber();
 		type = gd.getNextChoiceIndex();
 		show_mask = gd.getNextBoolean();
+		show_response_stack = gd.getNextBoolean();
 		equalize = gd.getNextBoolean();
 		
 		
@@ -104,6 +107,7 @@ public class FilamentEnhancer_ implements PlugInFilter {
 		ImageStack enhancedStack = new ImageStack(ip.getWidth(), ip.getHeight());
 		for(int i = 0; i < fftOfFilters.size(); i++){
 			h2 = fftOfFilters.get(i);
+			
 			FHT result = h1.multiply(h2);
 			result.inverseTransform();
 			result.swapQuadrants();
@@ -113,8 +117,10 @@ public class FilamentEnhancer_ implements PlugInFilter {
 		}
 		
 		ImagePlus imp = new ImagePlus("enhancedstack", enhancedStack);
+		if(show_response_stack){
+			imp.show();
+		}
 		
-	//	imp.show();
 		ZProjector zproj = new ZProjector();
 		zproj.setImage(imp);
 		zproj.setMethod(ZProjector.MAX_METHOD);
@@ -130,6 +136,7 @@ public class FilamentEnhancer_ implements PlugInFilter {
 		if(equalize){
 			
 			ImageStatistics stat = maxProjProc.getStatistics();
+			maxProjProc.subtract(stat.mean);
 			maxProjProc.multiply(1.0/stat.stdDev);
 			stat = maxProjProc.getStatistics();
 			maxProj = new ImagePlus("", maxProjProc);

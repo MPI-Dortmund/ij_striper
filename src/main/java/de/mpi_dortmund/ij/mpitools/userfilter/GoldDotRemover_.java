@@ -93,7 +93,6 @@ public class GoldDotRemover_ implements PlugIn, IUserFilter {
 		minDistanceToGold = gd.getNextNumber();
 		minBlobArea = (int) gd.getNextNumber();
 		Helical_Picker_.registerUserFilter(this);
-		IJ.showMessage("Gold dot remover was registered as user filter for the helical picker.");
 
 	}
 

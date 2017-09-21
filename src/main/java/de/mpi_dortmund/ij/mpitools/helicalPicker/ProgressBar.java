@@ -13,7 +13,7 @@ public class ProgressBar
 {
 	
 	JProgressBar bar;
-	JFrame frame;
+	protected JFrame frame;
 	boolean runs = false;
 	private static ProgressBar instance;
 	private ProgressBar() {
@@ -46,7 +46,9 @@ public class ProgressBar
 			return instance;
 		}
 		instance.updateProgress(0, "");
-		instance.setVisible(true);
+		if(instance.frame.isVisible()==false){
+			instance.setVisible(true);
+		}
 		return instance;
 	}
 	
@@ -63,7 +65,9 @@ public class ProgressBar
 	}
 	
 	public void setVisible(boolean visible){
-		frame.setVisible(visible);
+		
+			frame.setVisible(visible);
+		
 	}
 
 }

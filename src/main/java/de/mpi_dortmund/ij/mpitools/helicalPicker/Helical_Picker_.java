@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import com.opencsv.CSVWriter;
 
@@ -85,7 +86,6 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			enhancer = new FilamentEnhancer_();
 		}
 		ImageProcessor response_map = null;
-		
 		if( isPreview && calculatedResponseMaps.get(input_imp.getCurrentSlice()) != null && updateResponseMap==false ){
 			this.input_imp.setOverlay(null);
 			this.input_imp.updateAndRepaintWindow();
@@ -160,12 +160,12 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 	}
 	
 	public synchronized void increaseRunPasseAndUpdateProgress(){
-		runPassed++;
 
 		if(isPreview==false){
+			runPassed++;
 			progressBar = ProgressBar.getInstance();
 			int progress =  (int) (100.0*runPassed/nPasses);
-			progressBar.updateProgress(progress, "% slices processed");
+			progressBar.updateProgress(progress, progress + "% slices processed");
 			if(progress==100){
 				progressBar.setVisible(false);
 			}
@@ -182,6 +182,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			}
 		}
 		userFilters.add(filter);
+		IJ.showMessage(filter.getFilterName()+" was registered as user filter for the helical picker.");
 	}
 	
 	 
@@ -293,8 +294,8 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
-		
-		final GenericDialogPlus gd = new GenericDialogPlus("Helical Picker V"+getClass().getPackage().getImplementationVersion());
+		//fast robust helical picking procedure
+		final GenericDialogPlus gd = new GenericDialogPlus("STRIPPER V"+getClass().getPackage().getImplementationVersion());
 		gd.addMessage("Line detection parameters:");
 		gd.addNumericField("Filament width", filament_width, 0,4,"pixels");
 		gd.addNumericField("Mask width", mask_width, 0,5,"pixels");
@@ -378,7 +379,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		if(isPreview==false){
 			progressBar = ProgressBar.getInstance();
 			int progress =  (int) (100.0*runPassed/nPasses);
-			progressBar.updateProgress(progress, "% slices processed");
+			progressBar.updateProgress(progress, progress+"% slices processed");
 		}
 		
 	}
@@ -447,7 +448,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			equalize = new_equalize;
 		}
 		previewMode = gd.getNextChoice();
-		
+
 		
 		return true;
 	}

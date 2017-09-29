@@ -14,7 +14,7 @@ public class MaskCreator_ implements PlugIn {
 		GenericDialog gd = new GenericDialog("Mask creator");
 		gd.addNumericField("Filament width", 16, 0);
 		gd.addNumericField("Mask width", 128, 0);
-	//	gd.addNumericField("Blurring radius", 10, 0);
+		gd.addNumericField("Mask_size", 1024, 0);
 		gd.addChoice("Type", new String[]{"First","Second"}, "Second");
 		gd.showDialog();
 		
@@ -24,9 +24,10 @@ public class MaskCreator_ implements PlugIn {
 		
 		int filament_width = (int) gd.getNextNumber();
 		int mask_width = (int )gd.getNextNumber();
+		int mask_size = (int) gd.getNextNumber();
 		int type = gd.getNextChoiceIndex();
 	//	int blurring_radius = (int) gd.getNextNumber();
-		FloatProcessor fp = generateMask(filament_width,mask_width,type);//generateMask(filament_width, mask_width, blurring_radius);
+		FloatProcessor fp = generateMask(mask_size,filament_width,mask_width,type);//generateMask(filament_width, mask_width, blurring_radius);
 
 		ImagePlus mask = new ImagePlus("Mask", fp);
 		mask.show();
@@ -60,8 +61,8 @@ public class MaskCreator_ implements PlugIn {
 		
 	}
 	
-	public FloatProcessor generateMask(int filamentwidth, int maskwidth, int type){
-		FloatProcessor fp = new FloatProcessor(1024, 1024);
+	public FloatProcessor generateMask(int mask_size, int filamentwidth, int maskwidth, int type){
+		FloatProcessor fp = new FloatProcessor(mask_size, mask_size);
 		double x0 = fp.getWidth()/2 + 0.5;
 		double y0 = fp.getHeight()/2 + 0.5;
 		double sigmax = maskwidth/2.355; //Full width at half maximum
@@ -69,8 +70,8 @@ public class MaskCreator_ implements PlugIn {
 		double sigmay = filamentwidth/2.355;
 		double vary = sigmay*sigmay;
 		
-		for(int i = 0; i < 1024; i++){
-			for(int j = 0; j < 1024; j++){
+		for(int i = 0; i < mask_size; i++){
+			for(int j = 0; j < mask_size; j++){
 				double value = 0;
 				double y = j+0.5;
 				double x = i+0.5;

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.mpi-dortmund.ij.mpitools</groupId>
   <artifactId>ij_helical_picker</artifactId>
-  <version>1.0.0-alpha.8</version>
+  <version>1.0.0-alpha.9</version>
   <repositories>
 		  <repository>
 		    <id>imagej.public</id>

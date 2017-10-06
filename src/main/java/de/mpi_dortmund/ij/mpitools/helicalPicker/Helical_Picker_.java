@@ -47,7 +47,8 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 	int mask_width = 100;
 	double ridge_lt = 0.7;
 	double ridge_ut = 1.2;
-	int min_filament_length = 0;
+	int min_number_boxes = 7;
+	int min_filament_length;
 	double sigma_min_response = 0;
 	double sigma_max_response = 0;
 	double double_filament_detection_insensitivity = 0.1;
@@ -169,10 +170,8 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			if(isPreview){
 				sliceNumber = input_imp.getCurrentSlice();
 			}
-			if(isPreview && previewMode.equals("Points")){
-				box_size = 1;
-			}
-			placer.placeBoxes(line_image, input_imp, sliceNumber, box_size, box_distance);
+	
+			placer.placeBoxes(line_image, input_imp, sliceNumber, box_size, box_distance,previewMode.equals("Points"));
 			input_imp.updateAndRepaintWindow();
 			increaseRunPasseAndUpdateProgress();
 		}
@@ -267,7 +266,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			writer.writeNext(next);
 			next = new String[]{"REMOVEMENT_RADIUS=" + removement_radius};
 			writer.writeNext(next);
-			next = new String[]{"MIN_FILAMENT_LENGTH=" + min_filament_length};
+			next = new String[]{"MIN_NUMBER_BOXES=" + min_number_boxes};
 			writer.writeNext(next);
 			next = new String[]{"SIGMA_MIN_RESPONSE=" + sigma_min_response};
 			writer.writeNext(next);
@@ -325,7 +324,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		gd.addMessage("Line filtering parameters: ");
 		gd.addNumericField("Junction safety distance", 20, 0,5,"pixels");
 		gd.addSlider("Overlapping factor", 0.1, 0.5, overlapping_factor);
-		gd.addNumericField("Min line length", min_filament_length, 0,5,"pixels");
+		gd.addNumericField("Min_number_of_boxes", min_number_boxes, 0,5,"pixels");
 		gd.addNumericField("Sigma_min._response", sigma_min_response, 0);
 		gd.addNumericField("Sigma_max._response", sigma_max_response, 0);
 		String[] imageTitles = WindowManager.getImageTitles();
@@ -447,7 +446,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		ridge_ut = gd.getNextNumber();
 		removement_radius = (int) gd.getNextNumber();
 		overlapping_factor = gd.getNextNumber();
-		min_filament_length = (int) gd.getNextNumber();
+		min_number_boxes = (int) gd.getNextNumber();
 		sigma_min_response = gd.getNextNumber();
 		sigma_max_response = gd.getNextNumber();
 		String maskTitle = gd.getNextChoice();
@@ -469,8 +468,10 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			equalize = new_equalize;
 		}
 		previewMode = gd.getNextChoice();
-
-		
+		min_filament_length = (min_number_boxes-1)*box_distance+box_size;
+		if(min_number_boxes==0){
+			min_filament_length = 0;
+		}
 		return true;
 	}
 	

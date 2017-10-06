@@ -2,6 +2,7 @@ package de.mpi_dortmund.ij.mpitools.boxplacer;
 
 import java.awt.Color;
 import java.awt.Polygon;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;
@@ -45,14 +46,14 @@ public class BoxPlacer_ implements PlugInFilter {
 
 	public void run(ImageProcessor ip) {
 		
-		placeBoxes(ip, targetImage, ip.getSliceNumber(), boxsize, box_distance);
+		placeBoxes(ip, targetImage, ip.getSliceNumber(), boxsize, box_distance,false);
 	}
 	
 	public synchronized void increaseID(){
 		running_id++;
 	}
 	
-	public ArrayList<Line> placeBoxes(ImageProcessor lineImage, ImagePlus targetImage, int slicePosition, int boxsize, int box_distance){
+	public ArrayList<Line> placeBoxes(ImageProcessor lineImage, ImagePlus targetImage, int slicePosition, int box_size, int box_distance, boolean place_points){
 		ArrayList<Line> allLines = new ArrayList<Line>();
 		Overlay ov = targetImage.getOverlay();
 		if(ov==null){
@@ -66,13 +67,27 @@ public class BoxPlacer_ implements PlugInFilter {
 		ArrayList<Polygon> lines = tracer.extractLines((ByteProcessor) lineImage);
 		int distancesq = box_distance*box_distance;
 		Color[] colors = {Color.red,Color.BLUE,Color.GREEN,Color.yellow,Color.CYAN,Color.ORANGE, Color.magenta};
-		
+		int boxsize = box_size;
 		for (Polygon p : lines) {
 			increaseID();
 			Line l = new Line(running_id);
 			Color c = colors[running_id%colors.length];
-			int x = p.xpoints[0]-boxsize/2;
-			int y = p.ypoints[0]-boxsize/2;
+			int start_index = 0;
+			double d = 0;
+			do {
+				
+				start_index++;
+				d = Point2D.distanceSq(p.xpoints[0], p.ypoints[0], p.xpoints[start_index], p.ypoints[start_index]);
+				
+			}while(d<Math.pow(box_size/2, 2));
+			if(place_points){
+				boxsize=1;
+			}
+			//IJ.log("START: " + start_index);
+			int x = p.xpoints[start_index]-boxsize/2;
+			int y = p.ypoints[start_index]-boxsize/2;
+			
+			
 			
 			Roi r = new Roi(x, y, boxsize, boxsize);
 			r.setProperty("id", ""+running_id);
@@ -81,11 +96,14 @@ public class BoxPlacer_ implements PlugInFilter {
 			r.setStrokeColor(c);
 			ov.add(r);
 			l.add(r);
-			for(int i = 1; i < p.npoints; i++){
+			for(int i = start_index+1; i < p.npoints; i++){
 				int xc = p.xpoints[i]-boxsize/2;
 				int yc = p.ypoints[i]-boxsize/2;
 				
-				if(distsq(x, y, xc, yc)>=distancesq){
+				if(
+						Point2D.distanceSq(x, y, xc, yc)>=distancesq && 
+								Point2D.distanceSq(xc, yc, p.xpoints[p.npoints-1], p.ypoints[p.npoints-1])>Math.pow(box_size/2, 2)
+						){
 					x = xc;
 					y = yc;
 				
@@ -102,12 +120,6 @@ public class BoxPlacer_ implements PlugInFilter {
 		}
 		
 		return allLines;
-	}
-	
-	
-	
-	public double distsq(int x1, int y1, int x2, int y2){
-		return Math.pow(x1-x2, 2)+Math.pow(y1-y2, 2);
 	}
 	
 	

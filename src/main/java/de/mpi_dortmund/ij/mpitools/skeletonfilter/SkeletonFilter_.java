@@ -3,6 +3,7 @@ package de.mpi_dortmund.ij.mpitools.skeletonfilter;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -357,15 +358,18 @@ public class SkeletonFilter_ implements PlugInFilter {
 	}
 	
 	private double getStraightness(Polygon p, int from, int to ){
+	
 		double sum = 0;
 		for(int i = from; i< to; i++){
-			int dx = p.xpoints[i]-p.xpoints[i+1];
-			int dy = p.ypoints[i]-p.ypoints[i+1];
+
+			sum += Point2D.distance(p.xpoints[i], p.ypoints[i], p.xpoints[i+1], p.ypoints[i+1]);
+			/*
 			if( (dx==0) ^ (dy==0) ){
 				sum += 1;
 			}else{
 				sum += Math.sqrt(2);
 			}
+			*/
 		}
 		double distance = Math.sqrt(Math.pow(p.xpoints[from]-p.xpoints[to], 2)+Math.pow(p.ypoints[from]-p.ypoints[to], 2));
 		

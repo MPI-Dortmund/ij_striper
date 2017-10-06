@@ -74,7 +74,8 @@ public class Ridge_Optimizer implements PlugInFilter {
 
 		ImageProcessor[] ips = getArrayOfEnhancedFilaments(imp, slicesWithSelection, filament_width, mask_width);
 		ImageProcessor[] selectionMaps = getArrayOfSelectionMaps(imp, slicesWithSelection);
-		
+		double[] r  = searchRange(ips, filament_width);
+		IJ.log("Range: " + r[0] + " " + r[1] );
 		double max_goodness = Integer.MIN_VALUE;
 		double[] max_goodness_para = null;
 		int N_RUNS = GLOBAL_RUNS+LOCAL_RUNS;
@@ -83,7 +84,7 @@ public class Ridge_Optimizer implements PlugInFilter {
 			double[] para = null;
 			
 			if(i<=GLOBAL_RUNS){
-				para = nextParamterSet(0, 3, 0, 3);
+				para = nextParamterSet(r[0], r[1], r[0], r[1]);
 			}
 			else{
 				int LRUN = i-GLOBAL_RUNS;
@@ -202,6 +203,45 @@ public class Ridge_Optimizer implements PlugInFilter {
 		
 	}
 	
+	public double[] searchRange(ImageProcessor[] ips,double filament_width){
+		LineDetector detect = new LineDetector();
+		boolean found = false;
+		double lb = 0;
+		double ub = 20;
+		double last_lb = 0;
+		double last_ub_without_lines = 20;
+		int max_filament_length = 0;
+		boolean isDarkLine = false;
+		boolean doCorrectPosition = true;
+		boolean doEstimateWidth = false;
+		boolean doExtendLine = true;
+		double sigma = filament_width/(2*Math.sqrt(3)) + 0.5;
+		
+		do{
+			IJ.log("Search range!");
+			int N_FOUND = 0;
+			for(int k = 0; k < ips.length; k++){
+				ImageProcessor ip = ips[k];			
+				Lines lines = detect.detectLines(ip, sigma, ub, lb, 0,max_filament_length, isDarkLine, doCorrectPosition, doEstimateWidth, doExtendLine, OverlapOption.NONE);
+				N_FOUND += lines.size();
+			}
+			if(N_FOUND==0){
+				last_ub_without_lines = ub;
+				ub = ub/2;
+				IJ.log("No Line New UB: " + ub);
+			}
+			else{
+				ub = ub + (last_ub_without_lines -ub)/2;
+				IJ.log("Lines found New UB: " + ub);
+				
+			}
+			
+		}while(Math.abs(ub-last_ub_without_lines)>0.01);
+		
+		return new double[]{0,last_ub_without_lines};
+		
+	}
+	
 	public double getGoodness(ImageProcessor[] ips, ImageProcessor[] selectionMaps, double ridge_ut,  double ridge_lt, double filament_width){
 		LineDetector detect = new LineDetector();
 		int max_filament_length = 0;
@@ -235,7 +275,7 @@ public class Ridge_Optimizer implements PlugInFilter {
 				
 			}
 		}
-		return (numberInSelection - numberOutSelection);
+		return (0.8*numberInSelection - 0.2*numberOutSelection);
 	}
 	
 	public double[] nextParamterSet(double min_lt,  double max_lt, double min_ut, double max_ut){

@@ -75,9 +75,12 @@ public class BoxPlacer_ implements PlugInFilter {
 			int start_index = 0;
 			double d = 0;
 			do {
-				
-				start_index++;
-				d = Point2D.distanceSq(p.xpoints[0], p.ypoints[0], p.xpoints[start_index], p.ypoints[start_index]);
+				if(start_index+1<p.npoints){
+					start_index++;
+					d = Point2D.distanceSq(p.xpoints[0], p.ypoints[0], p.xpoints[start_index], p.ypoints[start_index]);
+				}else{
+					d = Double.POSITIVE_INFINITY;
+				}
 				
 			}while(d<Math.pow(box_size/2, 2));
 			if(place_points){

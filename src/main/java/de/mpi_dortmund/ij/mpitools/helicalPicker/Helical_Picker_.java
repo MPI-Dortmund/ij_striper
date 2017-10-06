@@ -54,7 +54,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 	double double_filament_detection_insensitivity = 0.1;
 	int box_size = 64;
 	int box_distance = 10;
-	int removement_radius = 20;
+	//int removement_radius = 20;
 	double min_straightness = 0.9;
 	int straightness_windowsize = 25;
 	double overlapping_factor = 0.5;
@@ -157,7 +157,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			if(mask!=null){
 				maskImage = mask.getStack().getProcessor(ip.getSliceNumber());
 			}
-			
+			int removement_radius = box_size/2;
 			ArrayList<Polygon> filteredLines = skeleton_filter.filterLineImage(line_image, 
 					ip, response_map, maskImage, border_diameter, line_distance, removement_radius, 
 					min_straightness, straightness_windowsize, min_filament_length, sigma_max_response,
@@ -264,8 +264,8 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			writer.writeNext(next);
 			next = new String[]{"RIDGE_UT=" + ridge_ut};
 			writer.writeNext(next);
-			next = new String[]{"REMOVEMENT_RADIUS=" + removement_radius};
-			writer.writeNext(next);
+		//	next = new String[]{"REMOVEMENT_RADIUS=" + removement_radius};
+		//	writer.writeNext(next);
 			next = new String[]{"MIN_NUMBER_BOXES=" + min_number_boxes};
 			writer.writeNext(next);
 			next = new String[]{"SIGMA_MIN_RESPONSE=" + sigma_min_response};
@@ -322,7 +322,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		gd.addNumericField("Lower threshold (RidgeDetection)", ridge_lt, 2);
 		gd.addNumericField("Upper threshold (RidgeDetection)", ridge_ut, 2);
 		gd.addMessage("Line filtering parameters: ");
-		gd.addNumericField("Junction safety distance", 20, 0,5,"pixels");
+
 		gd.addSlider("Overlapping factor", 0.1, 0.5, overlapping_factor);
 		gd.addNumericField("Min_number_of_boxes", min_number_boxes, 0,5,"pixels");
 		gd.addNumericField("Sigma_min._response", sigma_min_response, 0);
@@ -444,7 +444,7 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		
 		ridge_lt = gd.getNextNumber();
 		ridge_ut = gd.getNextNumber();
-		removement_radius = (int) gd.getNextNumber();
+//		removement_radius = (int) gd.getNextNumber();
 		overlapping_factor = gd.getNextNumber();
 		min_number_boxes = (int) gd.getNextNumber();
 		sigma_min_response = gd.getNextNumber();

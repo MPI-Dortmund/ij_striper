@@ -56,14 +56,13 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 	int box_distance = 10;
 	//int removement_radius = 20;
 	double min_straightness = 0.9;
-	int straightness_windowsize = 25;
+	int straightness_windowsize = 100;
 	double overlapping_factor = 0.5;
 	FilamentEnhancer_ enhancer;
 	ImagePlus input_imp;
 	boolean isPreview = false;
 	boolean updateResponseMap = false;
 	boolean sliceChanged = false;
-	boolean removeCarbonEdge = false;
 	boolean applyUserFilter = true;
 	boolean equalize = true;
 	String previewMode = "Boxes";
@@ -158,10 +157,11 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 				maskImage = mask.getStack().getProcessor(ip.getSliceNumber());
 			}
 			int removement_radius = box_size/2;
+			boolean fitDistr = false;
 			ArrayList<Polygon> filteredLines = skeleton_filter.filterLineImage(line_image, 
 					ip, response_map, maskImage, border_diameter, line_distance, removement_radius, 
 					min_straightness, straightness_windowsize, min_filament_length, sigma_max_response,
-					sigma_min_response, double_filament_detection_insensitivity, removeCarbonEdge,filters);
+					sigma_min_response, fitDistr, double_filament_detection_insensitivity, filters);
 		
 			skeleton_filter.drawLines(filteredLines, line_image);
 
@@ -370,7 +370,6 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			}
 		});
 		
-		gd.addCheckbox("Remove carbon edge", removeCarbonEdge);
 		gd.addCheckbox("Apply user filter", applyUserFilter);
 		gd.addCheckbox("Equalize", equalize);
 		gd.addChoice("Preview mode:", new String[]{"Boxes","Points","Enhanced+Ridges"}, "Boxes");
@@ -460,7 +459,6 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		straightness_windowsize = (int) gd.getNextNumber();
 		box_size = (int) gd.getNextNumber();
 		box_distance = (int) gd.getNextNumber();
-		removeCarbonEdge = gd.getNextBoolean();
 		applyUserFilter = gd.getNextBoolean();
 		boolean new_equalize = gd.getNextBoolean();
 		if(new_equalize != equalize){

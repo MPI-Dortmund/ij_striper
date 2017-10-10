@@ -13,6 +13,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
+import ij.measure.CurveFitter;
 import ij.plugin.FFTMath;
 import ij.plugin.filter.PlugInFilter;
 import ij.plugin.filter.RankFilters;
@@ -31,12 +32,12 @@ public class SkeletonFilter_ implements PlugInFilter {
 	int min_length;
 	double min_response;
 	double max_response;
+	boolean fitDistr;
 	double min_straightness;
 	int window_straightness;
 	int min_distance;
 	int border_diameter;
 	double double_filament_insensitivity;
-	boolean remove_carbon_edge;
 	ImagePlus mask;
 	
 	public int setup(String arg, ImagePlus imp) {
@@ -59,6 +60,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 		gd.addNumericField("Minimum_line_distance:", 20, 0);
 		gd.addNumericField("Minimum_response:", 0, 2);
 		gd.addNumericField("Maximum_response:", 0, 2);
+		gd.addCheckbox("Fit Resp. Distribution", false);
 		gd.addSlider("Double_filament_detection_sensitivity:", 0.01, 0.99, 0.9); 
 		String[] imageTitles = WindowManager.getImageTitles();
 		String[] choices = new String[imageTitles.length];
@@ -67,7 +69,6 @@ public class SkeletonFilter_ implements PlugInFilter {
 			choices[i] = imageTitles[i-1];
 		}
 		gd.addChoice("Mask", choices, choices[0]);
-		gd.addCheckbox("Remove_carbon_edge", false);
 		
 		gd.showDialog();
 	
@@ -85,9 +86,10 @@ public class SkeletonFilter_ implements PlugInFilter {
 		min_distance = (int) gd.getNextNumber();
 		min_response =  gd.getNextNumber();
 		max_response =  gd.getNextNumber();
+		fitDistr = gd.getNextBoolean();
 		double_filament_insensitivity = 1-gd.getNextNumber();
 		mask = WindowManager.getImage(gd.getNextChoice());
-		remove_carbon_edge = gd.getNextBoolean();
+
 		if(response.getImageStackSize() != input_image.getImageStackSize()){
 			IJ.error("Response image and input image must have the same number of slices");
 		}
@@ -103,13 +105,13 @@ public class SkeletonFilter_ implements PlugInFilter {
 		if(mask!=null){
 			maskImage = mask.getStack().getProcessor(ip.getSliceNumber());
 		}
-		
+
 		ArrayList<Polygon> lines = filterLineImage(ip, 
 				input_image.getStack().getProcessor(ip.getSliceNumber()), 
 				response.getStack().getProcessor(ip.getSliceNumber()), 
 				maskImage,
 				border_diameter, min_distance, radius, min_straightness, window_straightness, 
-				min_length, max_response, min_response,double_filament_insensitivity,remove_carbon_edge, null);
+				min_length, max_response, min_response,fitDistr,double_filament_insensitivity, null);
 		drawLines(lines, ip);
 		
 		
@@ -119,14 +121,15 @@ public class SkeletonFilter_ implements PlugInFilter {
 	/*
 	 *  1. Set border to zero
 	 *  2. Remove junctions
-	 *  3. (remove Carbon edge)
+	 *  3. (Apply mask)
 	 *  4. Straightness
 	 *  5. User filter
 	 *  6. length filter
-	 *  7. Remove parallel lines
-	 *  8. Length filter 2
+	 *  7. Filter by response
+	 *  8. Remove parallel lines
+	 *  9. Length filter 2
 	 */
-	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, ImageProcessor mask, int border_diameter, int min_distance, int removementRadius, double min_straightness, int window_straightness, int min_length, double max_response, double min_response, double double_filament_insensitivity, boolean removeCarbonEdge, ArrayList<IUserFilter> userFilters){
+	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, ImageProcessor mask, int border_diameter, int min_distance, int removementRadius, double min_straightness, int window_straightness, int min_length, double max_response, double min_response, boolean fitDist, double double_filament_insensitivity, ArrayList<IUserFilter> userFilters){
 		
 		setBorderToZero((ByteProcessor)line_image,  border_diameter);
 		//(new ImagePlus("after border to zero", line_image.duplicate())).show();
@@ -134,7 +137,6 @@ public class SkeletonFilter_ implements PlugInFilter {
 		//(new ImagePlus("after remove junction", line_image.duplicate())).show();
 		if(mask != null){
 			applyMask(line_image, mask);
-			//setCarbonEdgeToZero2(input_image, line_image, 20,50);
 		}
 		//(new ImagePlus("after carbon edge removed", line_image.duplicate())).show();
 		LineTracer tracer = new LineTracer();
@@ -142,7 +144,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 		
 		
 		
-		lines = splitByStraightness2(lines,(ByteProcessor)line_image,min_straightness,window_straightness,removementRadius);
+		lines = splitByStraightness(lines,(ByteProcessor)line_image,min_straightness,window_straightness,removementRadius);
 		//(new ImagePlus("after straightness ", line_image.duplicate())).show();
 		
 		if(userFilters!=null){
@@ -157,12 +159,12 @@ public class SkeletonFilter_ implements PlugInFilter {
 		drawLines(lines, line_image);
 		
 		//lines = filterByResponseFixThresholds(lines, response.getProcessor(), min_response, max_response);
-		lines = filterByResponseMeanStd(lines, response_image,max_response, min_response,double_filament_insensitivity);
+		boolean doFitDistr = false;
+		lines = filterByResponseMeanStd(lines, response_image,max_response, min_response,double_filament_insensitivity,doFitDistr);
 		
 		drawLines(lines, line_image);
 		
-		removeParallelLines((ByteProcessor) line_image, lines, min_distance);
-		lines = tracer.extractLines((ByteProcessor) line_image);
+		lines = removeParallelLines((ByteProcessor) line_image, lines, min_distance);
 		
 		lines = filterByLength(lines, min_length);
 
@@ -179,67 +181,6 @@ public class SkeletonFilter_ implements PlugInFilter {
 		}
 	}
 	
-	private void setCarbonEdgeToZero2(ImageProcessor inputImage, ImageProcessor lineImage, int filterSize, int numberOfErosions){
-		
-		FloatProcessor mask = (FloatProcessor) inputImage.duplicate().convertToFloat();
-		
-		mask.resetRoi();
-		RankFilters rf = new RankFilters();
-		rf.rank(mask, filterSize, rf.VARIANCE);
-		mask.sqrt();
-		
-		// Calculate central mean and standard deviation
-		mask.setRoi(new Rectangle(inputImage.getWidth()/2 - 100, inputImage.getWidth()/2 - 100, 200, 200));
-		ImageStatistics stats = mask.getStats();
-		double centralsd_mean = stats.mean;
-		double centralsd_sd = stats.stdDev;
-
-		
-		ImagePlus help = new ImagePlus("1", mask);
-		help.show();
-		help = new ImagePlus("2", lineImage);
-		help.show();
-		double threshold = centralsd_mean + 4*centralsd_sd;
-		IJ.log("Threshold: " + threshold);
-		for(int x = 0; x < mask.getWidth(); x++){
-			for(int y = 0; y < mask.getHeight(); y++){
-				if(mask.getPixel(x, y)>=threshold){
-					lineImage.set(x, y, 0);
-				}
-			}
-		}
-		
-		
-	}
-	
-	
-	private void setCarbonEdgeToZero(ImageProcessor inputImage, ImageProcessor lineImage, int filterSize){
-		
-		ImageProcessor mask = inputImage.duplicate().convertToByteProcessor();
-		mask.resetRoi();
-
-		mask.findEdges();
-		RankFilters rf = new RankFilters();
-		rf.rank(mask, filterSize, RankFilters.MEAN);
-		ImagePlus help = new ImagePlus("carbon", mask);
-		IJ.setAutoThreshold(help, "MaxEntropy");
-	    IJ.run(help, "Convert to Mask", ""); 
-	    mask = help.getProcessor();
-	    int[] hist = mask.getHistogram();
-	    if(hist[0]>hist[255]){
-	    	mask.invert();
-	    }
-		//help.show();
-		
-		for(int x = 0; x < mask.getWidth(); x++){
-			for(int y = 0; y < mask.getWidth(); y++){
-				if(mask.getPixel(x, y)==0){
-					lineImage.set(x, y, 0);
-				}
-			}
-		}
-		
-	}
 	
 	private void setBorderToZero(ImageProcessor ip, int bordersize){
 		Roi r = new Roi(0, 0, ip.getWidth(), bordersize);
@@ -261,7 +202,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 		ip.resetRoi();
 	}
 	
-	private void removeParallelLines(ByteProcessor ip, ArrayList<Polygon> lines, int radius){
+	private ArrayList<Polygon> removeParallelLines(ByteProcessor ip, ArrayList<Polygon> lines, int radius){
 		for (Polygon p : lines) {
 			
 			for(int i = 0; i < p.npoints; i++){
@@ -278,8 +219,10 @@ public class SkeletonFilter_ implements PlugInFilter {
 					}
 				}
 			}
-			
 		}
+		LineTracer tracer = new LineTracer();
+		ArrayList<Polygon> filtered_lines = tracer.extractLines((ByteProcessor) ip);
+		return filtered_lines;
 	}
 	
 	private boolean isOnLine(int x, int y, Polygon p){
@@ -304,7 +247,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 		}
 	}
 	
-	private ArrayList<Polygon> splitByStraightness2(ArrayList<Polygon> lines, ByteProcessor line_image, double min_straightness, int window_length, int radius){
+	private ArrayList<Polygon> splitByStraightness(ArrayList<Polygon> lines, ByteProcessor line_image, double min_straightness, int window_length, int radius){
 		for (Polygon p : lines) {
 			
 			for(int i = 0; i < p.npoints-window_length; i++){
@@ -318,41 +261,6 @@ public class SkeletonFilter_ implements PlugInFilter {
 		}
 		LineTracer tracer = new LineTracer();
 		ArrayList<Polygon> filtered = tracer.extractLines((ByteProcessor) line_image);
-		
-		return filtered;
-	}
-	
-	private ArrayList<Polygon> splitByStraightness(ArrayList<Polygon> lines, double min_straightness, int window_length){
-		ArrayList<Polygon> filtered = new ArrayList<Polygon>();
-		for (Polygon p : lines) {
-			int[] keepPos = new int[p.npoints];
-			Arrays.fill(keepPos, 1);
-			
-			for(int i = 0; i < p.npoints-window_length; i++){
-				double s = getStraightness(p, i, i+window_length);
-				if(s<min_straightness){
-					int index = i + window_length/2 + 1;
-					keepPos[index] = 0;
-				}
-			}
-			Polygon newP = new Polygon();
-			for(int i = 0; i < keepPos.length; i++){
-				if(keepPos[i]==1){
-					newP.addPoint(p.xpoints[i], p.ypoints[i]);
-				}
-				
-				if(keepPos[i]==0){
-					if(newP.npoints>2){
-						filtered.add(newP);
-					}
-					newP = new Polygon();
-				}
-			}
-			if(newP.npoints>2){
-				filtered.add(newP);
-			}
-		}
-		
 		
 		return filtered;
 	}
@@ -386,45 +294,38 @@ public class SkeletonFilter_ implements PlugInFilter {
 		return filtered;
 	}
 	
-	private ArrayList<Polygon> filterByResponseFixThresholds(ArrayList<Polygon> lines, ImageProcessor responde_map, int min_response, int max_response){
+	
+	
+	private ArrayList<Polygon> filterByResponseMeanStd(ArrayList<Polygon> lines, ImageProcessor response_map, double sigmafactor_max, double sigmafactor_min, double double_filament_insensitivity, boolean fitDistr){
 		ArrayList<Polygon> filtered = new ArrayList<Polygon>();
 		
+		//Calculate mean response over all lines
+		double sum_mean_line_response = 0;
 		for (Polygon p : lines) {
-			boolean add = true;
-			double mean_response = meanResponse(p, responde_map);
-
-			if(min_response>0 && mean_response<min_response){
-				add = false;
-			}
-			if(max_response>0 && mean_response>max_response){
-				add = false;
-			}
-			if(add){
-				filtered.add(p);
-			}
-		}		
-		return filtered;
-	}
-	
-	
-	private ArrayList<Polygon> filterByResponseMeanStd(ArrayList<Polygon> lines, ImageProcessor responde_map, double sigmafactor_max, double sigmafactor_min, double double_filament_insensitivity){
-		ArrayList<Polygon> filtered = new ArrayList<Polygon>();
-		double mean_response = 0;
-		for (Polygon p : lines) {
-			mean_response += meanResponse(p, responde_map);
+			sum_mean_line_response += meanResponse(p, response_map);
 		}
-		mean_response = mean_response/lines.size();
+		double mean_response = sum_mean_line_response/lines.size();
 		
+		// Calculate standard deviation of the response
 		double sd = 0;
 		int N = 0;
 		for (Polygon p : lines) {
 			for(int i = 0; i < p.npoints; i++){
-				sd += Math.pow(responde_map.getf(p.xpoints[i], p.ypoints[i])-mean_response,2);
+				sd += Math.pow(response_map.getf(p.xpoints[i], p.ypoints[i])-mean_response,2);
 				N++;
 			}
 		}
 		sd = Math.sqrt(sd/N);
 		
+		// Fit a distribution to get better estimates for mean response and the standard deviation
+		if(fitDistr){
+			double[] fitted = fitNormalDistributionToHist(getResponseHistogram(lines, response_map),mean_response,sd);
+			
+			mean_response = fitted[2];
+			sd = fitted[3];
+		}
+		
+		// Calculate the thresholds
 		double threshold_max = mean_response + sd*sigmafactor_max;
 		double threshold_min = mean_response - sd*sigmafactor_min;
 		if(sigmafactor_max<Math.pow(10, -6)){
@@ -437,18 +338,21 @@ public class SkeletonFilter_ implements PlugInFilter {
 		if(sigmafactor_min<Math.pow(10, -6)){
 			threshold_min = Double.MIN_VALUE;
 		}
-		//IJ.log("MEAN: " + mean_response + " sigma: " + sd + " TMAX: " + threshold_max + " TMIN: " + threshold_min);
 		
+		/*
+		 *  For each line: Count the number of positions (pixel) which has a response below threshold_min or above threshold_max.
+		 *  If the number if higher then a the number of positions times some factor (0-1) the filament will be excluded.
+		 */
 		for (Polygon p : lines) {
 			int nOver = 0;
 			int nUnder = 0;
 			
 			for(int i = 0; i < p.npoints; i++){
-				if(responde_map.getf(p.xpoints[i], p.ypoints[i])>threshold_max){
+				if(response_map.getf(p.xpoints[i], p.ypoints[i])>threshold_max){
 					nOver++;
 				}
 				
-				if(responde_map.getf(p.xpoints[i], p.ypoints[i])<threshold_min){
+				if(response_map.getf(p.xpoints[i], p.ypoints[i])<threshold_min){
 					nUnder++;
 				}
 			}
@@ -461,6 +365,39 @@ public class SkeletonFilter_ implements PlugInFilter {
 		}
 		
 		return filtered;
+	}
+	
+	private int[] getResponseHistogram(ArrayList<Polygon> lines, ImageProcessor responde_map){
+		
+		int[] hist = new int[256];
+		
+		for (Polygon p : lines) {
+			for(int i = 0; i < p.npoints; i++){
+				int v = responde_map.get(p.xpoints[i], p.ypoints[i]);
+				hist[v] = hist[v]+1;
+			}
+		}
+		
+		return hist;
+	}
+	
+	public double[] fitNormalDistributionToHist(int[] hist, double initMean, double initSD){
+		
+		double[] xData = new double[254]; // 254 -> Ignore saturated values
+		double[] yData = new double[254];
+		for(int i = 0; i < xData.length; i++){
+			xData[i] = i;
+			yData[i] = hist[i];
+		}
+		
+		CurveFitter cfit = new CurveFitter(xData, yData);
+		double[] init = {150,100,initMean,initSD};
+		cfit.setInitialParameters(init);
+		cfit.doFit(CurveFitter.GAUSSIAN);
+
+		double[] fitted = cfit.getParams();
+		
+		return fitted;
 	}
 	
 	private double meanResponse(Polygon p, ImageProcessor responde_map){

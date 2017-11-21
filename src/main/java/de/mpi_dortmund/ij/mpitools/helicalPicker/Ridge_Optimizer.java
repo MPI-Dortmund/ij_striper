@@ -32,6 +32,7 @@ public class Ridge_Optimizer implements PlugInFilter {
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
 		rand = new Random();
+		rand.setSeed(1234);
 		
 		GenericDialog gd = new GenericDialog("Optimizer");
 		gd.addNumericField("Number of global runs", 40, 0);

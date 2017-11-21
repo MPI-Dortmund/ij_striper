@@ -61,5 +61,18 @@ public class TestTransformedMaskProvider {
 		assertTrue(TestUtils.isEquals(img.getProcessor(), transformedMasks.get(44).getPowerSpectrum()));
 	}
 	
+	@Test(expected = IllegalArgumentException.class)
+	public void testGetTransformedMask_notPowerOf2Exception() {
+		int mask_size = 200;
+		int filament_width = 10;
+		int mask_width = 60;
+		int angle_step = 2;
+		int type = 1;  
+		TransformedMaskProvider provider = new TransformedMaskProvider();
+
+		ArrayList<FHT> transformedMasks = provider.getTransformedMasks(mask_size, filament_width, mask_width, angle_step, type);
+		
+	}
+	
 
 }

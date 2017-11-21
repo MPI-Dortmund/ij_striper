@@ -85,6 +85,23 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 	}
 
 	public void run(ImageProcessor ip) {
+
+		generic_dialog_pipeline(ip);
+		
+	}
+	
+	public void new_gui_pipeline(){
+		
+	}
+	
+	public void generic_dialog_pipeline(ImageProcessor ip){
+		/*
+		 * Detect filaments in cryo-em images by
+		 * 	1. Enhance filaments by orientational filtering
+		 *  2. Detect lines in enhanced image using steger's method
+		 *  3. Filter & process detected lines (split junction point, filter by length  & response etc.)
+		 *  4. Place boxes
+		 */
 		try {
 			TimeUnit.SECONDS.sleep(1);
 		} catch (InterruptedException e) {
@@ -92,6 +109,10 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			//	e.printStackTrace();
 			// Do nothing
 		}
+		
+		/*
+		 *  Enhance map
+		 */
 		if(enhancer == null){
 			enhancer = new FilamentEnhancer_();
 		}
@@ -115,6 +136,10 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			calculatedResponseMaps.put(input_imp.getCurrentSlice(), response_map.duplicate());
 			updateResponseMap=false;
 		}
+		
+		/*
+		 * Detect lines on response map
+		 */
 		LineDetector detect = new LineDetector();
 		int max_filament_length = 0;
 		boolean isDarkLine = false;
@@ -125,9 +150,10 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		Lines lines = detect.detectLines(response_map, sigma, ridge_ut, ridge_lt, min_filament_length,max_filament_length, isDarkLine, doCorrectPosition, doEstimateWidth, doExtendLine, OverlapOption.NONE);
 		
 		if(isPreview && previewMode.equals("Enhanced+Ridges") ){
-			
+			/*
+			 * Show detected ridges without any filtering
+			 */
 			response_map = calculatedResponseMaps.get(input_imp.getCurrentSlice());
-			//(new ImagePlus("",response_map)).show();
 			ImageRoi imgRoi = new ImageRoi(0, 0, response_map);
 			imgRoi.setPosition(input_imp.getCurrentSlice());
 			Overlay ov = input_imp.getOverlay();
@@ -142,6 +168,10 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			//ip.setPixels(response_map.getPixels());
 		}
 		else{
+			
+			/*
+			 * Process filter lines
+			 */
 			ImageProcessor line_image = generateBinaryImage(lines, ip.getWidth(), ip.getHeight());
 
 			SkeletonFilter_ skeleton_filter = new SkeletonFilter_();
@@ -165,6 +195,9 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 		
 			skeleton_filter.drawLines(filteredLines, line_image);
 
+			/*
+			 * Place boxes
+			 */
 			BoxPlacer_ placer = new BoxPlacer_();
 			int sliceNumber = ip.getSliceNumber();
 			if(isPreview){
@@ -175,8 +208,6 @@ public class Helical_Picker_ implements ExtendedPlugInFilter, DialogListener {
 			input_imp.updateAndRepaintWindow();
 			increaseRunPasseAndUpdateProgress();
 		}
-		
-		
 	}
 	
 	public synchronized void increaseRunPasseAndUpdateProgress(){

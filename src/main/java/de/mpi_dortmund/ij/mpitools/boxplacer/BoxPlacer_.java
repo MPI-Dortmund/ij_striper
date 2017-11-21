@@ -54,17 +54,25 @@ public class BoxPlacer_ implements PlugInFilter {
 	}
 	
 	public ArrayList<Line> placeBoxes(ImageProcessor lineImage, ImagePlus targetImage, int slicePosition, int box_size, int box_distance, boolean place_points){
+
+		targetImage.setProperty("line_image", lineImage.convertToByteProcessor());
+		
+		LineTracer tracer = new LineTracer();
+		
+		ArrayList<Polygon> lines = tracer.extractLines((ByteProcessor) lineImage);
+		ArrayList<Line> allLines = placeBoxes(lines, targetImage, slicePosition, box_size, box_distance, place_points);
+		
+		return allLines;
+	}
+	
+	public ArrayList<Line> placeBoxes(ArrayList<Polygon> lines, ImagePlus targetImage, int slicePosition, int box_size, int box_distance, boolean place_points){
 		ArrayList<Line> allLines = new ArrayList<Line>();
 		Overlay ov = targetImage.getOverlay();
 		if(ov==null){
 			ov = new Overlay();
 			targetImage.setOverlay(ov);
 		}
-		targetImage.setProperty("line_image", lineImage.convertToByteProcessor());
 		
-		LineTracer tracer = new LineTracer();
-		
-		ArrayList<Polygon> lines = tracer.extractLines((ByteProcessor) lineImage);
 		int distancesq = box_distance*box_distance;
 		Color[] colors = {Color.red,Color.BLUE,Color.GREEN,Color.yellow,Color.CYAN,Color.ORANGE, Color.magenta};
 		int boxsize = box_size;

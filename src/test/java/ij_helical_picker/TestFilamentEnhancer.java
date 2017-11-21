@@ -9,6 +9,8 @@ import org.junit.Test;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.process.ByteProcessor;
+import ij.process.ImageProcessor;
 
 public class TestFilamentEnhancer {
 
@@ -27,6 +29,23 @@ public class TestFilamentEnhancer {
 		FilamentEnhancer enhancer = new FilamentEnhancer(input.getImageStack(), filament_width, mask_width, angle_step, equalize);
 		ImageStack ips = enhancer.getEnhancedImages(1, 5);
 		assertTrue(TestUtils.isEquals(result.getStack(),ips));
+	}
+	
+	
+	@Test
+	public void testGetEnhancedImages_imagesUncommenFormat() {
+		
+		ImageProcessor ip = new ByteProcessor(500, 511);
+	
+		ImagePlus input = new ImagePlus("", ip);
+		
+		int filament_width = 10;
+		int mask_width = 60;
+		int angle_step = 2;
+		boolean equalize = false;
+		FilamentEnhancer enhancer = new FilamentEnhancer(input.getImageStack(), filament_width, mask_width, angle_step, equalize);
+		ImageStack ips = enhancer.getEnhancedImages(1, input.getStackSize());
+	
 	}
 
 }

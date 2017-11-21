@@ -14,7 +14,12 @@
 		<dependency>
    	 		<groupId>net.imagej</groupId>
    	 		<artifactId>ij</artifactId>
-  	 		<version>1.51k</version>
+  	 		<version>1.51n</version>
+		</dependency>
+		<dependency>
+		  <groupId>net.imagej</groupId>
+		  <artifactId>imagej</artifactId>
+		  <version>2.0.0-rc-61</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -49,7 +54,9 @@
 		</dependency>
 	</dependencies>
 	
-  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
   <build>
 	<plugins>
       <plugin>
@@ -65,6 +72,7 @@
       <plugin>
 	    <groupId>org.apache.maven.plugins</groupId>
 	    <artifactId>maven-jar-plugin</artifactId>
+	    <version>2.3.2</version>
 	    <configuration>
 	        <archive>                   
 	            <manifest>

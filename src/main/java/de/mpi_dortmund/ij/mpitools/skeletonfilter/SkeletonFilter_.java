@@ -39,6 +39,26 @@ public class SkeletonFilter_ implements PlugInFilter {
 	int border_diameter;
 	double double_filament_insensitivity;
 	ImagePlus mask;
+	ArrayList<IUserFilter> userFilters;
+	
+	public SkeletonFilter_() {
+		// TODO Auto-generated constructor stub
+	}
+	
+	public SkeletonFilter_(int min_length, double min_straightness, int window_straightness, int radius, int border_diameter, double min_reponse, double max_response, boolean fitDistr, 
+			int min_distance, double double_filament_insensitivity, ArrayList<IUserFilter> userFilters) {
+		this.min_length = min_length;
+		this.min_straightness = min_straightness;
+		this.window_straightness = window_straightness;
+		this.radius = radius;
+		this.border_diameter = border_diameter;
+		this.min_response = min_reponse;
+		this.max_response = max_response;
+		this.fitDistr = fitDistr;
+		this.min_distance = min_distance;
+		this.double_filament_insensitivity = double_filament_insensitivity;
+		this.userFilters = userFilters;
+	}
 	
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -117,6 +137,11 @@ public class SkeletonFilter_ implements PlugInFilter {
 		
 		
 	}
+	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, ImageProcessor mask){
+		
+		return filterLineImage(line_image, input_image, response_image, mask, border_diameter, min_distance, radius, min_straightness, window_straightness, min_length, max_response, min_response, fitDistr, double_filament_insensitivity, userFilters);
+	}
+	
 	
 	/*
 	 *  1. Set border to zero
@@ -236,7 +261,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 	
 	
 	
-	public void drawLines(ArrayList<Polygon> lines, ImageProcessor ip){
+	public static void drawLines(ArrayList<Polygon> lines, ImageProcessor ip){
 		ip.setRoi(new Rectangle(0, 0, ip.getWidth(), ip.getHeight()));
 		ip.set(0);
 		ip.resetRoi();
@@ -316,7 +341,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 			}
 		}
 		sd = Math.sqrt(sd/N);
-		
+
 		// Fit a distribution to get better estimates for mean response and the standard deviation
 		if(fitDistr){
 			double[] fitted = fitNormalDistributionToHist(getResponseHistogram(lines, response_map),mean_response,sd);
@@ -328,6 +353,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 		// Calculate the thresholds
 		double threshold_max = mean_response + sd*sigmafactor_max;
 		double threshold_min = mean_response - sd*sigmafactor_min;
+		
 		if(sigmafactor_max<Math.pow(10, -6)){
 			// No max threshold!
 			threshold_max = Double.MAX_VALUE;
@@ -339,6 +365,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 			threshold_min = Double.MIN_VALUE;
 		}
 		
+	
 		/*
 		 *  For each line: Count the number of positions (pixel) which has a response below threshold_min or above threshold_max.
 		 *  If the number if higher then a the number of positions times some factor (0-1) the filament will be excluded.

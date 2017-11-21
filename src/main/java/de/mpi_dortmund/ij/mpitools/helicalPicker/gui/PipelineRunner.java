@@ -44,8 +44,10 @@ public class PipelineRunner {
 		//For preview mode: Save single slices. If parameters changes, update.
 		if(this.enhanced_images == null || update==true){
 			enhanced_images = picker_.enhanceImages(input_images.getStack(), filament_width, mask_width, angle_step, equalize,slicefrom,sliceto);
+			this.enhanced_images = enhanced_images;
 		}
 		else if(update==false){
+			IJ.log("Use previous");
 			enhanced_images = this.enhanced_images;
 		}
 		

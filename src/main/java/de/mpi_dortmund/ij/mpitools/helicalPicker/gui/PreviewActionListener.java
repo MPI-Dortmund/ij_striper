@@ -13,14 +13,20 @@ import ij.IJ;
 public class PreviewActionListener implements ActionListener {
 
 	int last_filament_width = -1;
-	int last_mask_width = -11;
+	int last_mask_width = -1;
 	int last_slice_from = -1;
 	int last_slice_to = -1;
 
-	public final static int PREVIEW_BOXES = 1;
-	public final static int PREVIEW_POINTS = 2;
-	public final static int PREVIEW_LINES = 3;
-	private int PREVIEW_MODE = 1;  
+	public final static int PREVIEW_BOXES = 0;
+	public final static int PREVIEW_POINTS = 1;
+	public final static int PREVIEW_LINES = 2;
+ 
+	
+	PipelineRunner runner;
+	
+	public PreviewActionListener() {
+		runner = new PipelineRunner();
+	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -30,10 +36,12 @@ public class PreviewActionListener implements ActionListener {
 		
 		int filament_width = Integer.parseInt(gui.textfieldFilamentWidth.getText());
 		int mask_width = Integer.parseInt(gui.textfieldMaskWidth.getText());
+		int preview_mode = gui.comboboxPreviewOptions.getSelectedIndex();
 		int slice_from = picker_.getImage().getCurrentSlice();
 		int slice_to = picker_.getImage().getCurrentSlice();
 		
 		boolean update=false;
+	
 		
 		if(
 				last_filament_width != filament_width ||
@@ -42,12 +50,13 @@ public class PreviewActionListener implements ActionListener {
 				last_slice_to != slice_to
 				){
 			update = true;
+			
 			last_filament_width = filament_width;
 			last_mask_width = mask_width;
 			last_slice_from = slice_from;
 			last_slice_to = slice_to;
 		}
-		PipelineRunner runner = new PipelineRunner();
+		
 		boolean skip_line_filter = false;
 		runner.run(slice_from, slice_to, update, skip_line_filter);
 		
@@ -62,7 +71,7 @@ public class PreviewActionListener implements ActionListener {
 		CentralLog.getInstance().info("info");
 		
 		boolean place_points = false;
-		if(PREVIEW_MODE==PREVIEW_POINTS){
+		if(preview_mode==PREVIEW_POINTS){
 			place_points=true;
 		}
 		picker_.placeBoxes(filtered_lines, box_size, box_distance, place_points);
@@ -70,8 +79,5 @@ public class PreviewActionListener implements ActionListener {
 	}
 
 	
-	public void setPreviewMode(int preview_mode){
-		this.PREVIEW_MODE = preview_mode;
-	}
 
 }

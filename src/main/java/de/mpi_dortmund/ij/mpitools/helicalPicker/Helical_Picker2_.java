@@ -1,5 +1,6 @@
 package de.mpi_dortmund.ij.mpitools.helicalPicker;
 
+import java.awt.Color;
 import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,9 +18,12 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Overlay;
+import ij.gui.PolygonRoi;
+import ij.gui.Roi;
 import ij.io.OpenDialog;
 import ij.plugin.PlugIn;
 import ij.process.ByteProcessor;
+import ij.process.FloatPolygon;
 import ij.process.ImageProcessor;
 import net.imagej.ImageJ;
 
@@ -196,8 +200,29 @@ public class Helical_Picker2_ implements PlugIn {
 
 	}
 	
-	public void generatePreview(){
-		
+	public void showLinesAsPreview(ArrayList<Polygon> lines){
+
+		Overlay ovpoly = input_image.getOverlay();
+		if(ovpoly==null){
+			ovpoly = new Overlay();
+			input_image.setOverlay(ovpoly);
+		}
+		// Print contour
+		for (Polygon line : lines) {
+			
+				PolygonRoi polyRoiMitte = new PolygonRoi(line,
+						Roi.POLYLINE);
+				
+				polyRoiMitte.setStrokeColor(Color.red);
+				int position = input_image.getCurrentSlice();
+			
+			
+				polyRoiMitte.setPosition(position);
+				ovpoly.add(polyRoiMitte);
+				
+		}
+		input_image.updateAndRepaintWindow();
+
 	}
 		
 	public static ArrayList<IUserFilter> getUserFilter(){

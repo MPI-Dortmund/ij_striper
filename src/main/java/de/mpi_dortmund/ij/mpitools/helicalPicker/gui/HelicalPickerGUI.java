@@ -39,9 +39,11 @@ import javax.swing.event.ChangeListener;
 
 import com.sun.jdi.connect.Connector.StringArgument;
 
+import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.GIF_Reader;
+import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
@@ -55,12 +57,14 @@ public class HelicalPickerGUI implements Runnable {
 	private JPanel filteringPane;
 	private JPanel generalPane;
 	private JPanel informationPane;
+	JPanel reponseFilterPanel;
+	JPanel straightnessFilterPanel;
 	
 	JCheckBox checkboxShowAdvancedSettings;
-	JCheckBox checkboxShowPreview;
 	
 	JButton buttonApply;
 	JButton buttonCancel;
+	JButton buttonShowPreview;
 	
 	JSeparator seperator_upper;
 	JSeparator seperator_lower;
@@ -97,6 +101,7 @@ public class HelicalPickerGUI implements Runnable {
 	JLabel labelCustomMask;
 	JLabel labelBoxSize;
 	JLabel labelBoxDistance;
+	JLabel labelPreviewOptions;
 	
 	JSpinner spinnerSigmaMinResponse;
 	JSpinner spinnerSigmaMaxResponse;
@@ -107,11 +112,10 @@ public class HelicalPickerGUI implements Runnable {
 	JTextField textfieldMinNumberBoxes;
 	JTextField textfieldWindowSize;
 	
-	JPanel reponseFilterPanel;
-	JPanel straightnessFilterPanel;
-	
 	JComboBox comboboxCustomMask;
+	JComboBox comboboxPreviewOptions;
 	
+	PreviewActionListener listenerPreview;
 	
 	public void createAndShowGUI(){
 		String version = getClass().getPackage().getImplementationVersion();
@@ -121,8 +125,8 @@ public class HelicalPickerGUI implements Runnable {
 		guiFrame = new JFrame("STRIPPER V"+version);
 		guiFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		guiFrame.setJMenuBar(createMenuBar());
-		guiFrame.setMinimumSize(new Dimension(300, 700));
-		guiFrame.setMaximumSize(new Dimension(300, 700));
+		guiFrame.setMinimumSize(new Dimension(320, 700));
+		guiFrame.setMaximumSize(new Dimension(320, 700));
 		guiFrame.setLayout(new GridBagLayout());
 		/*
 		 * Set up the basic pane.
@@ -150,6 +154,7 @@ public class HelicalPickerGUI implements Runnable {
 		guiFrame.pack();
 		//guiFrame.setLocationRelativeTo(imp.getWindow());
 		guiFrame.setVisible(true);
+		
 	}
 	
 	public void toggleAdvanced(){
@@ -167,9 +172,6 @@ public class HelicalPickerGUI implements Runnable {
 	
 	public void initComponents(){
 		
-		//guiFrame.setMinimumSize(new Dimension(350, 300));
-	//	guiFrame.setMaximumSize(new Dimension(350, 900));
-	//	guiFrame.setPreferredSize(new Dimension(350, 700));
 		basicPane = new JPanel();
 		detectionPane = new JPanel();
 		filteringPane = new JPanel();
@@ -185,20 +187,18 @@ public class HelicalPickerGUI implements Runnable {
 		informationPane = new JPanel();
 		informationPane.setBorder(BorderFactory.createTitledBorder("Manual"));
 		informationPane.setLayout(new BorderLayout());
-		//informationPane.setMinimumSize(new Dimension(150, 500));
+
 		textpaneInformation = new JTextArea();
-		//textpaneInformation.setColumns(25);
-		//textpaneInformation.setRows(35);
 		textpaneInformation.setBackground(guiFrame.getBackground());
 		textpaneInformation.setLineWrap(true);
 		textpaneInformation.setWrapStyleWord(true);
 		textpaneInformation.setText("Here are important information");
 		
 		checkboxShowAdvancedSettings = new JCheckBox("Show advanced settings");
-		checkboxShowPreview = new JCheckBox("Show preview");
 		
 		buttonApply = new JButton("Apply");
 		buttonCancel = new JButton("Cancel");
+		buttonShowPreview = new JButton("Show preview");
 		
 		/*
 		 * Detection pane
@@ -207,7 +207,7 @@ public class HelicalPickerGUI implements Runnable {
 		labelLowerThreshold = new JLabel("Lower threshold:");
 		labelUpperThreshold = new JLabel("Upper threshold:");
 		labelMaskWidth = new JLabel("Mask width:");
-		
+		labelPreviewOptions = new JLabel("Preview options:");
 		textfieldFilamentWidth = new JTextField("64", 3);
 		textfieldLowerThreshold = new JTextField("0.6", 4);
 		textfieldUpperThreshold = new JTextField("1.2", 4);
@@ -244,6 +244,12 @@ public class HelicalPickerGUI implements Runnable {
 		 items.add("None");
 		 comboboxCustomMask = new JComboBox(items);
 		 
+		 items = new Vector<String>();
+		 items.add("Boxes");
+		 items.add("Points");
+		 items.add("Response map + Detected lines");
+		 comboboxPreviewOptions = new JComboBox(items);
+		 
 		 /*
 		  * General pane
 		  */
@@ -270,12 +276,12 @@ public class HelicalPickerGUI implements Runnable {
 	
 	public void setupListener(){
 		UpdateInformationListener updateInformationListener = new UpdateInformationListener(textpaneInformation);
-		updateInformationListener.addDescription(checkboxShowAdvancedSettings, "Shows advanced settings. In most cases, you <br >don't need to change them.");
-		updateInformationListener.addDescription(checkboxShowPreview, "Shows you the result for the current image."
+		updateInformationListener.addDescription(checkboxShowAdvancedSettings, "Shows advanced settings. In most cases, you don't need to change them.");
+		updateInformationListener.addDescription(buttonShowPreview, "Shows you the result for the current image."
 				+ " Be careful: If you change the filament or mask width the update may be long time.");
 		updateInformationListener.addDescription(textfieldFilamentWidth, "The width of your filaments in pixel.");
-		checkboxShowAdvancedSettings.addMouseListener(updateInformationListener);
-		checkboxShowPreview.addMouseListener(updateInformationListener);
+		buttonShowPreview.addMouseListener(updateInformationListener);
+		comboboxPreviewOptions.addMouseListener(updateInformationListener);
 		textfieldFilamentWidth.addMouseListener(updateInformationListener);
 		
 		checkboxShowAdvancedSettings.addActionListener(new ActionListener() {
@@ -286,6 +292,22 @@ public class HelicalPickerGUI implements Runnable {
 				
 			}
 		});
+		
+		
+		buttonCancel.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				guiFrame.dispose();
+				
+			}
+		});
+		
+		buttonApply.addActionListener(new ApplyActionListener());
+		listenerPreview = new PreviewActionListener();
+		
+		buttonShowPreview.addActionListener(listenerPreview);
+
 	}
 	
 	public void addComponentsToPane(JPanel basicPane) {
@@ -373,10 +395,29 @@ public class HelicalPickerGUI implements Runnable {
 		c.insets = new Insets(0,5,0,5);      //make this component tall
 		c.weightx = 0.0;
 
-		c.gridwidth = 3;
+		c.gridwidth = 1;
 		c.gridx = 0;
 		c.gridy = basicPaneRow;
-		basicPane.add(checkboxShowPreview, c);
+		basicPane.add(labelPreviewOptions, c);
+		
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+
+		c.gridwidth = 2;
+		c.gridx = 1;
+		c.gridy = basicPaneRow;
+		basicPane.add(comboboxPreviewOptions, c);
+		basicPaneRow++;
+		
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+
+		c.gridwidth = 2;
+		c.gridx = 1;
+		c.gridy = basicPaneRow;
+		basicPane.add(buttonShowPreview, c);
 		basicPaneRow++;
 		
 		
@@ -577,16 +618,18 @@ public class HelicalPickerGUI implements Runnable {
 		rowNumber++;
 		
 		straightnessFilterPanel = new JPanel();
+		straightnessFilterPanel.setLayout(new GridBagLayout());
 		straightnessFilterPanel.setBorder(BorderFactory.createTitledBorder("Straightness filter"));
 		GridBagConstraints straightnessConstr = new GridBagConstraints();
 		straightnessConstr.fill = GridBagConstraints.HORIZONTAL;
 		straightnessConstr.insets = new Insets(0,5,0,5);      //make this component tall
-		straightnessConstr.weightx = 0.0;
+		straightnessConstr.weightx = 0.7;
 		straightnessConstr.gridwidth = 1;
 		straightnessConstr.gridx = 0;
 		straightnessConstr.gridy = 0;
 		straightnessFilterPanel.add(labelMinStraightness, straightnessConstr);
 		
+		straightnessConstr.weightx = 0.3;
 		straightnessConstr.gridwidth = 2;
 		straightnessConstr.gridx = 1;
 		straightnessConstr.gridy = 0;
@@ -695,7 +738,7 @@ public class HelicalPickerGUI implements Runnable {
 		tabs.addTab("General", generalPane);
 	
 	}
-
+	
 	
 	@Override
 	public void run() {

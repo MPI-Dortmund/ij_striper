@@ -19,6 +19,7 @@ import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 
+@Deprecated
 public class FilamentEnhancer_ implements PlugInFilter {
 
 	ArrayList<FHT> fftOfFilters = null;
@@ -29,8 +30,23 @@ public class FilamentEnhancer_ implements PlugInFilter {
 	boolean show_response_stack;
 	int last_fft_mask_width=0;
 	int last_fft_filament_width=0;
+	int last_angle_step = 2;
 	int type;
 	boolean equalize;
+	
+	public FilamentEnhancer_() {
+		// TODO Auto-generated constructor stub
+	}
+	
+	public FilamentEnhancer_(int filament_width, int mask_width, int angle_step,boolean show_mask, boolean equalize, int type) {
+		this.filament_width = filament_width;
+		this.mask_width = mask_width;
+		this.angle_step = angle_step;
+		this.show_mask = show_mask;
+		this.equalize = equalize;
+		this.type = type;
+	}
+	
 	public int setup(String arg, ImagePlus imp) {
 		GenericDialog gd = new GenericDialog("Mask creator");
 		gd.addNumericField("Filament width", 16, 0);
@@ -67,7 +83,7 @@ public class FilamentEnhancer_ implements PlugInFilter {
 			throw new IllegalArgumentException("Mask size is not a power of 2");
 		}
 		
-		if(fftOfFilters==null || (filament_width != last_fft_filament_width) || (mask_width != last_fft_mask_width)){
+		if(fftOfFilters==null || (filament_width != last_fft_filament_width) || (mask_width != last_fft_mask_width) || (angle_step != last_angle_step)){
 			
 			MaskCreator_ maskCreator = new MaskCreator_();
 			fftOfFilters = new ArrayList<FHT>();
@@ -98,6 +114,7 @@ public class FilamentEnhancer_ implements PlugInFilter {
 			}
 			last_fft_filament_width = filament_width;
 			last_fft_mask_width = mask_width;
+			last_angle_step = angle_step;
 		}
 	}
 
@@ -105,9 +122,15 @@ public class FilamentEnhancer_ implements PlugInFilter {
 		enhance_filaments(ip, filament_width, mask_width, angle_step, show_mask, equalize, type);
 	}
 	
+	public void enhance_filaments(ImageProcessor ip){
+		enhance_filaments(ip, filament_width, mask_width, angle_step, show_mask, equalize, type);
+	}
+	
 	public void enhance_filaments(ImageProcessor ip, int filament_width, int mask_width, int angle_step,boolean show_mask, boolean equalize, int type){
 		
-		// Adjust size to power of 2
+		/*
+		 *  Adjust size to power of 2
+		 */
 		int max = ip.getWidth()>ip.getHeight()?ip.getWidth():ip.getHeight();
 		int old_width = ip.getWidth();
 		int old_height = ip.getHeight();
@@ -118,7 +141,7 @@ public class FilamentEnhancer_ implements PlugInFilter {
 		Toolbar.setBackgroundColor(new Color(mean, mean, mean));
 		IJ.run(help, "Canvas Size...", "width="+new_size+" height="+new_size+" position=Center");
 		ImageProcessor ip_resize = ip.resize(new_size, new_size);
-		
+		// Fill new space with the mean value
 		for(int x = 0; x < ip_resize.getWidth(); x++){
 			for(int y = 0; y < ip_resize.getHeight(); y++){
 				ip_resize.set(x, y,help.getProcessor().get(x, y));
@@ -153,11 +176,6 @@ public class FilamentEnhancer_ implements PlugInFilter {
 		zproj.doProjection();
 		ImagePlus maxProj = zproj.getProjection();
 		
-	//	zproj.setMethod(ZProjector.MIN_METHOD);
-	//	zproj.doProjection();
-	//	ImagePlus minProj = zproj.getProjection();
-	//	minProj.show();
-	//	maxProj.show();
 		FloatProcessor maxProjProc = (FloatProcessor) maxProj.getProcessor();
 		if(equalize){
 			

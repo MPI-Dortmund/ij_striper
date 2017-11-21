@@ -268,7 +268,6 @@ public class HelicalPickerGUI implements Runnable {
 		menu.add(close);
 		menuBar.add(menu);
 		
-		
 		menu = new JMenu("Help");
 		menuBar.add(menu);
 		return menuBar;

@@ -12,6 +12,7 @@ import de.mpi_dortmund.ij.mpitools.helicalPicker.custom.IWorker;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilter_;
+import ij.IJ;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
@@ -72,6 +73,7 @@ public class FilamentDetectorWorker extends Thread implements IFilamentDetectorW
 			boolean doCorrectPosition = true;
 			boolean doEstimateWidth = false;
 			boolean doExtendLine = true;
+			IJ.log("Upper_trheshold " + upper_threshold);
 			Lines detected_lines = detect.detectLines(input_image, sigma, upper_threshold, lower_threshold, min_filament_length,max_filament_length, isDarkLine, doCorrectPosition, doEstimateWidth, doExtendLine, OverlapOption.NONE);
 			CentralLog.getInstance().info("Line detection frame " + i + " successfull");
 			ImageProcessor line_image = generateBinaryImage(detected_lines, input_image.getWidth(), input_image.getHeight());

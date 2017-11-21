@@ -230,7 +230,7 @@ public class HelicalPickerGUI implements Runnable {
 		 ((JSpinner.DefaultEditor)spinnerSigmaMinResponse.getEditor()).getTextField().setColumns(4);
 		 spinnerSigmaMaxResponse = new JSpinner(new SpinnerNumberModel(0, 0, 4, 0.1));
 		 ((JSpinner.DefaultEditor)spinnerSigmaMaxResponse.getEditor()).getTextField().setColumns(4);
-		 spinnerSensitvity = new JSpinner(new SpinnerNumberModel(0, 0, 1, 0.1));
+		 spinnerSensitvity = new JSpinner(new SpinnerNumberModel(0.9, 0, 1, 0.1));
 		 ((JSpinner.DefaultEditor)spinnerSensitvity.getEditor()).getTextField().setColumns(4);
 		 spinnerMinStraightness = new JSpinner(new SpinnerNumberModel(0, 0, 1, 0.1));
 		 ((JSpinner.DefaultEditor)spinnerMinStraightness.getEditor()).getTextField().setColumns(4);

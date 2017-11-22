@@ -1,7 +1,8 @@
-image: maven:3-jdk-7
+image: kaiwinter/docker-java8-maven
+#maven:3-jdk-7
 
 maven_build:
-  stage: test
+  stage: build
   script:
   - "mvn clean package"
   - "cat target/site/jacoco/index.html"

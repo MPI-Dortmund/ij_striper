@@ -1,4 +1,6 @@
 image: maven:3-jdk-7
 
 maven_build:
-  script: mvn package
+  script:
+  -"mvn install -B"
+  -"cat target/site/jacoco/index.html"

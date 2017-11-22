@@ -8,14 +8,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import de.mpi_dortmund.ij.mpitools.helicalPicker.custom.WorkerArrayCreator;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
+import ij.IJ;
 import ij.ImageStack;
 
 public class FilamentDetector {
 	
 	ImageStack ips;
 	double sigma; 
-	double lower_threshold; 
-	double upper_threshold;
+	DetectionThresholdRange thresh_range;
 	int mask_width;
 	
 	/**
@@ -26,20 +27,21 @@ public class FilamentDetector {
 	 * @param upper_threshold upper detection threshold
 	 * @param equalize helps to have the same signal for filaments with different contrast
 	 */
-	public FilamentDetector(ImageStack ips, double sigma, double lower_threshold, double upper_threshold) {
+	public FilamentDetector(ImageStack ips, double sigma, DetectionThresholdRange thresh_range) {
 		this.ips = ips;
 		this.sigma = sigma;
-		this.lower_threshold = lower_threshold;
-		this.upper_threshold = upper_threshold;
+		this.thresh_range = thresh_range;
 	}
 	
-	public HashMap<Integer, ArrayList<Polygon>> getFilaments( int sliceFrom, int sliceTo){
+	public HashMap<Integer, ArrayList<Polygon>> getFilaments(SliceRange slice_range){
 		int numberOfProcessors = Runtime.getRuntime().availableProcessors();
-		FilamentDetectorWorker[] workers = createWorkerArray(numberOfProcessors, sliceFrom, sliceTo);
+		FilamentDetectorWorker[] workers = createWorkerArray(numberOfProcessors, slice_range);
 		ExecutorService pool = Executors.newFixedThreadPool(numberOfProcessors);
 		for (FilamentDetectorWorker worker : workers) {
+		
 			pool.submit(worker);
 		}
+
 		pool.shutdown();
 		
 		try {
@@ -53,17 +55,18 @@ public class FilamentDetector {
 		
 		HashMap<Integer, ArrayList<Polygon>> lines = new HashMap<Integer, ArrayList<Polygon>>();
 		for (IFilamentDetectorWorker worker : workers) {
-			for(int i = worker.getSliceFrom(); i <= worker.getSliceTo(); i++){
-				lines.put(i, worker.getLines().get(i-worker.getSliceFrom()));			
+			SliceRange range = worker.getSliceRange();
+			for(int i = range.getSliceFrom(); i <= range.getSliceTo(); i++){
+				lines.put(i, worker.getLines().get(i-range.getSliceFrom()));			
 			}
 		}
 		return lines;
 	}
 	
-	protected FilamentDetectorWorker[] createWorkerArray(int numberOfProcessors, int sliceFrom, int sliceTo){
+	protected FilamentDetectorWorker[] createWorkerArray(int numberOfProcessors, SliceRange slice_range){
 		WorkerArrayCreator creator = new WorkerArrayCreator();
-		FilamentDetectorWorker worker = new FilamentDetectorWorker(ips, sliceFrom, sliceTo, sigma, lower_threshold, upper_threshold);
-		FilamentDetectorWorker[] workers = creator.createWorkerArray(numberOfProcessors, sliceFrom, sliceTo, worker);
+		FilamentDetectorWorker worker = new FilamentDetectorWorker(ips, slice_range, sigma, thresh_range);
+		FilamentDetectorWorker[] workers = creator.createWorkerArray(numberOfProcessors, slice_range, worker);
 	
 		return workers;
 		

@@ -10,7 +10,9 @@ import java.util.Iterator;
 
 import org.junit.Test;
 
+import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetector;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
 import ij.ImagePlus;
 import ij.ImageStack;
 
@@ -30,10 +32,11 @@ public class TestFilamentDetector {
 		double sigma = 3.39;
 		double lower_threshold = 0.68;
 		double upper_threshold = 1.36;
-		boolean equalize = false;
-	
-		FilamentDetector detector = new FilamentDetector(img.getImageStack(), sigma, lower_threshold, upper_threshold);
-		HashMap<Integer,ArrayList<Polygon>> lines = detector.getFilaments(1, 5);
+
+		DetectionThresholdRange thresh_range = new DetectionThresholdRange(lower_threshold, upper_threshold);
+		FilamentDetector detector = new FilamentDetector(img.getImageStack(), sigma, thresh_range);
+		SliceRange range = new SliceRange(1, 5);
+		HashMap<Integer,ArrayList<Polygon>> lines = detector.getFilaments(range);
 		
 		Iterator<Integer> slice_iterator = lines.keySet().iterator();
 		int N = 0;

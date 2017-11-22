@@ -7,6 +7,9 @@ import java.net.URL;
 import org.junit.Test;
 
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer;
+import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
@@ -22,12 +25,17 @@ public class TestFilamentEnhancer {
 		url = this.getClass().getClassLoader().getResource("stack_5_images_12_lines.tif");
 		ImagePlus input = new ImagePlus(url.getPath());
 		
-		int filament_width = 10;
-		int mask_width = 60;
-		int angle_step = 2;
-		boolean equalize = false;
-		FilamentEnhancer enhancer = new FilamentEnhancer(input.getImageStack(), filament_width, mask_width, angle_step, equalize);
-		ImageStack ips = enhancer.getEnhancedImages(1, 5);
+		FilamentEnhancerContext context = new FilamentEnhancerContext();
+		context.setFilamentWidth(10);
+		context.setMaskWidth(60);
+		context.setAngleStep(2);
+		context.setEqualize(false);
+	
+		FilamentEnhancer enhancer = new FilamentEnhancer(input.getImageStack(), context);
+		SliceRange range = new SliceRange(1, 5);
+		ImageStack ips = enhancer.getEnhancedImages(range);
+	
+	
 		assertTrue(TestUtils.isEquals(result.getStack(),ips));
 	}
 	
@@ -39,12 +47,15 @@ public class TestFilamentEnhancer {
 	
 		ImagePlus input = new ImagePlus("", ip);
 		
-		int filament_width = 10;
-		int mask_width = 60;
-		int angle_step = 2;
-		boolean equalize = false;
-		FilamentEnhancer enhancer = new FilamentEnhancer(input.getImageStack(), filament_width, mask_width, angle_step, equalize);
-		ImageStack ips = enhancer.getEnhancedImages(1, input.getStackSize());
+		FilamentEnhancerContext context = new FilamentEnhancerContext();
+		context.setFilamentWidth(10);
+		context.setMaskWidth(60);
+		context.setAngleStep(2);
+		context.setEqualize(false);
+		
+		FilamentEnhancer enhancer = new FilamentEnhancer(input.getImageStack(), context);
+		SliceRange range = new SliceRange(1, input.getStackSize());
+		ImageStack ips = enhancer.getEnhancedImages(range);
 	
 	}
 

@@ -3,11 +3,13 @@ package de.mpi_dortmund.ij.mpitools.helicalPicker.custom;
 import java.lang.reflect.Array;
 
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorWorker;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
+import ij.IJ;
 
 public class WorkerArrayCreator {
 	
-	public <T> T[] createWorkerArray(int numberOfProcessors, int sliceFrom, int sliceTo, IWorker clonable_worker){
-		int nSlices = sliceTo-sliceFrom+1;
+	public <T> T[] createWorkerArray(int numberOfProcessors, SliceRange slice_range, IWorker clonable_worker){
+		int nSlices = slice_range.getSliceTo()-slice_range.getSliceFrom()+1;
 		int slicesPerThread = getNumberSlicesPerThreads(numberOfProcessors, nSlices);
 		int Nmult = numberOfProcessors;
 		int N = numberOfProcessors+(nSlices-numberOfProcessors*slicesPerThread);
@@ -18,13 +20,15 @@ public class WorkerArrayCreator {
 		int to=0;
 
 		if(nSlices<numberOfProcessors){
-			for(int i = sliceFrom-1; i < sliceTo; i++){
+			for(int i = slice_range.getSliceFrom()-1; i < slice_range.getSliceTo(); i++){
 				from = i+1;
-				to = (i+1);				
+				to = (i+1);
+			
 				IWorker worker = (IWorker) clonable_worker.clone_worker();
-				worker.setSliceFrom(from);
-				worker.setSliceTo(to);
-				workers[i-sliceFrom+1] = (T)worker;
+				SliceRange range = new SliceRange(from, to);
+				worker.setSliceRange(range);
+		
+				workers[i-slice_range.getSliceFrom()+1] = (T)worker;
 			}
 			return workers;
 		}
@@ -35,9 +39,9 @@ public class WorkerArrayCreator {
 		for(int i = 0; i < Nmult; i++){
 			from = i*slicesPerThread+1;
 			to = (i+1)*slicesPerThread;
+			SliceRange range = new SliceRange(from, to);
 			IWorker worker = (IWorker) clonable_worker.clone_worker();
-			worker.setSliceFrom(from);
-			worker.setSliceTo(to);
+			worker.setSliceRange(range);
 			workers[i] = (T)worker;
 		}
 		
@@ -48,9 +52,9 @@ public class WorkerArrayCreator {
 		for(int i = 0; i < (N-numberOfProcessors); i++){
 			from =  off+i+1;
 			to = off+i+1;
+			SliceRange range = new SliceRange(from, to);
 			IWorker worker = (IWorker) clonable_worker.clone_worker();
-			worker.setSliceFrom(from);
-			worker.setSliceTo(to);
+			worker.setSliceRange(range);
 			workers[numberOfProcessors+i] = (T)worker;
 		}
 		

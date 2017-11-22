@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import org.junit.Test;
 
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
+import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.boxplacer.Line;
 import ij.ImagePlus;
 
@@ -23,12 +24,14 @@ public class TestBoxPlacer {
 		ImagePlus line_image = new ImagePlus(url.getPath());
 		
 		BoxPlacer_ placer = new BoxPlacer_();
-		int slice_position = 1;
-		int box_size = 10;
-		int box_distance = 5;
-		boolean place_points = false;
-		ArrayList<Line> lines = placer.placeBoxes(line_image.getProcessor(), target_image, slice_position, box_size, box_distance, place_points);
-		
+
+		BoxPlacingContext placing_context = new BoxPlacingContext();
+		placing_context.setBoxDistance(5);
+		placing_context.setBoxSize(10);
+		placing_context.setPlacePoints(false);
+		placing_context.setSlicePosition(1);
+
+		ArrayList<Line> lines = placer.placeBoxes(line_image.getProcessor(), target_image, placing_context);
 		assertEquals(lines.size(), 3);
 		
 	}

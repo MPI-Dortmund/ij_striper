@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
+import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilter_;
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import ij.ImagePlus;
@@ -49,21 +50,22 @@ public class TestSkeletonFilter {
 		 * Distance     ~96     ~90
 		 */
 		
-		int min_length = 90;
-		double min_straightness = 0;
-		int window_straightness = 10;
-		int radius = 10;
-		int border_diameter = 5;
-		double sigma_min_reponse = 5;
-		double sigma_max_response = 5;
-		boolean fitDistr = false;
-		int min_distance = 80;
-		double double_filament_insensitivity = 1;
-		ArrayList<IUserFilter> userFilters = null;
-		SkeletonFilter_ filter = new SkeletonFilter_(min_length, min_straightness, window_straightness, radius, 
-				border_diameter, sigma_min_reponse, sigma_max_response, fitDistr, min_distance, double_filament_insensitivity, userFilters);
+		SkeletonFilterContext context = new SkeletonFilterContext();
+		context.setMinimumFilamentLength(90);
+		context.setMinimumLineStraightness(0);
+		context.setWindowWidthStraightness(10);
+		context.setRemovementRadius(10);
+		context.setBorderDiameter(5);
+		context.setSigmaMinResponse(5);
+		context.setSigmaMaxResponse(5);
+		context.setFitDistribution(false);
+		context.setMinFilamentDistance(80);
+		context.setDoubleFilamentInsensitivity(1);
+		context.setUserFilters(null);
+
+		SkeletonFilter_ filter = new SkeletonFilter_();
 		
-		ArrayList<Polygon> filteredLines = filter.filterLineImage(lines.getProcessor(), input.getProcessor(), response.getProcessor(), null);
+		ArrayList<Polygon> filteredLines = filter.filterLineImage(lines.getProcessor(), input.getProcessor(), response.getProcessor(), null,context);
 		
 		assertEquals(3, filteredLines.size());
 	}
@@ -77,21 +79,23 @@ public class TestSkeletonFilter {
 		 * Distance     ~96     ~90
 		 */
 		
-		int min_length = 151;
-		double min_straightness = 0;
-		int window_straightness = 10;
-		int radius = 10;
-		int border_diameter = 5;
-		double sigma_min_reponse = 5;
-		double sigma_max_response = 5;
-		boolean fitDistr = false;
-		int min_distance = 80;
-		double double_filament_insensitivity = 1;
-		ArrayList<IUserFilter> userFilters = null;
-		SkeletonFilter_ filter = new SkeletonFilter_(min_length, min_straightness, window_straightness, radius, 
-				border_diameter, sigma_min_reponse, sigma_max_response, fitDistr, min_distance, double_filament_insensitivity, userFilters);
 		
-		ArrayList<Polygon> filteredLines = filter.filterLineImage(lines.getProcessor(), input.getProcessor(), response.getProcessor(), null);
+		SkeletonFilterContext context = new SkeletonFilterContext();
+		context.setMinimumFilamentLength(151);
+		context.setMinimumLineStraightness(0);
+		context.setWindowWidthStraightness(10);
+		context.setRemovementRadius(10);
+		context.setBorderDiameter(5);
+		context.setSigmaMinResponse(5);
+		context.setSigmaMaxResponse(5);
+		context.setFitDistribution(false);
+		context.setMinFilamentDistance(80);
+		context.setDoubleFilamentInsensitivity(1);
+		context.setUserFilters(null);
+
+		SkeletonFilter_ filter = new SkeletonFilter_();
+		
+		ArrayList<Polygon> filteredLines = filter.filterLineImage(lines.getProcessor(), input.getProcessor(), response.getProcessor(), null,context);
 		
 		assertEquals(1, filteredLines.size());
 		assertEquals(200, filteredLines.get(0).npoints,1);
@@ -109,21 +113,23 @@ public class TestSkeletonFilter {
 		 * Known mean:99.36547672756798
 		 * Known SD: 41.65841610647696
 		 */
-		int min_length = 90;
-		double min_straightness = 0;
-		int window_straightness = 10;
-		int radius = 10;
-		int border_diameter = 5;
-		double sigma_min_reponse = 1;
-		double sigma_max_response = 1;
-		boolean fitDistr = false;
-		int min_distance = 80;
-		double double_filament_insensitivity = 0.3;
-		ArrayList<IUserFilter> userFilters = null;
-		SkeletonFilter_ filter = new SkeletonFilter_(min_length, min_straightness, window_straightness, radius, 
-				border_diameter, sigma_min_reponse, sigma_max_response, fitDistr, min_distance, double_filament_insensitivity, userFilters);
 		
-		ArrayList<Polygon> filteredLines = filter.filterLineImage(lines.getProcessor(), input.getProcessor(), response.getProcessor(), null);
+		SkeletonFilterContext context = new SkeletonFilterContext();
+		context.setMinimumFilamentLength(90);
+		context.setMinimumLineStraightness(0);
+		context.setWindowWidthStraightness(10);
+		context.setRemovementRadius(10);
+		context.setBorderDiameter(5);
+		context.setSigmaMinResponse(1);
+		context.setSigmaMaxResponse(1);
+		context.setFitDistribution(false);
+		context.setMinFilamentDistance(80);
+		context.setDoubleFilamentInsensitivity(0.3);
+		context.setUserFilters(null);
+
+		SkeletonFilter_ filter = new SkeletonFilter_();
+		
+		ArrayList<Polygon> filteredLines = filter.filterLineImage(lines.getProcessor(), input.getProcessor(), response.getProcessor(), null, context);
 		
 		assertEquals(1, filteredLines.size());
 		assertEquals(150, filteredLines.get(0).npoints,1);
@@ -138,22 +144,23 @@ public class TestSkeletonFilter {
 		 * Distance     ~96     ~90
 		 */
 		
-		int min_length = 90;
-		double min_straightness = 0;
-		int window_straightness = 10;
-		int radius = 10;
-		int border_diameter = 5;
-		double sigma_min_reponse = 5;
-		double sigma_max_response = 5;
-		boolean fitDistr = false;
-		int min_distance = 80;
-		double double_filament_insensitivity = 1;
-		ArrayList<IUserFilter> userFilters = null;
+		SkeletonFilterContext context = new SkeletonFilterContext();
+		context.setMinimumFilamentLength(90);
+		context.setMinimumLineStraightness(0);
+		context.setWindowWidthStraightness(10);
+		context.setRemovementRadius(10);
+		context.setBorderDiameter(5);
+		context.setSigmaMinResponse(5);
+		context.setSigmaMaxResponse(5);
+		context.setFitDistribution(false);
+		context.setMinFilamentDistance(80);
+		context.setDoubleFilamentInsensitivity(1);
+		context.setUserFilters(null);
+	
 		ImageProcessor mask = this.mask.getProcessor();
-		SkeletonFilter_ filter = new SkeletonFilter_(min_length, min_straightness, window_straightness, radius, 
-				border_diameter, sigma_min_reponse, sigma_max_response, fitDistr, min_distance, double_filament_insensitivity, userFilters);
+		SkeletonFilter_ filter = new SkeletonFilter_();
 		
-		ArrayList<Polygon> filteredLines = filter.filterLineImage(lines.getProcessor(), input.getProcessor(), response.getProcessor(), mask);
+		ArrayList<Polygon> filteredLines = filter.filterLineImage(lines.getProcessor(), input.getProcessor(), response.getProcessor(), mask, context);
 		
 		assertEquals(2, filteredLines.size());
 	}

@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -39,9 +40,17 @@ import javax.swing.event.ChangeListener;
 
 import com.sun.jdi.connect.Connector.StringArgument;
 
+import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
+import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
+import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
+import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
+import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
+import ij.WindowManager;
 import ij.plugin.GIF_Reader;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ByteProcessor;
@@ -743,6 +752,76 @@ public class HelicalPickerGUI implements Runnable {
 	public void run() {
 		
 		
+	}
+	
+	public BoxPlacingContext getBoxPlacingContext(){
+		BoxPlacingContext context = new BoxPlacingContext();
+		int box_distance = Integer.parseInt(textfieldBoxDistance.getText());
+		int box_size = Integer.parseInt(textfieldBoxSize.getText());
+		boolean place_points = false;
+		int slicePosition = 1;
+		context.setBoxDistance(box_distance);
+		context.setBoxSize(box_size);
+		context.setPlacePoints(place_points);
+		context.setSlicePosition(slicePosition);
+		
+		return context;
+	}
+	
+	public FilamentEnhancerContext getFilamentEnhancerContext(){
+		FilamentEnhancerContext context = new FilamentEnhancerContext();
+		context.setAngleStep(2);
+		int mask_width = Integer.parseInt(textfieldMaskWidth.getText());
+		context.setMaskWidth(mask_width);
+		int filament_width = Integer.parseInt(textfieldFilamentWidth.getText());
+		context.setFilamentWidth(filament_width);
+		context.setEqualize(true);
+		
+		return context;
+	}
+	
+	public DetectionThresholdRange getDetectionThresholdRange(){
+		
+		double lower_threshold = Double.parseDouble(textfieldLowerThreshold.getText());
+		double upper_threshold = Double.parseDouble(textfieldLowerThreshold.getText());
+		DetectionThresholdRange range = new DetectionThresholdRange(lower_threshold, upper_threshold);
+		return range;
+	}
+	
+	public SkeletonFilterContext getLineFilterContext(){
+		int box_size = Integer.parseInt(textfieldBoxSize.getText());
+		double min_straightness = (Double)spinnerMinStraightness.getValue();
+		int straightness_windowsize = Integer.parseInt(textfieldWindowSize.getText());
+		int box_distance = Integer.parseInt(textfieldBoxDistance.getText());
+		int min_number_boxes = Integer.parseInt(textfieldMinNumberBoxes.getText());
+		int min_filament_length = (min_number_boxes-1)*box_distance+box_size;
+		double sigma_max_response = (double) spinnerSigmaMaxResponse.getValue();
+		double sigma_min_response = (double) spinnerSigmaMinResponse.getValue();
+		double double_filament_detection_insensitivity = 1-(double)spinnerSensitvity.getValue();
+		String selected_mask = (String) comboboxCustomMask.getSelectedItem();
+		double overlapping_factor = 0.5;
+		int min_filament_distance = (int) Math.sqrt(Math.pow(overlapping_factor*box_size,2)+Math.pow(overlapping_factor*box_size,2))/2;
+		ImagePlus masks = null;
+		if(selected_mask.equals("None") == false){
+			masks = WindowManager.getImage(selected_mask);
+			
+		}
+		ArrayList<IUserFilter> userFilters = Helical_Picker2_.getUserFilter();
+		
+		SkeletonFilterContext context = new SkeletonFilterContext();
+		context.setMinimumLineStraightness(min_straightness);
+		context.setWindowWidthStraightness(straightness_windowsize);
+		context.setMinFilamentDistance(min_filament_distance);
+		context.setMinimumFilamentLength(min_filament_length);
+		context.setSigmaMinResponse(sigma_min_response);
+		context.setSigmaMaxResponse(sigma_max_response);
+		context.setDoubleFilamentInsensitivity(double_filament_detection_insensitivity);
+		context.setBorderDiameter(box_size/2);
+		context.setRemovementRadius(box_size/2);
+		context.setBinaryMask(masks);
+		context.setUserFilters(userFilters);
+		
+		return context;
 	}
 	
 	public static void main(String[] args) {

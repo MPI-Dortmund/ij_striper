@@ -45,27 +45,29 @@ public class BoxPlacer_ implements PlugInFilter {
 	}
 
 	public void run(ImageProcessor ip) {
-		
-		placeBoxes(ip, targetImage, ip.getSliceNumber(), boxsize, box_distance,false);
+		BoxPlacingContext context = new BoxPlacingContext();
+		context.setSlicePosition(ip.getSliceNumber());
+		context.setPlacePoints(false);
+		placeBoxes(ip, targetImage, context);
 	}
 	
 	public synchronized void increaseID(){
 		running_id++;
 	}
 	
-	public ArrayList<Line> placeBoxes(ImageProcessor lineImage, ImagePlus targetImage, int slicePosition, int box_size, int box_distance, boolean place_points){
+	public ArrayList<Line> placeBoxes(ImageProcessor lineImage, ImagePlus targetImage, BoxPlacingContext placing_context){
 
 		targetImage.setProperty("line_image", lineImage.convertToByteProcessor());
 		
 		LineTracer tracer = new LineTracer();
 		
 		ArrayList<Polygon> lines = tracer.extractLines((ByteProcessor) lineImage);
-		ArrayList<Line> allLines = placeBoxes(lines, targetImage, slicePosition, box_size, box_distance, place_points);
+		ArrayList<Line> allLines = placeBoxes(lines, targetImage,placing_context);
 		
 		return allLines;
 	}
 	
-	public ArrayList<Line> placeBoxes(ArrayList<Polygon> lines, ImagePlus targetImage, int slicePosition, int box_size, int box_distance, boolean place_points){
+	public ArrayList<Line> placeBoxes(ArrayList<Polygon> lines, ImagePlus targetImage, BoxPlacingContext placing_context){
 		ArrayList<Line> allLines = new ArrayList<Line>();
 		Overlay ov = targetImage.getOverlay();
 		if(ov==null){
@@ -75,7 +77,7 @@ public class BoxPlacer_ implements PlugInFilter {
 		
 		int distancesq = box_distance*box_distance;
 		Color[] colors = {Color.red,Color.BLUE,Color.GREEN,Color.yellow,Color.CYAN,Color.ORANGE, Color.magenta};
-		int boxsize = box_size;
+		int boxsize = placing_context.getBoxSize();
 		for (Polygon p : lines) {
 			increaseID();
 			Line l = new Line(running_id);
@@ -90,8 +92,8 @@ public class BoxPlacer_ implements PlugInFilter {
 					d = Double.POSITIVE_INFINITY;
 				}
 				
-			}while(d<Math.pow(box_size/2, 2));
-			if(place_points){
+			}while(d<Math.pow(boxsize/2, 2));
+			if(placing_context.isPlacePoints()){
 				boxsize=1;
 			}
 			//IJ.log("START: " + start_index);
@@ -103,7 +105,7 @@ public class BoxPlacer_ implements PlugInFilter {
 			Roi r = new Roi(x, y, boxsize, boxsize);
 			r.setProperty("id", ""+running_id);
 			
-			r.setPosition(slicePosition);
+			r.setPosition(placing_context.getSlicePosition());
 			r.setStrokeColor(c);
 			ov.add(r);
 			l.add(r);
@@ -113,7 +115,7 @@ public class BoxPlacer_ implements PlugInFilter {
 				
 				if(
 						Point2D.distanceSq(x, y, xc, yc)>=distancesq && 
-								Point2D.distanceSq(xc, yc, p.xpoints[p.npoints-1], p.ypoints[p.npoints-1])>Math.pow(box_size/2, 2)
+								Point2D.distanceSq(xc, yc, p.xpoints[p.npoints-1], p.ypoints[p.npoints-1])>Math.pow(placing_context.getBoxSize()/2, 2)
 						){
 					x = xc;
 					y = yc;
@@ -122,7 +124,7 @@ public class BoxPlacer_ implements PlugInFilter {
 					r.setProperty("id", ""+running_id);
 					r.setStrokeColor(c);
 					
-					r.setPosition(slicePosition);
+					r.setPosition(placing_context.getSlicePosition());
 					ov.add(r);
 					l.add(r);
 				}

@@ -28,36 +28,15 @@ public class SkeletonFilter_ implements PlugInFilter {
 	ImagePlus imp;
 	ImagePlus response;
 	ImagePlus input_image;
-	int radius;
-	int min_length;
-	double min_response;
-	double max_response;
-	boolean fitDistr;
-	double min_straightness;
-	int window_straightness;
-	int min_distance;
-	int border_diameter;
-	double double_filament_insensitivity;
-	ImagePlus mask;
-	ArrayList<IUserFilter> userFilters;
+	SkeletonFilterContext context;
 	
 	public SkeletonFilter_() {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public SkeletonFilter_(int min_length, double min_straightness, int window_straightness, int radius, int border_diameter, double min_reponse, double max_response, boolean fitDistr, 
-			int min_distance, double double_filament_insensitivity, ArrayList<IUserFilter> userFilters) {
-		this.min_length = min_length;
-		this.min_straightness = min_straightness;
-		this.window_straightness = window_straightness;
-		this.radius = radius;
-		this.border_diameter = border_diameter;
-		this.min_response = min_reponse;
-		this.max_response = max_response;
-		this.fitDistr = fitDistr;
-		this.min_distance = min_distance;
-		this.double_filament_insensitivity = double_filament_insensitivity;
-		this.userFilters = userFilters;
+	public SkeletonFilter_(SkeletonFilterContext context) {
+		this.context = context;
+		
 	}
 	
 	public int setup(String arg, ImagePlus imp) {
@@ -98,17 +77,30 @@ public class SkeletonFilter_ implements PlugInFilter {
 		}
 		input_image = gd.getNextImage();
 		response = gd.getNextImage();
-		radius = (int) gd.getNextNumber();
-		border_diameter = (int) gd.getNextNumber();
-		min_length = (int) gd.getNextNumber();
-		min_straightness = gd.getNextNumber();
-		window_straightness = (int) gd.getNextNumber();
-		min_distance = (int) gd.getNextNumber();
-		min_response =  gd.getNextNumber();
-		max_response =  gd.getNextNumber();
-		fitDistr = gd.getNextBoolean();
-		double_filament_insensitivity = 1-gd.getNextNumber();
-		mask = WindowManager.getImage(gd.getNextChoice());
+		context = new SkeletonFilterContext(); 
+		int removement_radius = (int) gd.getNextNumber();
+		int border_diameter = (int) gd.getNextNumber();
+		int min_filament_length = (int) gd.getNextNumber();
+		double min_line_straightness = gd.getNextNumber();
+		int window_width_straightness = (int) gd.getNextNumber();
+		int min_filament_distance = (int) gd.getNextNumber();
+		double sigma_min_response =  gd.getNextNumber();
+		double sigma_max_response =  gd.getNextNumber();
+		boolean fit_distribution = gd.getNextBoolean();
+		double double_filament_insensitivity = 1-gd.getNextNumber();
+		ImagePlus mask = WindowManager.getImage(gd.getNextChoice());
+		
+		context.setRemovementRadius(removement_radius);
+		context.setBorderDiameter(border_diameter);
+		context.setMinimumFilamentLength(min_filament_length);
+		context.setMinimumLineStraightness(min_line_straightness);
+		context.setWindowWidthStraightness(window_width_straightness);
+		context.setMinFilamentDistance(min_filament_distance);
+		context.setSigmaMinResponse(sigma_min_response);
+		context.setSigmaMaxResponse(sigma_max_response);
+		context.setFitDistribution(fit_distribution);
+		context.setDoubleFilamentInsensitivity(double_filament_insensitivity);
+		context.setBinaryMask(mask);
 
 		if(response.getImageStackSize() != input_image.getImageStackSize()){
 			IJ.error("Response image and input image must have the same number of slices");
@@ -121,6 +113,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 
 	public void run(ImageProcessor ip) {
 		
+		ImagePlus mask = context.getBinaryMask();
 		ImageProcessor maskImage = null;
 		if(mask!=null){
 			maskImage = mask.getStack().getProcessor(ip.getSliceNumber());
@@ -130,16 +123,15 @@ public class SkeletonFilter_ implements PlugInFilter {
 				input_image.getStack().getProcessor(ip.getSliceNumber()), 
 				response.getStack().getProcessor(ip.getSliceNumber()), 
 				maskImage,
-				border_diameter, min_distance, radius, min_straightness, window_straightness, 
-				min_length, max_response, min_response,fitDistr,double_filament_insensitivity, null);
+				context);
 		drawLines(lines, ip);
 		
 		
 		
 	}
-	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, ImageProcessor mask){
+	private ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, ImageProcessor mask){
 		
-		return filterLineImage(line_image, input_image, response_image, mask, border_diameter, min_distance, radius, min_straightness, window_straightness, min_length, max_response, min_response, fitDistr, double_filament_insensitivity, userFilters);
+		return filterLineImage(line_image, input_image, response_image, mask, context);
 	}
 	
 	
@@ -154,11 +146,13 @@ public class SkeletonFilter_ implements PlugInFilter {
 	 *  8. Remove parallel lines
 	 *  9. Length filter 2
 	 */
-	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, ImageProcessor mask, int border_diameter, int min_distance, int removementRadius, double min_straightness, int window_straightness, int min_length, double max_response, double min_response, boolean fitDist, double double_filament_insensitivity, ArrayList<IUserFilter> userFilters){
+	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, ImageProcessor mask, SkeletonFilterContext context){
 		
-		setBorderToZero((ByteProcessor)line_image,  border_diameter);
+		int border_diameter = context.getBorderDiameter();
+		setBorderToZero((ByteProcessor)line_image, border_diameter);
 		//(new ImagePlus("after border to zero", line_image.duplicate())).show();
-		removeJunctions((ByteProcessor) line_image,removementRadius);
+		int removement_radius = context.getRemovementRadius();
+		removeJunctions((ByteProcessor) line_image, removement_radius);
 		//(new ImagePlus("after remove junction", line_image.duplicate())).show();
 		if(mask != null){
 			applyMask(line_image, mask);
@@ -168,10 +162,12 @@ public class SkeletonFilter_ implements PlugInFilter {
 		ArrayList<Polygon> lines = tracer.extractLines((ByteProcessor) line_image);
 		
 		
-		
-		lines = splitByStraightness(lines,(ByteProcessor)line_image,min_straightness,window_straightness,removementRadius);
+		double min_line_straightness = context.getMinimumLineStraightness();
+		int window_width_straightness = context.getWindowWidthStraightness();
+
+		lines = splitByStraightness(lines,(ByteProcessor)line_image,min_line_straightness,window_width_straightness,removement_radius);
 		//(new ImagePlus("after straightness ", line_image.duplicate())).show();
-		
+		ArrayList<IUserFilter> userFilters = context.getUserFilters();
 		if(userFilters!=null){
 			for (IUserFilter filter : userFilters) {
 				lines = filter.apply(input_image, response_image, line_image);
@@ -180,18 +176,23 @@ public class SkeletonFilter_ implements PlugInFilter {
 			}
 		}
 		
-		lines = filterByLength(lines, min_length);
+		int minimum_filament_length = context.getMinimumFilamentLength();
+		lines = filterByLength(lines, minimum_filament_length);
 		drawLines(lines, line_image);
 		
 		//lines = filterByResponseFixThresholds(lines, response.getProcessor(), min_response, max_response);
-		boolean doFitDistr = false;
-		lines = filterByResponseMeanStd(lines, response_image,max_response, min_response,double_filament_insensitivity,doFitDistr);
+		boolean doFitDistr = context.isFitDistribution();
+		double sigma_max_response = context.getSigmaMaxResponse();
+		double sigma_min_response = context.getMinimumSigmaResponse();
+		double double_filament_insensitivity = context.getDoubleFilamentInsensitivity();
+		lines = filterByResponseMeanStd(lines, response_image,sigma_max_response, sigma_min_response,double_filament_insensitivity,doFitDistr);
 		
 		drawLines(lines, line_image);
 		
-		lines = removeParallelLines((ByteProcessor) line_image, lines, min_distance);
+		int minimum_filament_distance = context.getMinFilamentDistance();
+		lines = removeParallelLines((ByteProcessor) line_image, lines, minimum_filament_distance);
 		
-		lines = filterByLength(lines, min_length);
+		lines = filterByLength(lines, minimum_filament_length);
 
 		return lines;
 	}
@@ -506,4 +507,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 		
 	}
 
+
 }
+
+

@@ -8,44 +8,36 @@ import de.biomedical_imaging.ij.steger.LineDetector;
 import de.biomedical_imaging.ij.steger.Lines;
 import de.biomedical_imaging.ij.steger.OverlapOption;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.custom.IWorker;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;
-import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilter_;
-import ij.IJ;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
-import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 
 public class FilamentDetectorWorker extends Thread implements IFilamentDetectorWorker, IWorker {
 	
 	private ImageStack input_images;
-	private int sliceFrom;
-	private int sliceTo;
+	private SliceRange slice_range;
 	private double sigma;
-	private double lower_threshold;
-	private double upper_threshold;
+	private DetectionThresholdRange thresh_range;
 	ArrayList<ArrayList<Polygon>> lines; // Contains a list of all images for every image
 	
-	public FilamentDetectorWorker(ImageStack ips, int from, int to, double sigma, double lower_threshold, double upper_threshold) {
+	public FilamentDetectorWorker(ImageStack ips, SliceRange slice_range, double sigma, DetectionThresholdRange thresh_range) {
 		
 		this.input_images = ips;
-		this.sliceFrom = from;
-		this.sliceTo = to;
+		this.slice_range = slice_range;
 		this.sigma = sigma;
-		this.lower_threshold = lower_threshold;
-		this.upper_threshold = upper_threshold;
+		this.thresh_range = thresh_range;
 		
 	}
 	
 	public FilamentDetectorWorker(FilamentDetectorWorker a) {
 		
 		this.input_images = a.input_images;
-		this.sliceFrom = a.sliceFrom;
-		this.sliceTo = a.sliceTo;
+		this.slice_range = a.slice_range;
 		this.sigma = a.sigma;
-		this.lower_threshold = a.lower_threshold;
-		this.upper_threshold = a.upper_threshold;
+		this.thresh_range = a.thresh_range;
 		
 	}
 	
@@ -56,9 +48,9 @@ public class FilamentDetectorWorker extends Thread implements IFilamentDetectorW
 		 *  1. Detect lines in enhanced image using steger's method
 		 */
 		lines = new ArrayList<ArrayList<Polygon>>();
-		int N = sliceTo - sliceFrom + 1;
+		int N = slice_range.getSliceTo() - slice_range.getSliceFrom() + 1;
 		
-		for(int i = sliceFrom; i <= sliceTo; i++){
+		for(int i = slice_range.getSliceFrom(); i <= slice_range.getSliceTo(); i++){
 			CentralLog.getInstance().info("Process lines of frame: " + i);
 			ImageProcessor input_image = input_images.getProcessor(i);
 			
@@ -72,7 +64,7 @@ public class FilamentDetectorWorker extends Thread implements IFilamentDetectorW
 			boolean doCorrectPosition = true;
 			boolean doEstimateWidth = false;
 			boolean doExtendLine = true;
-			Lines detected_lines = detect.detectLines(input_image, sigma, upper_threshold, lower_threshold, min_filament_length,max_filament_length, isDarkLine, doCorrectPosition, doEstimateWidth, doExtendLine, OverlapOption.NONE);
+			Lines detected_lines = detect.detectLines(input_image, sigma, thresh_range.getUpperThreshold(), thresh_range.getLowerThreshold(), min_filament_length,max_filament_length, isDarkLine, doCorrectPosition, doEstimateWidth, doExtendLine, OverlapOption.NONE);
 			CentralLog.getInstance().info("Line detection frame " + i + " successfull");
 			ImageProcessor line_image = generateBinaryImage(detected_lines, input_image.getWidth(), input_image.getHeight());
 			LineTracer tracer = new LineTracer();
@@ -136,27 +128,17 @@ public class FilamentDetectorWorker extends Thread implements IFilamentDetectorW
 	}
 
 	@Override
-	public void setSliceFrom(int i) {
-		this.sliceFrom = i;
-	}
-
-	@Override
-	public void setSliceTo(int i) {
-		this.sliceTo = i;
+	public void setSliceRange(SliceRange slice_range) {
+		this.slice_range = slice_range;
 		
 	}
 
 	@Override
-	public int getSliceFrom() {
+	public SliceRange getSliceRange() {
 		// TODO Auto-generated method stub
-		return sliceFrom;
+		return slice_range;
 	}
 
-	@Override
-	public int getSliceTo() {
-		// TODO Auto-generated method stub
-		return sliceTo;
-	}
 
 
 }

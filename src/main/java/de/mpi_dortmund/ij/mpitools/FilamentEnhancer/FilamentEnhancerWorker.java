@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 import de.mpi_dortmund.ij.mpitools.helicalPicker.custom.IWorker;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import ij.IJ;
 import ij.ImagePlus;
@@ -21,47 +22,41 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 
 	ArrayList<ImageProcessor> enhanced_maps;
 	int type = 1;
-	int filament_width; 
-	int mask_width; 
-	int angle_step;
-	boolean equalize;
-	int sliceFrom;
-	int sliceTo;
+	SliceRange slice_range;
+	FilamentEnhancerContext context;
 	ImageStack ips;
 	
-	public FilamentEnhancerWorker(ImageStack ips, int filament_width, int mask_width, int angle_step, boolean equalize, int sliceFrom, int sliceTo) {
+	public FilamentEnhancerWorker(ImageStack ips, FilamentEnhancerContext context, SliceRange slice_range) {
 		this.ips = ips;
-		this.filament_width = filament_width;
-		this.mask_width = mask_width;
-		this.angle_step = angle_step;
-		this.equalize = equalize;
-		this.sliceFrom = sliceFrom;
-		this.sliceTo = sliceTo;
+		this.context = context;
+		this.slice_range = slice_range;
 	}
 	public FilamentEnhancerWorker(FilamentEnhancerWorker a){
-		this(a.ips,a.filament_width,a.mask_width,a.angle_step,a.equalize,a.sliceFrom,a.sliceTo);
+		this(a.ips,a.context,a.getSliceRange());
+		
 		
 	}
 	
 	@Override
 	public void run() {
-
-		CentralLog.getInstance().info(CentralLog.m("Start enhancer - Filament width: " + filament_width + " mask width: " + mask_width + " angle_step: " + angle_step + " eq. " + equalize + " slice from " + sliceFrom + " slice to " + sliceTo));
+		
+		CentralLog.getInstance().info(CentralLog.m("Start enhancer - Filament width: " + context.getFilamentWidth() + " mask width: " + context.getMaskWidth() + " angle_step: " + context.getAngleStep() + " eq. " + context.isEqualize() + " slice from " + slice_range.getSliceFrom() + " slice to " + slice_range.getSliceTo()));
 		int max = ips.getWidth()>ips.getHeight()?ips.getWidth():ips.getHeight();
 		int old_width = ips.getWidth();
 		int old_height = ips.getHeight();
 		int new_size = nextPower2(max);
 		int mask_size = new_size;
 		
+		
 		CentralLog.getInstance().info(CentralLog.m("Calculate transformed masks"));
 		TransformedMaskProvider mask_provider = new TransformedMaskProvider();
-		CentralLog.getInstance().info(CentralLog.m("Transformed masks parameters - mask size: " + mask_size + " filament_width: " + filament_width + " mask_width: " + mask_width + " angle_step " + angle_step + " type " + type));
-		ArrayList<FHT> transformed_masks = mask_provider.getTransformedMasks(mask_size, filament_width, mask_width, angle_step, type);
+		CentralLog.getInstance().info(CentralLog.m("Transformed masks parameters - mask size: " + mask_size + " filament_width: " + context.getFilamentWidth() + " mask_width: " + context.getMaskWidth() + " angle_step " + context.getAngleStep() + " type " + type));
+		ArrayList<FHT> transformed_masks = mask_provider.getTransformedMasks(mask_size, context.getFilamentWidth(), context.getMaskWidth(), context.getAngleStep(), type);
 		CentralLog.getInstance().info(CentralLog.m("Transformed masks calculated"));
 		
 		enhanced_maps = new ArrayList<ImageProcessor>();
 		
-		for(int i = sliceFrom; i <= sliceTo; i++){
+		for(int i = slice_range.getSliceFrom(); i <= slice_range.getSliceTo(); i++){
 			CentralLog.getInstance().info(CentralLog.m("Enhance slice " + i));
 			ImageProcessor ip = ips.getProcessor(i);
 			/*
@@ -99,7 +94,7 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 			ImageStack enhancedStack = new ImageStack(ip_resize.getWidth(), ip_resize.getHeight());
 			
 			for(int j = 0; j < transformed_masks.size(); j++){
-				
+			
 				h2 = transformed_masks.get(j);
 				CentralLog.getInstance().info(CentralLog.m("Multiply slice " + i + " Mask" + j));
 			
@@ -108,7 +103,7 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 				result.inverseTransform();
 				result.swapQuadrants();
 				result.resetMinAndMax();
-				
+			
 				enhancedStack.addSlice(result);
 			}
 			
@@ -121,7 +116,7 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 			ImagePlus maxProj = zproj.getProjection();
 			
 			FloatProcessor maxProjProc = (FloatProcessor) maxProj.getProcessor();
-			if(equalize){
+			if(context.isEqualize()){
 				CentralLog.getInstance().info(CentralLog.m("Equalize"));
 				ImageStatistics stat = maxProjProc.getStatistics();
 				maxProjProc.subtract(stat.mean);
@@ -161,31 +156,21 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 		}
 		return v;
 	}
-
+	
 	@Override
-	public void setSliceFrom(int i) {
-		this.sliceFrom = i;
+	public void setSliceRange(SliceRange slice_range){
+		this.slice_range = slice_range;
 	}
 
-	@Override
-	public void setSliceTo(int i) {
-		this.sliceTo = i;
-	}
 
 	@Override
 	public FilamentEnhancerWorker clone_worker() {
 		// TODO Auto-generated method stub
 		return new FilamentEnhancerWorker(this);
 	}
+	
 	@Override
-	public int getSliceFrom() {
-		// TODO Auto-generated method stub
-		return this.sliceFrom;
+	public SliceRange getSliceRange(){
+		return slice_range;
 	}
-	@Override
-	public int getSliceTo() {
-		// TODO Auto-generated method stub
-		return this.sliceTo;
-	}
-
 }

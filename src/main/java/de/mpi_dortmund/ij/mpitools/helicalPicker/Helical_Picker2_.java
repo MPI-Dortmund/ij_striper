@@ -224,6 +224,7 @@ public class Helical_Picker2_ implements PlugIn {
 		input_image.updateAndRepaintWindow();
 
 	}
+	
 		
 	public static ArrayList<IUserFilter> getUserFilter(){
 		return userFilters;

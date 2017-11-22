@@ -7,7 +7,6 @@ import de.biomedical_imaging.ij.steger.Line;
 import de.biomedical_imaging.ij.steger.LineDetector;
 import de.biomedical_imaging.ij.steger.Lines;
 import de.biomedical_imaging.ij.steger.OverlapOption;
-import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.custom.IWorker;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;

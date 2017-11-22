@@ -4,7 +4,7 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 
-import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;
 import ij.IJ;
 import ij.ImagePlus;
@@ -92,7 +92,7 @@ public class GoldDotRemover_ implements PlugIn, IUserFilter {
 		filterSmallDia = (int) gd.getNextNumber();
 		minDistanceToGold = gd.getNextNumber();
 		minBlobArea = (int) gd.getNextNumber();
-		Helical_Picker_.registerUserFilter(this);
+		Helical_Picker2_.registerUserFilter(this);
 
 	}
 

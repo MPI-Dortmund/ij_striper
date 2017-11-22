@@ -7,9 +7,11 @@ import de.biomedical_imaging.ij.steger.Line;
 import de.biomedical_imaging.ij.steger.LineDetector;
 import de.biomedical_imaging.ij.steger.Lines;
 import de.biomedical_imaging.ij.steger.OverlapOption;
-import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer_;
+import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer;
+
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.gui.GenericDialog;
 import ij.gui.Overlay;
 import ij.gui.PolygonRoi;
@@ -27,7 +29,7 @@ public class Ridge_Optimizer implements PlugInFilter {
 	int LOCAL_RUNS;
 	int mask_width;
 	boolean verbose;
-	FilamentEnhancer_ enhancer;
+	FilamentEnhancer enhancer;
 	@Override
 	public int setup(String arg, ImagePlus imp) {
 		this.imp = imp;
@@ -52,7 +54,13 @@ public class Ridge_Optimizer implements PlugInFilter {
 		verbose = gd.getNextBoolean();
 		return DOES_8G;
 	}
-
+	
+	@Override
+	public void run(ImageProcessor ip) {
+		// TODO Auto-generated method stub
+		
+	}
+	/*
 	@Override
 	public void run(ImageProcessor ip) {
 		
@@ -62,7 +70,7 @@ public class Ridge_Optimizer implements PlugInFilter {
 		
 	}
 	
-	
+
 	public double[] optimize(ImagePlus imp, int filament_width, int mask_width, int GLOBAL_RUNS, int LOCAL_RUNS, boolean verbose){
 		Overlay ov = imp.getOverlay();
 		
@@ -184,7 +192,7 @@ public class Ridge_Optimizer implements PlugInFilter {
 		return selectionMaps;
 	}
 	
-	public ImageProcessor[] getArrayOfEnhancedFilaments(ImagePlus imp, Integer[] slices, int filament_width, int mask_width){
+	public ImageStack getArrayOfEnhancedFilaments(ImagePlus imp, Integer[] slices, int filament_width, int mask_width){
 		ImageProcessor[] ips = new ImageProcessor[slices.length];
 		int angle_step = 2;
 		boolean show_mask = false;
@@ -192,13 +200,11 @@ public class Ridge_Optimizer implements PlugInFilter {
 		int type = 1;		
 		
 		if(enhancer==null){
-			enhancer = new FilamentEnhancer_();
+			enhancer = new FilamentEnhancer(imp.getImageStack(), filament_width, mask_width, angle_step, equalize);
 		}
 
-		for(int i = 0; i < slices.length; i++){
-			ips[i] = imp.getStack().getProcessor(slices[i]);
-			enhancer.enhance_filaments(ips[i], filament_width, mask_width, angle_step, show_mask, equalize, type);
-		}
+		ImageStack enhanced = enhancer.getEnhancedImages(1, imp.getImageStackSize());
+		
 		
 		return ips;
 		
@@ -291,5 +297,5 @@ public class Ridge_Optimizer implements PlugInFilter {
 		
 		return new double[]{cand_lt,cand_ut};
 	}
-
+*/
 }

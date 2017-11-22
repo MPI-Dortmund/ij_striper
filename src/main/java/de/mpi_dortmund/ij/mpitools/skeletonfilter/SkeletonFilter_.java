@@ -408,7 +408,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 		return hist;
 	}
 	
-	public double[] fitNormalDistributionToHist(int[] hist, double initMean, double initSD){
+	private double[] fitNormalDistributionToHist(int[] hist, double initMean, double initSD){
 		
 		double[] xData = new double[254]; // 254 -> Ignore saturated values
 		double[] yData = new double[254];

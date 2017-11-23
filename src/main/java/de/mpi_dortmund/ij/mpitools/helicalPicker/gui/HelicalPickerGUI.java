@@ -757,7 +757,7 @@ public class HelicalPickerGUI implements Runnable {
 		context.setMaskWidth(mask_width);
 		int filament_width = Integer.parseInt(textfieldFilamentWidth.getText());
 		context.setFilamentWidth(filament_width);
-		context.setEqualize(true);
+		context.setEqualize(false);
 		
 		return context;
 	}

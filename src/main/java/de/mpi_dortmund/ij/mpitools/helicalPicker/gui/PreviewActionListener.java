@@ -79,7 +79,6 @@ public class PreviewActionListener implements ActionListener {
 		 * Place boxes
 		 */
 
-		IJ.log("Place");
 		CentralLog.getInstance().info("info");
 		BoxPlacingContext placing_context = gui.getBoxPlacingContext();
 

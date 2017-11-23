@@ -46,7 +46,6 @@ public class PipelineRunner {
 			this.enhanced_images = enhanced_images;
 		}
 		else if(update==false){
-			IJ.log("Use previous");
 			enhanced_images = this.enhanced_images;
 		}
 		

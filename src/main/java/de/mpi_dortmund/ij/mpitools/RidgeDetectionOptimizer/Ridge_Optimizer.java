@@ -1,4 +1,4 @@
-package de.mpi_dortmund.ij.mpitools.helicalPicker;
+package de.mpi_dortmund.ij.mpitools.RidgeDetectionOptimizer;
 
 import java.util.Random;
 
@@ -8,7 +8,8 @@ import ij.gui.GenericDialog;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 
-public class Ridge_Optimizer implements PlugInFilter {
+public class Ridge_Optimizer  {
+	/*
 	ImagePlus imp;
 	Random rand;
 	int filament_width;
@@ -47,7 +48,7 @@ public class Ridge_Optimizer implements PlugInFilter {
 		// TODO Auto-generated method stub
 		
 	}
-	/*
+
 	@Override
 	public void run(ImageProcessor ip) {
 		

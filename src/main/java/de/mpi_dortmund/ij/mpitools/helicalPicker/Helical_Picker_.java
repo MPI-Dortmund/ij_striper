@@ -45,7 +45,13 @@ public class Helical_Picker_ implements PlugIn {
 			return;
 		}
 		gui = new HelicalPickerGUI();
-		gui.createAndShowGUI();
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				gui.createAndShowGUI();
+			}
+		});
+		
 		
 		
 	}

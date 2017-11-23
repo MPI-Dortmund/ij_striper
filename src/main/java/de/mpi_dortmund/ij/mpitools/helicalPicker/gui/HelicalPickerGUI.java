@@ -30,12 +30,14 @@ import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
+import de.mpi_dortmund.ij.mpitools.RidgeDetectionOptimizer.RidgeDetectionOptimizerAssistant;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.boxplacer.HeliconParticleExporter_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 
@@ -258,6 +260,25 @@ public class HelicalPickerGUI implements Runnable {
 		JMenu menu = new JMenu("File");
 		
 		/*
+		 * Detection parameter assistant
+		 */
+		JMenuItem detection_parameter_assistant = new JMenuItem("Start detection parameter assistant");
+		detection_parameter_assistant.addActionListener(new ActionListener() {
+			RidgeDetectionOptimizerAssistant assistent = new RidgeDetectionOptimizerAssistant(Helical_Picker_.getInstance().getImage());
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				javax.swing.SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						assistent.showGUI();
+					}
+				});
+				
+			}
+		});
+		menu.add(detection_parameter_assistant);
+		
+		/*
 		 * Export boxes
 		 */
 		JMenuItem export_boxes = new JMenuItem("Export boxes");
@@ -271,6 +292,7 @@ public class HelicalPickerGUI implements Runnable {
 				
 			}
 		});
+			
 		menu.add(export_boxes);
 		
 		/*
@@ -777,6 +799,15 @@ public class HelicalPickerGUI implements Runnable {
 		context.setSlicePosition(slicePosition);
 		
 		return context;
+	}
+	
+	public void updateDetectionParameters(DetectionThresholdRange range){
+		textfieldLowerThreshold.setText(""+IJ.d2s(range.getLowerThreshold(), 4));
+		textfieldUpperThreshold.setText(""+IJ.d2s(range.getUpperThreshold(), 4));
+	}
+	
+	public void updateFilamentWidth(int filament_width){
+		textfieldFilamentWidth.setText(""+filament_width);
 	}
 	
 	public FilamentEnhancerContext getFilamentEnhancerContext(){

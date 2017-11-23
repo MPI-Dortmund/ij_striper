@@ -56,6 +56,7 @@ public class HelicalPickerGUI implements Runnable {
 	
 	JCheckBox checkboxShowAdvancedSettings;
 	
+	
 	JButton buttonApply;
 	JButton buttonCancel;
 	JButton buttonShowPreview;
@@ -73,6 +74,7 @@ public class HelicalPickerGUI implements Runnable {
 	JLabel labelMaskWidth;
 	JLabel labelLowerThreshold;
 	JLabel labelUpperThreshold;
+	JLabel labelCheckboxEqualize;
 	
 	JTextField textfieldFilamentWidth;
 	JTextField textfieldMaskWidth;
@@ -80,6 +82,8 @@ public class HelicalPickerGUI implements Runnable {
 	JTextField textfieldUpperThreshold;
 	JTextField textfieldBoxSize;
 	JTextField textfieldBoxDistance;
+	
+	JCheckBox checkboxEqualize;
 	
 	/*
 	 * Filtering panel elements
@@ -154,7 +158,8 @@ public class HelicalPickerGUI implements Runnable {
 	public void toggleAdvanced(){
 		labelMaskWidth.setVisible(!labelMaskWidth.isVisible());
 		textfieldMaskWidth.setVisible(!textfieldMaskWidth.isVisible());
-
+		labelCheckboxEqualize.setVisible(!labelCheckboxEqualize.isVisible());
+		checkboxEqualize.setVisible(!checkboxEqualize.isVisible());
 		straightnessFilterPanel.setVisible(!straightnessFilterPanel.isVisible());
 		labelOverlappingFactor.setVisible(!labelOverlappingFactor.isVisible());
 		spinnerOverlappingFactor.setVisible(!spinnerOverlappingFactor.isVisible());
@@ -189,7 +194,8 @@ public class HelicalPickerGUI implements Runnable {
 		textpaneInformation.setText("Here are important information");
 		
 		checkboxShowAdvancedSettings = new JCheckBox("Show advanced settings");
-		
+		checkboxEqualize = new JCheckBox("");
+		checkboxEqualize.setSelected(true);
 		buttonApply = new JButton("Apply");
 		buttonCancel = new JButton("Cancel");
 		buttonShowPreview = new JButton("Show preview");
@@ -200,6 +206,7 @@ public class HelicalPickerGUI implements Runnable {
 		labelFilamentWidth = new JLabel("Filament width:");
 		labelLowerThreshold = new JLabel("Lower threshold:");
 		labelUpperThreshold = new JLabel("Upper threshold:");
+		labelCheckboxEqualize = new JLabel("Equalize");
 		labelMaskWidth = new JLabel("Mask width:");
 		labelPreviewOptions = new JLabel("Preview options:");
 		textfieldFilamentWidth = new JTextField("64", 3);
@@ -567,11 +574,32 @@ public class HelicalPickerGUI implements Runnable {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(0,5,0,5);      //make this component tall
 		c.weightx = 0.0;
-		c.weighty = 1;
+		c.weighty = 0;
 		c.gridwidth = 2;
 		c.gridx = 1;
 		c.gridy = rowNumber;
 		detectionPane.add(textfieldUpperThreshold, c);
+		rowNumber++;
+		
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 0;
+		c.gridwidth = 1;
+		c.gridx = 0;
+		c.gridy = rowNumber;
+		detectionPane.add(labelCheckboxEqualize, c);
+		labelCheckboxEqualize.setVisible(false);
+		
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 1;
+		c.gridwidth = 1;
+		c.gridx = 1;
+		c.gridy = rowNumber;
+		detectionPane.add(checkboxEqualize, c);
+		checkboxEqualize.setVisible(false);
 		rowNumber++;
 				
 		
@@ -817,7 +845,7 @@ public class HelicalPickerGUI implements Runnable {
 		context.setMaskWidth(mask_width);
 		int filament_width = Integer.parseInt(textfieldFilamentWidth.getText());
 		context.setFilamentWidth(filament_width);
-		context.setEqualize(false);
+		context.setEqualize(checkboxEqualize.isSelected());
 		
 		return context;
 	}

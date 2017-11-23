@@ -71,19 +71,6 @@ public class Helical_Picker2_ implements PlugIn {
 		return gui;
 	}
 	
-	public ImageStack enhanceImages(ImageStack ips, FilamentEnhancerContext context){
-		SliceRange slice_range = new SliceRange(1, ips.size());
-		ImageStack enhanced_stack = enhanceImages(ips, context, slice_range);
-		return enhanced_stack;
-	}
-	
-	public ImageStack enhanceImages(ImageStack ips, FilamentEnhancerContext context, SliceRange slice_range){
-		FilamentEnhancer enhancer = new FilamentEnhancer(ips, context);
-		
-		ImageStack enhanced_stack = enhancer.getEnhancedImages(slice_range);
-		return enhanced_stack;
-	}
-	
 	public ImageProcessor generateBinaryImage(Lines lines, int imageWdith, int imageHeight){
 		ByteProcessor binary = new ByteProcessor(imageWdith, imageHeight);
 		for (Line contour : lines) {

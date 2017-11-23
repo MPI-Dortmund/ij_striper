@@ -4,6 +4,7 @@ import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
@@ -29,10 +30,10 @@ public class PipelineRunner {
 		run(input_images, range, line_filter_context, thresh_rang, enhancer_context, update,skip_line_filter);
 	}
 	
-	public void run(ImagePlus input_images, SliceRange range, SkeletonFilterContext filterContext, DetectionThresholdRange thresh_range, FilamentEnhancerContext enhancer_context,  boolean update, boolean skip_line_filter) {
+	public void run(ImagePlus input_images, SliceRange slice_range, SkeletonFilterContext filterContext, DetectionThresholdRange thresh_range, FilamentEnhancerContext enhancer_context,  boolean update, boolean skip_line_filter) {
 
 		Helical_Picker2_ picker_ = Helical_Picker2_.getInstance();
-		boolean is_single_frame = range.getSliceFrom()==range.getSliceTo();
+		boolean is_single_frame = slice_range.getSliceFrom()==slice_range.getSliceTo();
 		/*
 		 * Enhance images
 		 */
@@ -46,7 +47,9 @@ public class PipelineRunner {
 		
 		//For preview mode: Save single slices. If parameters changes, update.
 		if(this.enhanced_images == null || update==true){
-			enhanced_images = picker_.enhanceImages(input_images.getStack(), enhancer_context, range);
+			FilamentEnhancer enhancer = new FilamentEnhancer(input_images.getStack(), enhancer_context);		
+			enhanced_images = enhancer.getEnhancedImages(slice_range);
+	
 			this.enhanced_images = enhanced_images;
 		}
 		else if(update==false){
@@ -66,7 +69,7 @@ public class PipelineRunner {
 		CentralLog.getInstance().info("Detect");
 		double sigma = enhancer_context.getFilamentWidth()/(2*Math.sqrt(3)) + 0.5;
 		FilamentDetector fdetect = new FilamentDetector(enhanced_images, sigma, thresh_range);
-		lines =  fdetect.getFilaments(range);
+		lines =  fdetect.getFilaments(slice_range);
 		
 		
 		/*

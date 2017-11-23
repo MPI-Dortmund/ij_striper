@@ -8,50 +8,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;
-import fiji.util.gui.GenericDialogPlus;
-import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Overlay;
 import ij.gui.Roi;
-import ij.plugin.filter.PlugInFilter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
-public class BoxPlacer_ implements PlugInFilter {
+public class BoxPlacer_ {
 	
 	private static int running_id = 1;
 	int boxsize;
 	int box_distance;
 	ImagePlus targetImage;
-	
-
-	public int setup(String arg, ImagePlus imp) {
-		if(arg.equals("final")){
-			targetImage.repaintWindow();
-			return DONE;
-		}
-		GenericDialogPlus gd = new GenericDialogPlus("Box placer");
-		gd.addImageChoice("Target image", "");
-		gd.addNumericField("Box_size", 50, 0);
-		gd.addNumericField("Box_distance", 5, 0);
-		gd.showDialog();
-		
-		targetImage = gd.getNextImage();
-		boxsize = (int) gd.getNextNumber();
-		box_distance = (int) gd.getNextNumber();
-		
-		if(gd.wasCanceled()){
-			return DONE;
-		}
-		return IJ.setupDialog(imp, DOES_8G+PARALLELIZE_STACKS+FINAL_PROCESSING);
-	}
-
-	public void run(ImageProcessor ip) {
-		BoxPlacingContext context = new BoxPlacingContext();
-		context.setSlicePosition(ip.getSliceNumber());
-		context.setPlacePoints(false);
-		placeBoxes(ip, targetImage, context);
-	}
 	
 	public synchronized void increaseID(){
 		running_id++;

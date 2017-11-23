@@ -9,18 +9,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
-import fiji.util.gui.GenericDialogPlus;
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.WindowManager;
 import ij.gui.Roi;
 import ij.measure.CurveFitter;
-import ij.plugin.filter.PlugInFilter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
-public class SkeletonFilter_ implements PlugInFilter {
+public class SkeletonFilter_ {
 	ImagePlus imp;
 	ImagePlus response;
 	ImagePlus input_image;
@@ -32,97 +28,6 @@ public class SkeletonFilter_ implements PlugInFilter {
 	
 	public SkeletonFilter_(SkeletonFilterContext context) {
 		this.context = context;
-		
-	}
-	
-	public int setup(String arg, ImagePlus imp) {
-		this.imp = imp;
-		
-		GenericDialogPlus gd = new GenericDialogPlus("Skeleton Filter");
-		
-		gd.addMessage("Image choice:");
-		gd.addImageChoice("Input image:", "");
-		gd.addImageChoice("Response_map:", "");
-		
-		gd.addMessage("Preprocessing:");
-		gd.addNumericField("Removement_radius:", 10, 0);
-		gd.addNumericField("Border diameter:", 50, 0);
-		
-		gd.addMessage("Line filter:");
-		gd.addNumericField("Minimum_length:", 10, 0);
-		gd.addSlider("Minimum_straightness:", 0.0, 1.0, 0.90);
-		gd.addNumericField("Straightness window size", 25, 0);
-		gd.addNumericField("Minimum_line_distance:", 20, 0);
-		gd.addNumericField("Minimum_response:", 0, 2);
-		gd.addNumericField("Maximum_response:", 0, 2);
-		gd.addCheckbox("Fit Resp. Distribution", false);
-		gd.addSlider("Double_filament_detection_sensitivity:", 0.01, 0.99, 0.9); 
-		String[] imageTitles = WindowManager.getImageTitles();
-		String[] choices = new String[imageTitles.length];
-		choices[0] = "None";
-		for(int i = 1; i< choices.length; i++){
-			choices[i] = imageTitles[i-1];
-		}
-		gd.addChoice("Mask", choices, choices[0]);
-		
-		gd.showDialog();
-	
-		
-		if(gd.wasCanceled()){
-			return DONE;
-		}
-		input_image = gd.getNextImage();
-		response = gd.getNextImage();
-		context = new SkeletonFilterContext(); 
-		int removement_radius = (int) gd.getNextNumber();
-		int border_diameter = (int) gd.getNextNumber();
-		int min_filament_length = (int) gd.getNextNumber();
-		double min_line_straightness = gd.getNextNumber();
-		int window_width_straightness = (int) gd.getNextNumber();
-		int min_filament_distance = (int) gd.getNextNumber();
-		double sigma_min_response =  gd.getNextNumber();
-		double sigma_max_response =  gd.getNextNumber();
-		boolean fit_distribution = gd.getNextBoolean();
-		double double_filament_insensitivity = 1-gd.getNextNumber();
-		ImagePlus mask = WindowManager.getImage(gd.getNextChoice());
-		
-		context.setRemovementRadius(removement_radius);
-		context.setBorderDiameter(border_diameter);
-		context.setMinimumFilamentLength(min_filament_length);
-		context.setMinimumLineStraightness(min_line_straightness);
-		context.setWindowWidthStraightness(window_width_straightness);
-		context.setMinFilamentDistance(min_filament_distance);
-		context.setSigmaMinResponse(sigma_min_response);
-		context.setSigmaMaxResponse(sigma_max_response);
-		context.setFitDistribution(fit_distribution);
-		context.setDoubleFilamentInsensitivity(double_filament_insensitivity);
-		context.setBinaryMask(mask);
-
-		if(response.getImageStackSize() != input_image.getImageStackSize()){
-			IJ.error("Response image and input image must have the same number of slices");
-		}
-		if(response.getHeight()!= input_image.getHeight() || response.getWidth() != input_image.getWidth()){
-			IJ.error("Response image and input image must have the same dimensions");
-		}
-		return IJ.setupDialog(imp, DOES_8G);
-	}
-
-	public void run(ImageProcessor ip) {
-		
-		ImagePlus mask = context.getBinaryMask();
-		ImageProcessor maskImage = null;
-		if(mask!=null){
-			maskImage = mask.getStack().getProcessor(ip.getSliceNumber());
-		}
-
-		ArrayList<Polygon> lines = filterLineImage(ip, 
-				input_image.getStack().getProcessor(ip.getSliceNumber()), 
-				response.getStack().getProcessor(ip.getSliceNumber()), 
-				maskImage,
-				context);
-		drawLines(lines, ip);
-		
-		
 		
 	}
 

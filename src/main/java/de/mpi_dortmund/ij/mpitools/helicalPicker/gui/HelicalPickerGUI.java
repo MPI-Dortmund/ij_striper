@@ -31,6 +31,7 @@ import javax.swing.WindowConstants;
 
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
+import de.mpi_dortmund.ij.mpitools.boxplacer.HeliconParticleExporter_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
@@ -255,7 +256,35 @@ public class HelicalPickerGUI implements Runnable {
 	public JMenuBar createMenuBar(){
 		JMenuBar menuBar = new JMenuBar();
 		JMenu menu = new JMenu("File");
+		
+		/*
+		 * Export boxes
+		 */
+		JMenuItem export_boxes = new JMenuItem("Export boxes");
+		export_boxes.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				HeliconParticleExporter_ exporter = new HeliconParticleExporter_();
+				exporter.run("");
+				
+				
+			}
+		});
+		menu.add(export_boxes);
+		
+		/*
+		 * Close Button
+		 */
 		JMenuItem close = new JMenuItem("Close");
+		close.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				guiFrame.dispose();
+				
+			}
+		});
 		menu.add(close);
 		menuBar.add(menu);
 		

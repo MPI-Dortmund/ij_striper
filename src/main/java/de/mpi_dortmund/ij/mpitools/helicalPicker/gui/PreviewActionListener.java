@@ -49,6 +49,7 @@ public class PreviewActionListener implements ActionListener {
 		int preview_mode = gui.comboboxPreviewOptions.getSelectedIndex();
 		int slice_from = target_image.getCurrentSlice();
 		int slice_to = target_image.getCurrentSlice();
+		IJ.log("From " + slice_from + " To: " + slice_to);
 		SliceRange slice_range = new SliceRange(slice_from, slice_to);
 		boolean update=false;
 	

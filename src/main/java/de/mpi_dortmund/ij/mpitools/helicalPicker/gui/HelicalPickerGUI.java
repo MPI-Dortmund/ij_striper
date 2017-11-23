@@ -37,8 +37,6 @@ import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import ij.ImagePlus;
 import ij.WindowManager;
-import ij.process.ByteProcessor;
-import ij.process.ImageProcessor;
 
 public class HelicalPickerGUI implements Runnable {
 	
@@ -105,8 +103,8 @@ public class HelicalPickerGUI implements Runnable {
 	JTextField textfieldMinNumberBoxes;
 	JTextField textfieldWindowSize;
 	
-	JComboBox comboboxCustomMask;
-	JComboBox comboboxPreviewOptions;
+	JComboBox<String> comboboxCustomMask;
+	JComboBox<String> comboboxPreviewOptions;
 	
 	PreviewActionListener listenerPreview;
 	
@@ -235,13 +233,13 @@ public class HelicalPickerGUI implements Runnable {
 		 
 		 Vector<String> items = new Vector<String>();
 		 items.add("None");
-		 comboboxCustomMask = new JComboBox(items);
+		 comboboxCustomMask = new JComboBox<String>(items);
 		 
 		 items = new Vector<String>();
 		 items.add("Boxes");
 		 items.add("Points");
 		 items.add("Response map + Detected lines");
-		 comboboxPreviewOptions = new JComboBox(items);
+		 comboboxPreviewOptions = new JComboBox<String>(items);
 		 
 		 /*
 		  * General pane
@@ -816,7 +814,6 @@ public class HelicalPickerGUI implements Runnable {
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				ImageProcessor ip = new ByteProcessor(100, 100);
 				bgui.createAndShowGUI();
 			}
 		});

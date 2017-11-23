@@ -42,7 +42,7 @@ public class HeliconParticleExporter_ implements PlugIn {
 	public ArrayList<Line> getLinesFromOverlay(Overlay ov){
 		
 		HashMap<Integer, Line> lineMap = new HashMap<Integer, Line>();
-		int runningID = 1;
+	
 		for(int i = 0; i < ov.size(); i++){
 			Roi r = ov.get(i);
 			

@@ -43,7 +43,7 @@ public class LineTracer {
 	
 	public boolean isStartPoint(int x, int y, ByteProcessor ip, boolean connected8){
 		int n_8 = countNeighbors(x, y, ip, connected8);
-		int n_4 = countNeighbors(x, y, ip, false);
+		
 		if(n_8>=2){
 			return false;
 		}

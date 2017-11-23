@@ -48,7 +48,6 @@ public class FilamentDetectorWorker extends Thread implements IFilamentDetectorW
 		 *  1. Detect lines in enhanced image using steger's method
 		 */
 		lines = new ArrayList<ArrayList<Polygon>>();
-		int N = slice_range.getSliceTo() - slice_range.getSliceFrom() + 1;
 		
 		for(int i = slice_range.getSliceFrom(); i <= slice_range.getSliceTo(); i++){
 			CentralLog.getInstance().info("Process lines of frame: " + i);

@@ -345,6 +345,8 @@ public JPanel createPaneStep3(){
 					protected void done() {
 						Helical_Picker_.getGUI().updateDetectionParameters(best_range);
 						guiFrame.dispose();
+						target_image.setOverlay(null);
+						target_image.repaintWindow();
 						super.done();
 					}
 

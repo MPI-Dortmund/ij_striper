@@ -36,7 +36,7 @@ public class RidgeOptimizerWorker extends Thread {
 		this.filament_width = filament_width;
 	}
 	
-	public synchronized boolean updateBestResult(double goodness, DetectionThresholdRange para){
+	public static synchronized boolean updateBestResult(double goodness, DetectionThresholdRange para){
 		if(goodness > best_goodness){
 			best_para = para;
 			best_goodness = goodness;

@@ -18,7 +18,6 @@ public class BoxPlacer_ {
 	
 	private static int running_id = 1;
 	int boxsize;
-	int box_distance;
 	ImagePlus targetImage;
 	
 	public synchronized void increaseID(){
@@ -45,7 +44,7 @@ public class BoxPlacer_ {
 			targetImage.setOverlay(ov);
 		}
 		
-		int distancesq = box_distance*box_distance;
+		int distancesq = placing_context.getBoxDistance()*placing_context.getBoxDistance();
 		Color[] colors = {Color.red,Color.BLUE,Color.GREEN,Color.yellow,Color.CYAN,Color.ORANGE, Color.magenta};
 		int boxsize = placing_context.getBoxSize();
 		for (Polygon p : lines) {

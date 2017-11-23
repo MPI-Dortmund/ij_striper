@@ -9,7 +9,7 @@ import java.util.HashMap;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
-import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
@@ -43,7 +43,7 @@ public class PreviewActionListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
-		HelicalPickerGUI gui = Helical_Picker2_.getGUI();
+		HelicalPickerGUI gui = Helical_Picker_.getGUI();
 		FilamentEnhancerContext enhancer_context = gui.getFilamentEnhancerContext();
 
 		int preview_mode = gui.comboboxPreviewOptions.getSelectedIndex();
@@ -95,19 +95,19 @@ public class PreviewActionListener implements ActionListener {
 			ImageProcessor response_map = enhanced_images.getProcessor(1);
 			ImageRoi imgRoi = new ImageRoi(0, 0, response_map);
 			imgRoi.setPosition(slice_from);
-			Overlay ov = Helical_Picker2_.getInstance().getImage().getOverlay();
+			Overlay ov = Helical_Picker_.getInstance().getImage().getOverlay();
 			if(ov==null){
 				ov = new Overlay();
-				Helical_Picker2_.getInstance().getImage().setOverlay(ov);
+				Helical_Picker_.getInstance().getImage().setOverlay(ov);
 			}
 			ov.add(imgRoi);
 
 			HashMap<Integer, ArrayList<Polygon>> unfiltered_lines = runner.getLines();
-			Helical_Picker2_.getInstance().showLinesAsPreview(unfiltered_lines.get(slice_from));
+			Helical_Picker_.getInstance().showLinesAsPreview(unfiltered_lines.get(slice_from));
 		}
 		else{
 			BoxPlacer_ placer = new BoxPlacer_();
-			ImagePlus input_image = Helical_Picker2_.getInstance().getImage();
+			ImagePlus input_image = Helical_Picker_.getInstance().getImage();
 			placer.placeBoxes(filtered_lines, input_image, placing_context);
 		//	picker_.placeBoxes(filtered_lines, placing_context);
 		}

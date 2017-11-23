@@ -31,7 +31,7 @@ import javax.swing.WindowConstants;
 
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
-import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
@@ -294,7 +294,7 @@ public class HelicalPickerGUI implements Runnable {
 		});
 		
 		buttonApply.addActionListener(new ApplyActionListener());
-		listenerPreview = new PreviewActionListener(Helical_Picker2_.getInstance().getImage());
+		listenerPreview = new PreviewActionListener(Helical_Picker_.getInstance().getImage());
 		
 		buttonShowPreview.addActionListener(listenerPreview);
 
@@ -788,7 +788,7 @@ public class HelicalPickerGUI implements Runnable {
 			masks = WindowManager.getImage(selected_mask);
 			
 		}
-		ArrayList<IUserFilter> userFilters = Helical_Picker2_.getUserFilter();
+		ArrayList<IUserFilter> userFilters = Helical_Picker_.getUserFilter();
 		
 		SkeletonFilterContext context = new SkeletonFilterContext();
 		context.setMinimumLineStraightness(min_straightness);

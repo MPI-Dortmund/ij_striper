@@ -7,7 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
@@ -99,7 +99,7 @@ public class GoldDotRemover2_ implements ExtendedPlugInFilter, IUserFilter, Dial
 	public int setup(String arg, ImagePlus imp) {
 		if(arg.equals("final")){
 			isPreview = false;
-			Helical_Picker2_.registerUserFilter(this);
+			Helical_Picker_.registerUserFilter(this);
 			imp.setOverlay(null);
 			return DONE;
 		}

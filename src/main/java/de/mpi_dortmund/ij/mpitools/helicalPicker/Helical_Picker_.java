@@ -19,16 +19,16 @@ import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import net.imagej.ImageJ;
 
-public class Helical_Picker2_ implements PlugIn {
+public class Helical_Picker_ implements PlugIn {
 
-	private static Helical_Picker2_ instance;
+	private static Helical_Picker_ instance;
 	private static HelicalPickerGUI gui;
 	private ImagePlus input_image;
 	private static ArrayList<IUserFilter> userFilters;
 	
-	public static synchronized Helical_Picker2_ getInstance() {
+	public static synchronized Helical_Picker_ getInstance() {
 		if(instance==null){
-			instance = new Helical_Picker2_();
+			instance = new Helical_Picker_();
 		}
 		return instance;
 	}
@@ -130,7 +130,7 @@ public class Helical_Picker2_ implements PlugIn {
 	
 	public static void main(String[] args) {
 
-		Class<?> clazz = Helical_Picker2_.class;
+		Class<?> clazz = Helical_Picker_.class;
 		String url = clazz.getResource("/" + clazz.getName().replace('.', '/') + ".class").toString();
 		String pluginsDir = url.substring("file:".length(), url.length() - clazz.getName().length() - ".class".length());
 		System.setProperty("plugins.dir", pluginsDir);

@@ -9,7 +9,7 @@ import java.util.HashMap;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
-import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
@@ -21,9 +21,9 @@ public class ApplyActionListener implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		HelicalPickerGUI gui = Helical_Picker2_.getGUI();
+		HelicalPickerGUI gui = Helical_Picker_.getGUI();
 		
-		ImagePlus input_image = Helical_Picker2_.getInstance().getImage();
+		ImagePlus input_image = Helical_Picker_.getInstance().getImage();
 		
 		PipelineRunner runner = new PipelineRunner();
 		int sliceFrom = 1;

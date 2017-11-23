@@ -6,11 +6,14 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.Roi;
 import ij.measure.CurveFitter;
@@ -132,6 +135,47 @@ public class SkeletonFilter_ implements PlugInFilter {
 	private ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, ImageProcessor mask){
 		
 		return filterLineImage(line_image, input_image, response_image, mask, context);
+	}
+	
+	public HashMap<Integer, ArrayList<Polygon>> filterLines(HashMap<Integer, ArrayList<Polygon>> lines, SkeletonFilterContext context, ImageStack input_images, ImageStack response_maps){
+		
+		HashMap<Integer, ArrayList<Polygon>> filtered_lines = new HashMap<Integer, ArrayList<Polygon>>();
+		/*
+		 * Process filter lines
+		 */
+
+		SkeletonFilter_ skeleton_filter = new SkeletonFilter_();
+		Iterator<Integer> slice_iterator = lines.keySet().iterator();
+		ImagePlus masks = context.getBinaryMask();
+		while(slice_iterator.hasNext()){
+			int slice_position = slice_iterator.next();
+			ArrayList<Polygon> lines_frame_i = lines.get(slice_position);
+			
+			ByteProcessor line_image = new ByteProcessor(input_images.getWidth(), input_images.getHeight()); 
+			line_image.setLineWidth(1);
+			line_image.setColor(255);
+			SkeletonFilter_.drawLines(lines_frame_i, line_image);
+			line_image.invert();
+			line_image.skeletonize();
+			line_image.invert();
+			
+			ImageProcessor maskImage = null;
+			if(masks!=null){
+				maskImage = masks.getStack().getProcessor(slice_position);
+			}
+			ImageProcessor ip = input_images.getProcessor(slice_position);
+			ImageProcessor response_map = response_maps.getProcessor(slice_position);
+	
+			ArrayList<Polygon> filteredLines = skeleton_filter.filterLineImage(line_image, 
+					ip, response_map, maskImage, context);
+			
+			filtered_lines.put(slice_position, filteredLines);
+			
+		}
+		
+		return filtered_lines;
+	
+		
 	}
 	
 	

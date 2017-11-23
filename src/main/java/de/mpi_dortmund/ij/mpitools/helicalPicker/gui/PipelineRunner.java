@@ -7,8 +7,10 @@ import java.util.HashMap;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetector;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
+import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilter_;
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import ij.IJ;
 import ij.ImagePlus;
@@ -63,7 +65,8 @@ public class PipelineRunner {
 		 */
 		CentralLog.getInstance().info("Detect");
 		double sigma = enhancer_context.getFilamentWidth()/(2*Math.sqrt(3)) + 0.5;
-		lines = picker_.detectLines(enhanced_images, sigma, thresh_range,range);
+		FilamentDetector fdetect = new FilamentDetector(enhanced_images, sigma, thresh_range);
+		lines =  fdetect.getFilaments(range);
 		
 		
 		/*
@@ -89,7 +92,9 @@ public class PipelineRunner {
 		}
 		ArrayList<IUserFilter> userFilters = Helical_Picker2_.getUserFilter();
 		*/
-		filtered_lines = picker_.filterLines(lines, filterContext, input_images.getStack(), enhanced_images);
+		SkeletonFilter_ lineFilter = new SkeletonFilter_();
+		filtered_lines = lineFilter.filterLines(lines, filterContext, input_images.getImageStack(), enhanced_images);
+		//filtered_lines = picker_.filterLines(lines, filterContext, input_images.getStack(), enhanced_images);
 		
 	}
 

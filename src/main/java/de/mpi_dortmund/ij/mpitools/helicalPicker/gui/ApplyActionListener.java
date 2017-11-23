@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
+import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
@@ -27,15 +28,16 @@ public class ApplyActionListener implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		HelicalPickerGUI gui = Helical_Picker2_.getGUI();
 		
+		ImagePlus input_image = Helical_Picker2_.getInstance().getImage();
 		
 		PipelineRunner runner = new PipelineRunner();
 		int sliceFrom = 1;
-		int sliceTo = Helical_Picker2_.getInstance().getImage().getStackSize();
+		int sliceTo = input_image.getStackSize();
 		SliceRange slice_range = new SliceRange(sliceFrom, sliceTo);
 		SkeletonFilterContext skeleton_filter_context = gui.getLineFilterContext();
 		DetectionThresholdRange thresh_range = gui.getDetectionThresholdRange();
 		FilamentEnhancerContext enhancer_context = gui.getFilamentEnhancerContext();
-		ImagePlus input_image = Helical_Picker2_.getInstance().getImage();
+
 		runner.run(input_image,slice_range, skeleton_filter_context, thresh_range,enhancer_context);
 	
 		HashMap<Integer, ArrayList<Polygon>> filtered_lines = runner.getFilteredLines();
@@ -45,14 +47,16 @@ public class ApplyActionListener implements ActionListener {
 		 * Place boxes
 		 */
 		CentralLog.getInstance().info("Place boxes");
-		Helical_Picker2_ picker_ = Helical_Picker2_.getInstance();
 		boolean place_points = false;
 		BoxPlacingContext placing_context = new BoxPlacingContext();
 		placing_context.setBoxSize(box_size);
 		placing_context.setBoxDistance(box_distance);
 		placing_context.setPlacePoints(place_points);
-	
-		picker_.placeBoxes(filtered_lines, placing_context);
+		
+		BoxPlacer_ boxPlacer = new BoxPlacer_();
+		boxPlacer.placeBoxes(filtered_lines, input_image, placing_context);
+		
+		//picker_.placeBoxes(filtered_lines, placing_context);
 	}
 
 }

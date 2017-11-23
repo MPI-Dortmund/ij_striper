@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;
 import fiji.util.gui.GenericDialogPlus;
@@ -133,6 +135,27 @@ public class BoxPlacer_ implements PlugInFilter {
 		}
 		
 		return allLines;
+	}
+	
+	public void placeBoxes(HashMap<Integer, ArrayList<Polygon>> lines, ImagePlus target_image, BoxPlacingContext placing_context){
+		
+		BoxPlacer_ placer = new BoxPlacer_();
+	
+		Overlay ov = new Overlay();
+		target_image.setOverlay(ov);
+		target_image.repaintWindow();
+		
+		Iterator<Integer> image_iterator = lines.keySet().iterator();
+		while(image_iterator.hasNext()){
+			int slice_position = image_iterator.next();
+			placing_context.setSlicePosition(slice_position);
+			ArrayList<Polygon> lines_in_image = lines.get(slice_position);
+			if(lines_in_image.size()>0){
+				placer.placeBoxes(lines_in_image, target_image, placing_context);
+			}
+			
+		}
+
 	}
 	
 	

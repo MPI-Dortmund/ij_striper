@@ -312,7 +312,7 @@ public class HelicalPickerGUI implements Runnable {
 		});
 		
 		buttonApply.addActionListener(new ApplyActionListener());
-		listenerPreview = new PreviewActionListener();
+		listenerPreview = new PreviewActionListener(Helical_Picker2_.getInstance().getImage());
 		
 		buttonShowPreview.addActionListener(listenerPreview);
 

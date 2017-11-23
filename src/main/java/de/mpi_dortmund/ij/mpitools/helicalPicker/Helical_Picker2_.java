@@ -84,79 +84,6 @@ public class Helical_Picker2_ implements PlugIn {
 		return enhanced_stack;
 	}
 	
-	/**
-	 * 
-	 * @param ips The enhanced images
-	 * @param sigma Parameter for ridge detection. It depends on the filament width.
-	 * @param lower_threshold Lower threshold parameter for ridge detection
-	 * @param upper_threshold Upper threshold parameter for ridge detection
-	 * @param equalize Try to equalize the greyvalue for the filaments.
-	 * @return List of lines (polygone)
-	 */
-	public HashMap<Integer, ArrayList<Polygon>> detectLines(ImageStack ips, double sigma, DetectionThresholdRange thresh_range){
-		SliceRange slice_range = new SliceRange(1, ips.size());
-		HashMap<Integer, ArrayList<Polygon>> lines_map = detectLines(ips, sigma, thresh_range, slice_range);
-		return lines_map;
-	}
-	
-	/**
-	 * @param ips The enhanced images
-	 * @param sigma Parameter for ridge detection. It depends on the filament width.
-	 * @param lower_threshold Lower threshold parameter for ridge detection
-	 * @param upper_threshold Upper threshold parameter for ridge detection
-	 * @param equalize Try to equalize the greyvalue for the filaments.
-	 * @return List of lines (polygone)
-	 */
-	public HashMap<Integer, ArrayList<Polygon>> detectLines(ImageStack ips, double sigma, DetectionThresholdRange thresh_range, SliceRange slice_range){
-		FilamentDetector fdetect = new FilamentDetector(ips, sigma, thresh_range);
-		HashMap<Integer, ArrayList<Polygon>> lines_map =  fdetect.getFilaments(slice_range);
-		
-		return lines_map;
-	}
-	
-
-	
-	public HashMap<Integer, ArrayList<Polygon>> filterLines(HashMap<Integer, ArrayList<Polygon>> lines, SkeletonFilterContext context, ImageStack input_images, ImageStack response_maps){
-		
-		HashMap<Integer, ArrayList<Polygon>> filtered_lines = new HashMap<Integer, ArrayList<Polygon>>();
-		/*
-		 * Process filter lines
-		 */
-
-		SkeletonFilter_ skeleton_filter = new SkeletonFilter_();
-		Iterator<Integer> slice_iterator = lines.keySet().iterator();
-		ImagePlus masks = context.getBinaryMask();
-		while(slice_iterator.hasNext()){
-			int slice_position = slice_iterator.next();
-			ArrayList<Polygon> lines_frame_i = lines.get(slice_position);
-			
-			ByteProcessor line_image = new ByteProcessor(input_images.getWidth(), input_images.getHeight()); 
-			line_image.setLineWidth(1);
-			line_image.setColor(255);
-			SkeletonFilter_.drawLines(lines_frame_i, line_image);
-			line_image.invert();
-			line_image.skeletonize();
-			line_image.invert();
-			
-			ImageProcessor maskImage = null;
-			if(masks!=null){
-				maskImage = masks.getStack().getProcessor(slice_position);
-			}
-			ImageProcessor ip = input_images.getProcessor(slice_position);
-			ImageProcessor response_map = response_maps.getProcessor(slice_position);
-	
-			ArrayList<Polygon> filteredLines = skeleton_filter.filterLineImage(line_image, 
-					ip, response_map, maskImage, context);
-			
-			filtered_lines.put(slice_position, filteredLines);
-			
-		}
-		
-		return filtered_lines;
-	
-		
-	}
-	
 	public ImageProcessor generateBinaryImage(Lines lines, int imageWdith, int imageHeight){
 		ByteProcessor binary = new ByteProcessor(imageWdith, imageHeight);
 		for (Line contour : lines) {
@@ -181,26 +108,6 @@ public class Helical_Picker2_ implements PlugIn {
 		binary.skeletonize();
 		binary.invert();
 		return binary;
-	}
-	
-	public void placeBoxes(HashMap<Integer, ArrayList<Polygon>> lines, BoxPlacingContext placing_context){
-		BoxPlacer_ placer = new BoxPlacer_();
-
-		Overlay ov = new Overlay();
-		input_image.setOverlay(ov);
-		input_image.repaintWindow();
-		
-		Iterator<Integer> image_iterator = lines.keySet().iterator();
-		while(image_iterator.hasNext()){
-			int slice_position = image_iterator.next();
-			placing_context.setSlicePosition(slice_position);
-			ArrayList<Polygon> lines_in_image = lines.get(slice_position);
-			if(lines_in_image.size()>0){
-				placer.placeBoxes(lines_in_image, input_image, placing_context);
-			}
-			
-		}
-
 	}
 	
 	public void showLinesAsPreview(ArrayList<Polygon> lines){

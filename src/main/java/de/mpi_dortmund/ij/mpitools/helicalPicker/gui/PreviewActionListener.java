@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
+import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import ij.IJ;
+import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.ImageRoi;
 import ij.gui.Overlay;
@@ -29,38 +31,38 @@ public class PreviewActionListener implements ActionListener {
 	public final static int PREVIEW_POINTS = 1;
 	public final static int PREVIEW_LINES = 2;
  
+	ImagePlus target_image;
 	
 	PipelineRunner runner;
 	
-	public PreviewActionListener() {
+	public PreviewActionListener(ImagePlus target_image) {
 		runner = new PipelineRunner();
+		this.target_image = target_image;
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
 		HelicalPickerGUI gui = Helical_Picker2_.getGUI();
-		Helical_Picker2_ picker_ = Helical_Picker2_.getInstance();
-		
-		int filament_width = Integer.parseInt(gui.textfieldFilamentWidth.getText());
-		int mask_width = Integer.parseInt(gui.textfieldMaskWidth.getText());
+		FilamentEnhancerContext enhancer_context = gui.getFilamentEnhancerContext();
+
 		int preview_mode = gui.comboboxPreviewOptions.getSelectedIndex();
-		int slice_from = picker_.getImage().getCurrentSlice();
-		int slice_to = picker_.getImage().getCurrentSlice();
+		int slice_from = target_image.getCurrentSlice();
+		int slice_to = target_image.getCurrentSlice();
 		SliceRange slice_range = new SliceRange(slice_from, slice_to);
 		boolean update=false;
 	
 		
 		if(
-				last_filament_width != filament_width ||
-				last_mask_width != mask_width ||
+				last_filament_width != enhancer_context.getFilamentWidth() ||
+				last_mask_width != enhancer_context.getMaskWidth() ||
 				last_slice_from != slice_from ||
 				last_slice_to != slice_to
 				){
 			update = true;
 			
-			last_filament_width = filament_width;
-			last_mask_width = mask_width;
+			last_filament_width = enhancer_context.getFilamentWidth();
+			last_mask_width = enhancer_context.getMaskWidth();
 			last_slice_from = slice_from;
 			last_slice_to = slice_to;
 		}
@@ -68,22 +70,18 @@ public class PreviewActionListener implements ActionListener {
 		boolean skip_line_filter = false;
 		SkeletonFilterContext skeleton_filter_context = gui.getLineFilterContext();
 		DetectionThresholdRange thresh_range = gui.getDetectionThresholdRange();
-		FilamentEnhancerContext enhancer_context = gui.getFilamentEnhancerContext();
-		runner.run(picker_.getImage(), slice_range, skeleton_filter_context, thresh_range,enhancer_context, update, skip_line_filter);
+		
+		runner.run(target_image, slice_range, skeleton_filter_context, thresh_range,enhancer_context, update, skip_line_filter);
 	
 		HashMap<Integer, ArrayList<Polygon>> filtered_lines = runner.getFilteredLines();
 		
 		/*
 		 * Place boxes
 		 */
-		int box_size = Integer.parseInt(gui.textfieldBoxSize.getText());
-		int box_distance = Integer.parseInt(gui.textfieldBoxDistance.getText());
+
 		IJ.log("Place");
 		CentralLog.getInstance().info("info");
-		BoxPlacingContext placing_context = new BoxPlacingContext();
-		placing_context.setBoxSize(box_size);
-		placing_context.setBoxDistance(box_distance);
-		placing_context.setPlacePoints(false);
+		BoxPlacingContext placing_context = gui.getBoxPlacingContext();
 
 		if(preview_mode==PREVIEW_POINTS){
 			placing_context.setPlacePoints(true);
@@ -108,7 +106,10 @@ public class PreviewActionListener implements ActionListener {
 			Helical_Picker2_.getInstance().showLinesAsPreview(unfiltered_lines.get(slice_from));
 		}
 		else{
-			picker_.placeBoxes(filtered_lines, placing_context);
+			BoxPlacer_ placer = new BoxPlacer_();
+			ImagePlus input_image = Helical_Picker2_.getInstance().getImage();
+			placer.placeBoxes(filtered_lines, input_image, placing_context);
+		//	picker_.placeBoxes(filtered_lines, placing_context);
 		}
 		
 

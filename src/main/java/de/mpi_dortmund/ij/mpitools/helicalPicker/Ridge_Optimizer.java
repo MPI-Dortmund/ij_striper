@@ -1,24 +1,11 @@
 package de.mpi_dortmund.ij.mpitools.helicalPicker;
 
-import java.util.HashSet;
 import java.util.Random;
 
-import de.biomedical_imaging.ij.steger.Line;
-import de.biomedical_imaging.ij.steger.LineDetector;
-import de.biomedical_imaging.ij.steger.Lines;
-import de.biomedical_imaging.ij.steger.OverlapOption;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer;
-
-import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
 import ij.gui.GenericDialog;
-import ij.gui.Overlay;
-import ij.gui.PolygonRoi;
-import ij.gui.Roi;
-import ij.plugin.Selection;
 import ij.plugin.filter.PlugInFilter;
-import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
 public class Ridge_Optimizer implements PlugInFilter {

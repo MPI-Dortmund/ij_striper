@@ -1,13 +1,12 @@
 package ij_helical_picker;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.awt.Polygon;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.junit.Test;
 
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;

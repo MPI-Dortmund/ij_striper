@@ -1,11 +1,9 @@
 package ij_helical_picker;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerWorker;
-import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorWorker;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.custom.WorkerArrayCreator;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
 import testable_classes.ClonableTestWorker;

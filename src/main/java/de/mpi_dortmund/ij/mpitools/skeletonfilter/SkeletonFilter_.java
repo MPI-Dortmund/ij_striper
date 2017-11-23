@@ -5,7 +5,6 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -17,15 +16,9 @@ import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.Roi;
 import ij.measure.CurveFitter;
-import ij.plugin.FFTMath;
 import ij.plugin.filter.PlugInFilter;
-import ij.plugin.filter.RankFilters;
-import ij.process.AutoThresholder;
 import ij.process.ByteProcessor;
-import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
-import ij.process.ImageStatistics;
-import ij.process.AutoThresholder.Method;
 
 public class SkeletonFilter_ implements PlugInFilter {
 	ImagePlus imp;
@@ -132,11 +125,7 @@ public class SkeletonFilter_ implements PlugInFilter {
 		
 		
 	}
-	private ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, ImageProcessor mask){
-		
-		return filterLineImage(line_image, input_image, response_image, mask, context);
-	}
-	
+
 	public HashMap<Integer, ArrayList<Polygon>> filterLines(HashMap<Integer, ArrayList<Polygon>> lines, SkeletonFilterContext context, ImageStack input_images, ImageStack response_maps){
 		
 		HashMap<Integer, ArrayList<Polygon>> filtered_lines = new HashMap<Integer, ArrayList<Polygon>>();

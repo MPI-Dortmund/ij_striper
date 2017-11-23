@@ -1,21 +1,16 @@
 package de.mpi_dortmund.ij.mpitools.helicalPicker.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoundedRangeModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -26,33 +21,22 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
-import javax.swing.event.ChangeListener;
-
-import com.sun.jdi.connect.Connector.StringArgument;
 
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
-import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
-import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
 import ij.WindowManager;
-import ij.plugin.GIF_Reader;
-import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 

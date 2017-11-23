@@ -1,6 +1,6 @@
 package ij_helical_picker;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.net.URL;
 import java.util.ArrayList;

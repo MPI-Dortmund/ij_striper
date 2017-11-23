@@ -5,9 +5,6 @@ import java.awt.event.MouseListener;
 import java.util.HashMap;
 
 import javax.swing.JTextArea;
-import javax.swing.JTextPane;
-
-import ij.IJ;
 
 public class UpdateInformationListener implements MouseListener {
 	

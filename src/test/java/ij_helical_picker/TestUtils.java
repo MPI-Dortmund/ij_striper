@@ -1,6 +1,5 @@
 package ij_helical_picker;
 
-import ij.IJ;
 import ij.ImageStack;
 import ij.process.ImageProcessor;
 

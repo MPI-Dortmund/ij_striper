@@ -1,6 +1,5 @@
 package de.mpi_dortmund.ij.mpitools.FilamentEnhancer;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.GenericDialog;
 import ij.gui.Roi;

@@ -12,11 +12,9 @@ import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetect
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilter_;
-import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.WindowManager;
 import ij.process.ImageProcessor;
 
 public class PipelineRunner {

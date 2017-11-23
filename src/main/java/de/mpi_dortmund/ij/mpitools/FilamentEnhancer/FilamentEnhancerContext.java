@@ -1,7 +1,5 @@
 package de.mpi_dortmund.ij.mpitools.FilamentEnhancer;
 
-import ij.ImageStack;
-
 public class FilamentEnhancerContext {
 	private int filament_width; 
 	private int mask_width; 

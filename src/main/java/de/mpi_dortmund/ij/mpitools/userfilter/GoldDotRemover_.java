@@ -1,7 +1,6 @@
 package de.mpi_dortmund.ij.mpitools.userfilter;
 
 import java.awt.Polygon;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
@@ -11,15 +10,8 @@ import ij.ImagePlus;
 import ij.blob.Blob;
 import ij.blob.ManyBlobs;
 import ij.gui.GenericDialog;
-import ij.plugin.ContrastEnhancer;
 import ij.plugin.PlugIn;
-import ij.plugin.filter.FFTFilter;
-import ij.plugin.filter.PlugInFilter;
-import ij.process.Blitter;
 import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
-import ij.process.FHT;
-import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 
 public class GoldDotRemover_ implements PlugIn, IUserFilter {

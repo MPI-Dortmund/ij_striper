@@ -7,26 +7,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
-import com.sun.tools.classfile.Dependency.Finder;
-
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.blob.Blob;
-import ij.blob.ManyBlobs;
 import ij.gui.DialogListener;
 import ij.gui.GenericDialog;
-import ij.gui.NonBlockingGenericDialog;
 import ij.gui.Overlay;
 import ij.gui.PointRoi;
-import ij.gui.PolygonRoi;
 import ij.plugin.ImageCalculator;
-import ij.plugin.PlugIn;
 import ij.plugin.filter.ExtendedPlugInFilter;
 import ij.plugin.filter.MaximumFinder;
-import ij.plugin.filter.PlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.plugin.filter.RankFilters;
 import ij.process.ByteProcessor;

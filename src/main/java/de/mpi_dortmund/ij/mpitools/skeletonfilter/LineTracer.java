@@ -4,9 +4,6 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.util.ArrayList;
 
-import org.omg.CORBA.IMP_LIMIT;
-
-import ij.IJ;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 

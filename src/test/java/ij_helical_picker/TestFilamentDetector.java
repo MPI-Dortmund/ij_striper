@@ -1,6 +1,6 @@
 package ij_helical_picker;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.awt.Polygon;
 import java.net.URL;
@@ -14,7 +14,6 @@ import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThres
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetector;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
 import ij.ImagePlus;
-import ij.ImageStack;
 
 public class TestFilamentDetector {
 

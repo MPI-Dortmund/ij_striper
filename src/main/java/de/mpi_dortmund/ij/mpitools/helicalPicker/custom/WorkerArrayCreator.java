@@ -2,9 +2,7 @@ package de.mpi_dortmund.ij.mpitools.helicalPicker.custom;
 
 import java.lang.reflect.Array;
 
-import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorWorker;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
-import ij.IJ;
 
 public class WorkerArrayCreator {
 	

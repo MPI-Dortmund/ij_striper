@@ -1,6 +1,6 @@
 package ij_helical_picker;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.awt.Polygon;
 import java.net.URL;
@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilter_;
-import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import ij.ImagePlus;
 import ij.process.ImageProcessor;
 

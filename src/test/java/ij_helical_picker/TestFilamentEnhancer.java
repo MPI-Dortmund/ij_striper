@@ -1,6 +1,6 @@
 package ij_helical_picker;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 
@@ -9,7 +9,6 @@ import org.junit.Test;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;

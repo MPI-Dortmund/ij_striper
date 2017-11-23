@@ -3,9 +3,6 @@ package de.mpi_dortmund.ij.mpitools.FilamentEnhancer;
 import java.util.ArrayList;
 
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
-import ij.IJ;
-import ij.ImagePlus;
-import ij.ImageStack;
 import ij.process.FHT;
 import ij.process.FloatProcessor;
 

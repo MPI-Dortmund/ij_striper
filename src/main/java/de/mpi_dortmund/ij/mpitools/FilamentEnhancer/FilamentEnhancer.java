@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit;
 
 import de.mpi_dortmund.ij.mpitools.helicalPicker.custom.WorkerArrayCreator;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
-import ij.IJ;
 import ij.ImageStack;
 import ij.process.ImageProcessor;
 

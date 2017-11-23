@@ -11,14 +11,9 @@ import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker2_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
-import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetector;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
-import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
-import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
-import ij.WindowManager;
 
 public class ApplyActionListener implements ActionListener {
 

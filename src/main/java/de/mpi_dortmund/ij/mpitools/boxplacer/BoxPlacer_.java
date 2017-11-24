@@ -65,7 +65,6 @@ public class BoxPlacer_ {
 			if(placing_context.isPlacePoints()){
 				boxsize=1;
 			}
-			//IJ.log("START: " + start_index);
 			int x = p.xpoints[start_index]-boxsize/2;
 			int y = p.ypoints[start_index]-boxsize/2;
 			

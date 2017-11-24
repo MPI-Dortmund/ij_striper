@@ -146,7 +146,7 @@ public class FilamentFilterContext {
 		double_filament_insensitivity = 1;
 		userFilters = null;
 		mask = null;
-		return "Min. Filament length: " + min_filament_length + " Min. straightness " + min_line_straightness + " Min. window width: " + window_width_straightness + ""
+		return "FilamentFilterContext ### Min. Filament length: " + min_filament_length + " Min. straightness " + min_line_straightness + " Min. window width: " + window_width_straightness + ""
 				+ " Removement radius: " + removement_radius + " Fit distr: " + fit_distribution + " Sigma min: " + sigma_min_response + " Sigma max: " + sigma_max_response + ""
 						+ " Min. filament distance " + min_filament_distance +  " Min. border diameter " + border_diameter + " Double filament insens: " + double_filament_insensitivity + ""
 								+ " UserFilters: " + !(userFilters==null) + " Mask: " + !(mask == null);

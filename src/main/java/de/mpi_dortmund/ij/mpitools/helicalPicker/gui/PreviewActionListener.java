@@ -50,11 +50,9 @@ public class PreviewActionListener implements ActionListener {
 		int preview_mode = gui.comboboxPreviewOptions.getSelectedIndex();
 		int slice_from = target_image.getCurrentSlice();
 		int slice_to = target_image.getCurrentSlice();
-		IJ.log("From " + slice_from + " To: " + slice_to);
 		SliceRange slice_range = new SliceRange(slice_from, slice_to);
 		boolean update=false;
 	
-		
 		if(
 				last_filament_width != enhancer_context.getFilamentWidth() ||
 				last_mask_width != enhancer_context.getMaskWidth() ||
@@ -73,7 +71,7 @@ public class PreviewActionListener implements ActionListener {
 		FilamentFilterContext skeleton_filter_context = gui.getLineFilterContext();
 		FilamentDetectorContext detector_context = gui.getFilamentDetectorContext();
 	
-		
+
 		runner.run(target_image, slice_range, skeleton_filter_context,enhancer_context, detector_context, update, skip_line_filter);
 	
 		HashMap<Integer, ArrayList<Polygon>> filtered_lines = runner.getFilteredLines();
@@ -84,7 +82,6 @@ public class PreviewActionListener implements ActionListener {
 
 		CentralLog.getInstance().info("info");
 		BoxPlacingContext placing_context = gui.getBoxPlacingContext();
-
 		if(preview_mode==PREVIEW_POINTS){
 			placing_context.setPlacePoints(true);
 			
@@ -93,7 +90,7 @@ public class PreviewActionListener implements ActionListener {
 			/*
 			 * Show detected ridges without any filtering
 			 */
-			ImageStack enhanced_images = runner.enhanced_images;
+			ImageStack enhanced_images = runner.getEnhancedImage();
 			ImageProcessor response_map = enhanced_images.getProcessor(1);
 			ImageRoi imgRoi = new ImageRoi(0, 0, response_map);
 			imgRoi.setPosition(slice_from);

@@ -71,7 +71,7 @@ public class FilamentEnhancerContext {
 	
 	@Override
 	public String toString() {
-		String str = "Filament width: " + filament_width + " Mask width: " + mask_width + " Angle step: " + angle_step + " Equalize: " + equalize;
+		String str = "FilamentEnhancerContext ### Filament width: " + filament_width + " Mask width: " + mask_width + " Angle step: " + angle_step + " Equalize: " + equalize;
 		return str;
 	}
 	

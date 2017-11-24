@@ -27,7 +27,7 @@ public class FilamentDetectorContext {
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
-		return "Sigma " + sigma + " Upper: " + thresholdRange.getUpperThreshold() + " Lower: " + thresholdRange.getLowerThreshold();
+		return "FilamentDetector ### Sigma " + sigma + " Upper: " + thresholdRange.getUpperThreshold() + " Lower: " + thresholdRange.getLowerThreshold();
 	}
 	
 

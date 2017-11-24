@@ -11,6 +11,8 @@ import de.mpi_dortmund.ij.mpitools.helicalPicker.custom.IWorker;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter.LineTracer;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
+import ij.IJ;
+import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
@@ -44,6 +46,7 @@ public class FilamentDetectorWorker extends Thread implements IFilamentDetectorW
 		 *  For slices from-to in ImageStack ips do the following:
 		 *  1. Detect lines in enhanced image using steger's method
 		 */
+		
 		lines = new ArrayList<ArrayList<Polygon>>();
 		
 		for(int i = slice_range.getSliceFrom(); i <= slice_range.getSliceTo(); i++){
@@ -60,6 +63,7 @@ public class FilamentDetectorWorker extends Thread implements IFilamentDetectorW
 			boolean doCorrectPosition = true;
 			boolean doEstimateWidth = false;
 			boolean doExtendLine = true;
+			
 			Lines detected_lines = detect.detectLines(input_image, context.getSigma(), context.getThresholdRange().getUpperThreshold(), context.getThresholdRange().getLowerThreshold(), min_filament_length,max_filament_length, isDarkLine, doCorrectPosition, doEstimateWidth, doExtendLine, OverlapOption.NONE);
 			CentralLog.getInstance().info("Line detection frame " + i + " successfull");
 			ImageProcessor line_image = generateBinaryImage(detected_lines, input_image.getWidth(), input_image.getHeight());

@@ -866,7 +866,7 @@ public class HelicalPickerGUI implements Runnable {
 	private DetectionThresholdRange getDetectionThresholdRange(){
 		
 		double lower_threshold = Double.parseDouble(textfieldLowerThreshold.getText());
-		double upper_threshold = Double.parseDouble(textfieldLowerThreshold.getText());
+		double upper_threshold = Double.parseDouble(textfieldUpperThreshold.getText());
 		DetectionThresholdRange range = new DetectionThresholdRange(lower_threshold, upper_threshold);
 		return range;
 	}

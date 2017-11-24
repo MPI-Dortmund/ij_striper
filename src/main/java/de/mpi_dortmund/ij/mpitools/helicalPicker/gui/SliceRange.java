@@ -15,5 +15,12 @@ public class SliceRange {
 	public int getSliceTo(){
 		return slice_to;
 	}
+	
+	
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return "From: " + slice_from + "To: " + slice_to;
+	}
 
 }

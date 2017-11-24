@@ -58,15 +58,15 @@ public class PreviewActionListener implements ActionListener {
 		if(
 				last_filament_width != enhancer_context.getFilamentWidth() ||
 				last_mask_width != enhancer_context.getMaskWidth() ||
-				last_slice_from != slice_from ||
-				last_slice_to != slice_to
+				last_slice_from != slice_range.getSliceFrom() ||
+				last_slice_to != slice_range.getSliceTo()
 				){
 			update = true;
 			
 			last_filament_width = enhancer_context.getFilamentWidth();
 			last_mask_width = enhancer_context.getMaskWidth();
-			last_slice_from = slice_from;
-			last_slice_to = slice_to;
+			last_slice_from = slice_range.getSliceFrom();
+			last_slice_to = slice_range.getSliceTo();
 		}
 		
 		boolean skip_line_filter = false;
@@ -116,6 +116,9 @@ public class PreviewActionListener implements ActionListener {
 		
 
 	}
+	
+	
+	
 
 	
 

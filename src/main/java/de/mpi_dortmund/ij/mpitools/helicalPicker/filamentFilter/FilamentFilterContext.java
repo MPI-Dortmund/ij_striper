@@ -131,4 +131,26 @@ public class FilamentFilterContext {
 	public ImagePlus getBinaryMask(){
 		return mask;
 	}
+	
+	@Override
+	public String toString() {
+		min_filament_length = 0;
+		min_line_straightness = 0;
+		window_width_straightness = 5;
+		removement_radius = 0;
+		fit_distribution = false;
+		sigma_min_response = 0;
+		sigma_max_response = 0;
+		min_filament_distance = 0;
+		border_diameter = 0;
+		double_filament_insensitivity = 1;
+		userFilters = null;
+		mask = null;
+		return "Min. Filament length: " + min_filament_length + " Min. straightness " + min_line_straightness + " Min. window width: " + window_width_straightness + ""
+				+ " Removement radius: " + removement_radius + " Fit distr: " + fit_distribution + " Sigma min: " + sigma_min_response + " Sigma max: " + sigma_max_response + ""
+						+ " Min. filament distance " + min_filament_distance +  " Min. border diameter " + border_diameter + " Double filament insens: " + double_filament_insensitivity + ""
+								+ " UserFilters: " + !(userFilters==null) + " Mask: " + !(mask == null);
+	}
+	
+	
 }

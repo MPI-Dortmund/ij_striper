@@ -40,7 +40,7 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 	@Override
 	public void run() {
 		
-		CentralLog.getInstance().info(CentralLog.m("Start enhancer - Filament width: " + context.getFilamentWidth() + " mask width: " + context.getMaskWidth() + " angle_step: " + context.getAngleStep() + " eq. " + context.isEqualize() + " slice from " + slice_range.getSliceFrom() + " slice to " + slice_range.getSliceTo()));
+		CentralLog.getInstance().info(CentralLog.m("Start enhancer - Filament width: " + context.getFilamentWidth() + " mask width: " + context.getMaskWidth() + " angle_step: " + context.getAngleStep() + " eq. " + context.doEqualization() + " slice from " + slice_range.getSliceFrom() + " slice to " + slice_range.getSliceTo()));
 		int max = ips.getWidth()>ips.getHeight()?ips.getWidth():ips.getHeight();
 		int old_width = ips.getWidth();
 		int old_height = ips.getHeight();
@@ -116,7 +116,7 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 			ImagePlus maxProj = zproj.getProjection();
 			
 			FloatProcessor maxProjProc = (FloatProcessor) maxProj.getProcessor();
-			if(context.isEqualize()){
+			if(context.doEqualization()){
 				CentralLog.getInstance().info(CentralLog.m("Equalize"));
 				ImageStatistics stat = maxProjProc.getStatistics();
 				maxProjProc.subtract(stat.mean);

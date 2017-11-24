@@ -44,6 +44,7 @@ public class PipelineRunner {
 			FilamentEnhancer enhancer = new FilamentEnhancer(input_images.getStack(), enhancer_context);		
 			
 			enhanced_images = enhancer.getEnhancedImages(slice_range);
+			(new ImagePlus("", enhanced_images.getProcessor(1))).show();
 			this.enhanced_images = enhanced_images;
 		}
 		else if(update==false){

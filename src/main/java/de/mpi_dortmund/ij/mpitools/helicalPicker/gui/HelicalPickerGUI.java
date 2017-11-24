@@ -20,6 +20,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
@@ -46,7 +47,7 @@ public class HelicalPickerGUI implements Runnable {
 	
 	
 	private JFrame guiFrame;
-	
+	private JProgressBar bar;
 	private JPanel basicPane;
 	private JPanel detectionPane;
 	private JPanel filteringPane;
@@ -200,7 +201,7 @@ public class HelicalPickerGUI implements Runnable {
 		buttonApply = new JButton("Apply");
 		buttonCancel = new JButton("Cancel");
 		buttonShowPreview = new JButton("Show preview");
-		
+		bar = new JProgressBar(0, 100);
 		/*
 		 * Detection pane
 		 */
@@ -408,6 +409,19 @@ public class HelicalPickerGUI implements Runnable {
 		basicPane.add(informationPane, c);
 		basicPaneRow+=1;
 		c.weighty = 0;
+		
+		
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 0;
+		c.gridwidth = 3;
+		c.gridheight = 1;
+		c.gridx = 0;
+		c.gridy = basicPaneRow;
+		basicPane.add(bar, c);
+		basicPaneRow+=1;
+	
 		
 		/*
 		 * Lower seperator
@@ -869,6 +883,15 @@ public class HelicalPickerGUI implements Runnable {
 		double upper_threshold = Double.parseDouble(textfieldUpperThreshold.getText());
 		DetectionThresholdRange range = new DetectionThresholdRange(lower_threshold, upper_threshold);
 		return range;
+	}
+	
+	public void showProgress(boolean show_progress, String txt){
+		if(bar != null){
+			IJ.log("update");
+			bar.setStringPainted(show_progress);
+			bar.setIndeterminate(show_progress);
+		}
+		
 	}
 	
 	public FilamentFilterContext getLineFilterContext(){

@@ -7,6 +7,7 @@ import java.util.Iterator;
 
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetector;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorContext;
@@ -30,7 +31,10 @@ public class PipelineRunner {
 	}
 	
 	public void run(ImagePlus input_images, SliceRange slice_range, FilamentFilterContext filterContext, FilamentEnhancerContext enhancer_context, FilamentDetectorContext detector_context, boolean update, boolean skip_line_filter) {
-
+		if(Helical_Picker_.getGUI()!=null){
+			Helical_Picker_.getGUI().showProgress(true, "Enhance filaments");
+			
+		}
 		
 		/*
 		 * Enhance images
@@ -51,6 +55,9 @@ public class PipelineRunner {
 			enhanced_images = this.enhanced_images;
 		}
 		
+		if(Helical_Picker_.getGUI()!=null){
+			Helical_Picker_.getGUI().showProgress(true, "Detect filaments ");
+		}
 		SliceRange enhanced_substack_slice_range = new SliceRange(1, slice_range.getSliceTo()-slice_range.getSliceFrom()+1);	
 		
 		/*
@@ -61,7 +68,9 @@ public class PipelineRunner {
 		FilamentDetector fdetect = new FilamentDetector(enhanced_images, detector_context);
 		lines_in_enhanced_substack =  fdetect.getFilaments(enhanced_substack_slice_range);
 		
-		
+		if(Helical_Picker_.getGUI()!=null){
+			Helical_Picker_.getGUI().showProgress(true, "Filter filaments");
+		}
 		
 		/*
 		 * Filter filaments
@@ -85,6 +94,11 @@ public class PipelineRunner {
 		filtered_lines = filtered_lines_corr;
 		
 	
+		if(Helical_Picker_.getGUI()!=null){
+			Helical_Picker_.getGUI().showProgress(true, "Done!");
+			IJ.wait(100);
+			Helical_Picker_.getGUI().showProgress(false, "");
+		}
 		
 	}
 	

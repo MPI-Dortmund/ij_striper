@@ -6,7 +6,10 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.swing.SwingWorker;
+
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
+import de.mpi_dortmund.ij.mpitools.RidgeDetectionOptimizer.Parallel_Ridge_Optimizer;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
@@ -43,73 +46,88 @@ public class PreviewActionListener implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
-		HelicalPickerGUI gui = Helical_Picker_.getGUI();
-		FilamentEnhancerContext enhancer_context = gui.getFilamentEnhancerContext();
+		SwingWorker<Boolean, Integer> worker = new SwingWorker<Boolean, Integer>(){
 
-		int preview_mode = gui.comboboxPreviewOptions.getSelectedIndex();
-		int slice_from = target_image.getCurrentSlice();
-		int slice_to = target_image.getCurrentSlice();
-		SliceRange slice_range = new SliceRange(slice_from, slice_to);
-		boolean update=false;
-	
-		if(
-				last_filament_width != enhancer_context.getFilamentWidth() ||
-				last_mask_width != enhancer_context.getMaskWidth() ||
-				last_slice_from != slice_range.getSliceFrom() ||
-				last_slice_to != slice_range.getSliceTo()
-				){
-			update = true;
+			@Override
+			protected Boolean doInBackground() throws Exception {
+				HelicalPickerGUI gui = Helical_Picker_.getGUI();
+				FilamentEnhancerContext enhancer_context = gui.getFilamentEnhancerContext();
+
+				int preview_mode = gui.comboboxPreviewOptions.getSelectedIndex();
+				int slice_from = target_image.getCurrentSlice();
+				int slice_to = target_image.getCurrentSlice();
+				SliceRange slice_range = new SliceRange(slice_from, slice_to);
+				boolean update=false;
 			
-			last_filament_width = enhancer_context.getFilamentWidth();
-			last_mask_width = enhancer_context.getMaskWidth();
-			last_slice_from = slice_range.getSliceFrom();
-			last_slice_to = slice_range.getSliceTo();
-		}
-		
-		boolean skip_line_filter = false;
-		FilamentFilterContext skeleton_filter_context = gui.getLineFilterContext();
-		FilamentDetectorContext detector_context = gui.getFilamentDetectorContext();
-	
-
-		runner.run(target_image, slice_range, skeleton_filter_context,enhancer_context, detector_context, update, skip_line_filter);
-	
-		HashMap<Integer, ArrayList<Polygon>> filtered_lines = runner.getFilteredLines();
-		
-		/*
-		 * Place boxes
-		 */
-
-		CentralLog.getInstance().info("info");
-		BoxPlacingContext placing_context = gui.getBoxPlacingContext();
-		if(preview_mode==PREVIEW_POINTS){
-			placing_context.setPlacePoints(true);
+				if(
+						last_filament_width != enhancer_context.getFilamentWidth() ||
+						last_mask_width != enhancer_context.getMaskWidth() ||
+						last_slice_from != slice_range.getSliceFrom() ||
+						last_slice_to != slice_range.getSliceTo()
+						){
+					update = true;
+					
+					last_filament_width = enhancer_context.getFilamentWidth();
+					last_mask_width = enhancer_context.getMaskWidth();
+					last_slice_from = slice_range.getSliceFrom();
+					last_slice_to = slice_range.getSliceTo();
+				}
+				
+				boolean skip_line_filter = false;
+				FilamentFilterContext skeleton_filter_context = gui.getLineFilterContext();
+				FilamentDetectorContext detector_context = gui.getFilamentDetectorContext();
 			
-		}
-		if(preview_mode==PREVIEW_LINES){
-			/*
-			 * Show detected ridges without any filtering
-			 */
-			ImageStack enhanced_images = runner.getEnhancedImage();
-			ImageProcessor response_map = enhanced_images.getProcessor(1);
-			ImageRoi imgRoi = new ImageRoi(0, 0, response_map);
-			imgRoi.setPosition(slice_from);
-			Overlay ov = Helical_Picker_.getInstance().getImage().getOverlay();
-			if(ov==null){
-				ov = new Overlay();
-				Helical_Picker_.getInstance().getImage().setOverlay(ov);
+
+				runner.run(target_image, slice_range, skeleton_filter_context,enhancer_context, detector_context, update, skip_line_filter);
+			
+				HashMap<Integer, ArrayList<Polygon>> filtered_lines = runner.getFilteredLines();
+				
+				/*
+				 * Place boxes
+				 */
+
+				CentralLog.getInstance().info("info");
+				BoxPlacingContext placing_context = gui.getBoxPlacingContext();
+				if(preview_mode==PREVIEW_POINTS){
+					placing_context.setPlacePoints(true);
+					
+				}
+				if(preview_mode==PREVIEW_LINES){
+					/*
+					 * Show detected ridges without any filtering
+					 */
+					ImageStack enhanced_images = runner.getEnhancedImage();
+					ImageProcessor response_map = enhanced_images.getProcessor(1);
+					ImageRoi imgRoi = new ImageRoi(0, 0, response_map);
+					imgRoi.setPosition(slice_from);
+					Overlay ov = Helical_Picker_.getInstance().getImage().getOverlay();
+					if(ov==null){
+						ov = new Overlay();
+						Helical_Picker_.getInstance().getImage().setOverlay(ov);
+					}
+					ov.add(imgRoi);
+
+					HashMap<Integer, ArrayList<Polygon>> unfiltered_lines = runner.getLines();
+					Helical_Picker_.getInstance().showLinesAsPreview(unfiltered_lines.get(slice_from));
+				}
+				else{
+					BoxPlacer_ placer = new BoxPlacer_();
+					ImagePlus input_image = Helical_Picker_.getInstance().getImage();
+					placer.placeBoxes(filtered_lines, input_image, placing_context);
+				//	picker_.placeBoxes(filtered_lines, placing_context);
+				}
+				return false;
 			}
-			ov.add(imgRoi);
 
-			HashMap<Integer, ArrayList<Polygon>> unfiltered_lines = runner.getLines();
-			Helical_Picker_.getInstance().showLinesAsPreview(unfiltered_lines.get(slice_from));
-		}
-		else{
-			BoxPlacer_ placer = new BoxPlacer_();
-			ImagePlus input_image = Helical_Picker_.getInstance().getImage();
-			placer.placeBoxes(filtered_lines, input_image, placing_context);
-		//	picker_.placeBoxes(filtered_lines, placing_context);
-		}
+			@Override
+			protected void done() {
+
+				super.done();
+			}
+
+		};
+		worker.execute();	
+		
 		
 
 	}

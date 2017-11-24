@@ -64,56 +64,8 @@ public class Helical_Picker_ implements PlugIn {
 		return gui;
 	}
 	
-	public ImageProcessor generateBinaryImage(Lines lines, int imageWdith, int imageHeight){
-		ByteProcessor binary = new ByteProcessor(imageWdith, imageHeight);
-		for (Line contour : lines) {
-				
-				float[] x = contour.getXCoordinates();
-				float[] y = contour.getYCoordinates();
-
-				binary.setLineWidth(1);
-				binary.setColor(255);
-				
-				for(int j = 1; j < x.length; j++){
-					// this draws the identified line
-					
-					
-					binary.drawLine((int) Math.round(x[j-1]), (int) Math.round(y[j-1]),(int) Math.round(x[j]), (int) Math.round(y[j]));
-					
-				}
-			
-		}
 	
-		binary.invert();
-		binary.skeletonize();
-		binary.invert();
-		return binary;
-	}
 	
-	public void showLinesAsPreview(ArrayList<Polygon> lines){
-
-		Overlay ovpoly = input_image.getOverlay();
-		if(ovpoly==null){
-			ovpoly = new Overlay();
-			input_image.setOverlay(ovpoly);
-		}
-		// Print contour
-		for (Polygon line : lines) {
-			
-				PolygonRoi polyRoiMitte = new PolygonRoi(line,
-						Roi.POLYLINE);
-				
-				polyRoiMitte.setStrokeColor(Color.red);
-				int position = input_image.getCurrentSlice();
-			
-			
-				polyRoiMitte.setPosition(position);
-				ovpoly.add(polyRoiMitte);
-				
-		}
-		input_image.updateAndRepaintWindow();
-
-	}
 	
 		
 	public static ArrayList<IUserFilter> getUserFilter(){

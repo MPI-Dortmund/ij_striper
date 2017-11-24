@@ -1,7 +1,5 @@
 package de.mpi_dortmund.ij.mpitools.FilamentEnhancer;
 
-import de.mpi_dortmund.ij.mpitools.helicalPicker.custom.IContext;
-
 public class FilamentEnhancerContext {
 	private int filament_width; 
 	private int mask_width; 

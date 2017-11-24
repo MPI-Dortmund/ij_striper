@@ -1,5 +1,6 @@
 package de.mpi_dortmund.ij.mpitools.helicalPicker.gui;
 
+import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,6 +23,8 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.ImageRoi;
 import ij.gui.Overlay;
+import ij.gui.PolygonRoi;
+import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
 public class PreviewActionListener implements ActionListener {
@@ -108,7 +111,7 @@ public class PreviewActionListener implements ActionListener {
 					ov.add(imgRoi);
 
 					HashMap<Integer, ArrayList<Polygon>> unfiltered_lines = runner.getLines();
-					Helical_Picker_.getInstance().showLinesAsPreview(unfiltered_lines.get(slice_from));
+					showLinesAsPreview(unfiltered_lines.get(slice_from));
 				}
 				else{
 					BoxPlacer_ placer = new BoxPlacer_();
@@ -129,6 +132,31 @@ public class PreviewActionListener implements ActionListener {
 		worker.execute();	
 		
 		
+
+	}
+	
+	public void showLinesAsPreview(ArrayList<Polygon> lines){
+
+		Overlay ovpoly = target_image.getOverlay();
+		if(ovpoly==null){
+			ovpoly = new Overlay();
+			target_image.setOverlay(ovpoly);
+		}
+		// Print contour
+		for (Polygon line : lines) {
+			
+				PolygonRoi polyRoiMitte = new PolygonRoi(line,
+						Roi.POLYLINE);
+				
+				polyRoiMitte.setStrokeColor(Color.red);
+				int position = target_image.getCurrentSlice();
+			
+			
+				polyRoiMitte.setPosition(position);
+				ovpoly.add(polyRoiMitte);
+				
+		}
+		target_image.updateAndRepaintWindow();
 
 	}
 	

@@ -35,6 +35,7 @@ import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.boxplacer.HeliconParticleExporter_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorContext;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import ij.IJ;
@@ -850,7 +851,19 @@ public class HelicalPickerGUI implements Runnable {
 		return context;
 	}
 	
-	public DetectionThresholdRange getDetectionThresholdRange(){
+	public FilamentDetectorContext getFilamentDetectorContext(){
+		FilamentDetectorContext context = new FilamentDetectorContext();
+		DetectionThresholdRange range = getDetectionThresholdRange();
+		int filament_width = Integer.parseInt(textfieldFilamentWidth.getText());
+		double sigma = FilamentDetectorContext.filamentWidthToSigma(filament_width);
+		
+		context.setThresholdRange(range);
+		context.setSigma(sigma);
+		
+		return context;
+	}
+	
+	private DetectionThresholdRange getDetectionThresholdRange(){
 		
 		double lower_threshold = Double.parseDouble(textfieldLowerThreshold.getText());
 		double upper_threshold = Double.parseDouble(textfieldLowerThreshold.getText());

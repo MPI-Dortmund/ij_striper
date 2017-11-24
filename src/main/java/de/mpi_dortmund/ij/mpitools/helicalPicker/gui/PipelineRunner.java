@@ -8,6 +8,7 @@ import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetector;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilter_;
@@ -21,13 +22,13 @@ public class PipelineRunner {
 	ImageStack enhanced_images = null;
 	HashMap<Integer, ArrayList<Polygon>> filtered_lines = null;
 	HashMap<Integer, ArrayList<Polygon>> lines = null;
-	public void run(ImagePlus input_images, SliceRange range, SkeletonFilterContext line_filter_context, DetectionThresholdRange thresh_rang, FilamentEnhancerContext enhancer_context) {
+	public void run(ImagePlus input_images, SliceRange range, SkeletonFilterContext line_filter_context, FilamentEnhancerContext enhancer_context, FilamentDetectorContext detector_context) {
 		boolean update = true;
 		boolean skip_line_filter = false;
-		run(input_images, range, line_filter_context, thresh_rang, enhancer_context, update,skip_line_filter);
+		run(input_images, range, line_filter_context, enhancer_context, detector_context, update,skip_line_filter);
 	}
 	
-	public void run(ImagePlus input_images, SliceRange slice_range, SkeletonFilterContext filterContext, DetectionThresholdRange thresh_range, FilamentEnhancerContext enhancer_context,  boolean update, boolean skip_line_filter) {
+	public void run(ImagePlus input_images, SliceRange slice_range, SkeletonFilterContext filterContext, FilamentEnhancerContext enhancer_context, FilamentDetectorContext detector_context, boolean update, boolean skip_line_filter) {
 
 		boolean is_single_frame = slice_range.getSliceFrom()==slice_range.getSliceTo();
 		/*
@@ -41,8 +42,8 @@ public class PipelineRunner {
 		//For preview mode: Save single slices. If parameters changes, update.
 		if(this.enhanced_images == null || update==true){
 			FilamentEnhancer enhancer = new FilamentEnhancer(input_images.getStack(), enhancer_context);		
+			
 			enhanced_images = enhancer.getEnhancedImages(slice_range);
-	
 			this.enhanced_images = enhanced_images;
 		}
 		else if(update==false){
@@ -59,8 +60,8 @@ public class PipelineRunner {
 		 * Detect Filaments
 		 */
 		CentralLog.getInstance().info("Detect");
-		double sigma = enhancer_context.getFilamentWidth()/(2*Math.sqrt(3)) + 0.5;
-		FilamentDetector fdetect = new FilamentDetector(enhanced_images, sigma, thresh_range);
+		
+		FilamentDetector fdetect = new FilamentDetector(enhanced_images, detector_context);
 		lines =  fdetect.getFilaments(slice_range);
 		
 		

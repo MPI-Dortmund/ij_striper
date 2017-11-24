@@ -19,16 +19,14 @@ public class FilamentDetectorWorker extends Thread implements IFilamentDetectorW
 	
 	private ImageStack input_images;
 	private SliceRange slice_range;
-	private double sigma;
-	private DetectionThresholdRange thresh_range;
+	FilamentDetectorContext context;
 	ArrayList<ArrayList<Polygon>> lines; // Contains a list of all images for every image
 	
-	public FilamentDetectorWorker(ImageStack ips, SliceRange slice_range, double sigma, DetectionThresholdRange thresh_range) {
+	public FilamentDetectorWorker(ImageStack ips, SliceRange slice_range, FilamentDetectorContext context) {
 		
 		this.input_images = ips;
 		this.slice_range = slice_range;
-		this.sigma = sigma;
-		this.thresh_range = thresh_range;
+		this.context = context;
 		
 	}
 	
@@ -36,8 +34,7 @@ public class FilamentDetectorWorker extends Thread implements IFilamentDetectorW
 		
 		this.input_images = a.input_images;
 		this.slice_range = a.slice_range;
-		this.sigma = a.sigma;
-		this.thresh_range = a.thresh_range;
+		this.context = a.context;
 		
 	}
 	
@@ -63,7 +60,7 @@ public class FilamentDetectorWorker extends Thread implements IFilamentDetectorW
 			boolean doCorrectPosition = true;
 			boolean doEstimateWidth = false;
 			boolean doExtendLine = true;
-			Lines detected_lines = detect.detectLines(input_image, sigma, thresh_range.getUpperThreshold(), thresh_range.getLowerThreshold(), min_filament_length,max_filament_length, isDarkLine, doCorrectPosition, doEstimateWidth, doExtendLine, OverlapOption.NONE);
+			Lines detected_lines = detect.detectLines(input_image, context.getSigma(), context.getThresholdRange().getUpperThreshold(), context.getThresholdRange().getLowerThreshold(), min_filament_length,max_filament_length, isDarkLine, doCorrectPosition, doEstimateWidth, doExtendLine, OverlapOption.NONE);
 			CentralLog.getInstance().info("Line detection frame " + i + " successfull");
 			ImageProcessor line_image = generateBinaryImage(detected_lines, input_image.getWidth(), input_image.getHeight());
 			LineTracer tracer = new LineTracer();

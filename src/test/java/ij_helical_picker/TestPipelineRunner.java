@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.PipelineRunner;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
@@ -35,9 +36,12 @@ public class TestPipelineRunner {
 		enhancer_context.setMaskWidth(10);
 		enhancer_context.setAngleStep(2);
 		DetectionThresholdRange thresh_range = new DetectionThresholdRange(4, 5);
+		FilamentDetectorContext detector_context = new FilamentDetectorContext();
+		detector_context.setThresholdRange(thresh_range);
+		detector_context.setSigma(FilamentDetectorContext.filamentWidthToSigma(10));
 		
 
-		run.run(img,slice_range, skeleton_filter_context, thresh_range, enhancer_context);
+		run.run(img,slice_range, skeleton_filter_context, enhancer_context,detector_context);
 		HashMap<Integer, ArrayList<Polygon>> filtered_lines_map=  run.getFilteredLines();
 		ArrayList<Polygon> lines = filtered_lines_map.get(1);
 		assertEquals(2, lines.size());

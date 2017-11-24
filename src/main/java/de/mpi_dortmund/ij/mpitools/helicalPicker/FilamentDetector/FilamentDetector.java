@@ -14,8 +14,7 @@ import ij.ImageStack;
 public class FilamentDetector {
 	
 	ImageStack ips;
-	double sigma; 
-	DetectionThresholdRange thresh_range;
+	FilamentDetectorContext context;
 	int mask_width;
 	
 	/**
@@ -26,10 +25,9 @@ public class FilamentDetector {
 	 * @param upper_threshold upper detection threshold
 	 * @param equalize helps to have the same signal for filaments with different contrast
 	 */
-	public FilamentDetector(ImageStack ips, double sigma, DetectionThresholdRange thresh_range) {
+	public FilamentDetector(ImageStack ips, FilamentDetectorContext context) {
 		this.ips = ips;
-		this.sigma = sigma;
-		this.thresh_range = thresh_range;
+		this.context = context;
 	}
 	
 	public HashMap<Integer, ArrayList<Polygon>> getFilaments(SliceRange slice_range){
@@ -64,7 +62,7 @@ public class FilamentDetector {
 	
 	protected FilamentDetectorWorker[] createWorkerArray(int numberOfProcessors, SliceRange slice_range){
 		WorkerArrayCreator creator = new WorkerArrayCreator();
-		FilamentDetectorWorker worker = new FilamentDetectorWorker(ips, slice_range, sigma, thresh_range);
+		FilamentDetectorWorker worker = new FilamentDetectorWorker(ips, slice_range, context);
 		FilamentDetectorWorker[] workers = creator.createWorkerArray(numberOfProcessors, slice_range, worker);
 	
 		return workers;

@@ -11,6 +11,7 @@ import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import ij.ImagePlus;
@@ -30,10 +31,10 @@ public class ApplyActionListener implements ActionListener {
 		int sliceTo = input_image.getStackSize();
 		SliceRange slice_range = new SliceRange(sliceFrom, sliceTo);
 		SkeletonFilterContext skeleton_filter_context = gui.getLineFilterContext();
-		DetectionThresholdRange thresh_range = gui.getDetectionThresholdRange();
+		FilamentDetectorContext detector_context = gui.getFilamentDetectorContext();
 		FilamentEnhancerContext enhancer_context = gui.getFilamentEnhancerContext();
 
-		runner.run(input_image,slice_range, skeleton_filter_context, thresh_range,enhancer_context);
+		runner.run(input_image,slice_range, skeleton_filter_context,enhancer_context,detector_context);
 	
 		HashMap<Integer, ArrayList<Polygon>> filtered_lines = runner.getFilteredLines();
 		int box_size = Integer.parseInt(gui.textfieldBoxSize.getText());

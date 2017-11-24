@@ -11,6 +11,7 @@ import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacer_;
 import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import ij.IJ;
@@ -70,9 +71,10 @@ public class PreviewActionListener implements ActionListener {
 		
 		boolean skip_line_filter = false;
 		SkeletonFilterContext skeleton_filter_context = gui.getLineFilterContext();
-		DetectionThresholdRange thresh_range = gui.getDetectionThresholdRange();
+		FilamentDetectorContext detector_context = gui.getFilamentDetectorContext();
+	
 		
-		runner.run(target_image, slice_range, skeleton_filter_context, thresh_range,enhancer_context, update, skip_line_filter);
+		runner.run(target_image, slice_range, skeleton_filter_context,enhancer_context, detector_context, update, skip_line_filter);
 	
 		HashMap<Integer, ArrayList<Polygon>> filtered_lines = runner.getFilteredLines();
 		

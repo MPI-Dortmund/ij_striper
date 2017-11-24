@@ -8,7 +8,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
-import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter.LineTracer;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import ij.ImagePlus;

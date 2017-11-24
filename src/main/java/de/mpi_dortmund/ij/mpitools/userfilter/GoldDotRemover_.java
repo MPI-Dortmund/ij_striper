@@ -4,7 +4,7 @@ import java.awt.Polygon;
 import java.util.ArrayList;
 
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
-import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter.LineTracer;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.blob.Blob;

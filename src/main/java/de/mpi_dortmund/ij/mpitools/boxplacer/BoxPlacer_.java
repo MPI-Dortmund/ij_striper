@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter.LineTracer;
 import ij.ImagePlus;
 import ij.gui.Overlay;
 import ij.gui.Roi;

@@ -12,9 +12,9 @@ import org.junit.Test;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorContext;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter.FilamentFilterContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.PipelineRunner;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
-import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import ij.ImagePlus;
 
 public class TestPipelineRunner {
@@ -27,7 +27,7 @@ public class TestPipelineRunner {
 		int box_size = 10;
 		PipelineRunner run = new PipelineRunner();
 		SliceRange slice_range = new SliceRange(1, 1);
-		SkeletonFilterContext skeleton_filter_context = new SkeletonFilterContext();
+		FilamentFilterContext skeleton_filter_context = new FilamentFilterContext();
 		skeleton_filter_context.setBorderDiameter(box_size/2);
 		skeleton_filter_context.setMinFilamentDistance(1);
 		FilamentEnhancerContext enhancer_context = new FilamentEnhancerContext();

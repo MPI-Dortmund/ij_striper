@@ -36,7 +36,7 @@ import de.mpi_dortmund.ij.mpitools.boxplacer.HeliconParticleExporter_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorContext;
-import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter.FilamentFilterContext;
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import ij.IJ;
 import ij.ImagePlus;
@@ -871,7 +871,7 @@ public class HelicalPickerGUI implements Runnable {
 		return range;
 	}
 	
-	public SkeletonFilterContext getLineFilterContext(){
+	public FilamentFilterContext getLineFilterContext(){
 		int box_size = Integer.parseInt(textfieldBoxSize.getText());
 		double min_straightness = (Double)spinnerMinStraightness.getValue();
 		int straightness_windowsize = Integer.parseInt(textfieldWindowSize.getText());
@@ -891,7 +891,7 @@ public class HelicalPickerGUI implements Runnable {
 		}
 		ArrayList<IUserFilter> userFilters = Helical_Picker_.getUserFilter();
 		
-		SkeletonFilterContext context = new SkeletonFilterContext();
+		FilamentFilterContext context = new FilamentFilterContext();
 		context.setMinimumLineStraightness(min_straightness);
 		context.setWindowWidthStraightness(straightness_windowsize);
 		context.setMinFilamentDistance(min_filament_distance);

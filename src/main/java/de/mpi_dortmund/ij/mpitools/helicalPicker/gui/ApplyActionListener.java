@@ -12,8 +12,8 @@ import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorContext;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter.FilamentFilterContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
-import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import ij.ImagePlus;
 
 public class ApplyActionListener implements ActionListener {
@@ -30,7 +30,7 @@ public class ApplyActionListener implements ActionListener {
 		int sliceFrom = 1;
 		int sliceTo = input_image.getStackSize();
 		SliceRange slice_range = new SliceRange(sliceFrom, sliceTo);
-		SkeletonFilterContext skeleton_filter_context = gui.getLineFilterContext();
+		FilamentFilterContext skeleton_filter_context = gui.getLineFilterContext();
 		FilamentDetectorContext detector_context = gui.getFilamentDetectorContext();
 		FilamentEnhancerContext enhancer_context = gui.getFilamentEnhancerContext();
 

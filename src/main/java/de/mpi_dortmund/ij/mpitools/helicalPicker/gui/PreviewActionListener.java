@@ -12,8 +12,8 @@ import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPlacingContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorContext;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter.FilamentFilterContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
-import de.mpi_dortmund.ij.mpitools.skeletonfilter.SkeletonFilterContext;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -70,7 +70,7 @@ public class PreviewActionListener implements ActionListener {
 		}
 		
 		boolean skip_line_filter = false;
-		SkeletonFilterContext skeleton_filter_context = gui.getLineFilterContext();
+		FilamentFilterContext skeleton_filter_context = gui.getLineFilterContext();
 		FilamentDetectorContext detector_context = gui.getFilamentDetectorContext();
 	
 		

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
-import de.mpi_dortmund.ij.mpitools.skeletonfilter.LineTracer;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter.LineTracer;
 import ij.ImagePlus;
 import ij.process.ByteProcessor;
 

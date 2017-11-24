@@ -1,11 +1,11 @@
-package de.mpi_dortmund.ij.mpitools.skeletonfilter;
+package de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter;
 
 import java.util.ArrayList;
 
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import ij.ImagePlus;
 
-public class SkeletonFilterContext {
+public class FilamentFilterContext {
 	private int min_filament_length ;
 	private double min_line_straightness; 
 	private int window_width_straightness;
@@ -21,7 +21,7 @@ public class SkeletonFilterContext {
 	ArrayList<IUserFilter> userFilters;
 	ImagePlus mask;
 	
-	public SkeletonFilterContext() {
+	public FilamentFilterContext() {
 		min_filament_length = 0;
 		min_line_straightness = 0;
 		window_width_straightness = 5;

@@ -1,4 +1,4 @@
-package de.mpi_dortmund.ij.mpitools.skeletonfilter;
+package de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter;
 
 import java.awt.Point;
 import java.awt.Polygon;

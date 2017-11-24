@@ -1,4 +1,4 @@
-package de.mpi_dortmund.ij.mpitools.skeletonfilter;
+package de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter;
 
 import java.awt.Point;
 import java.awt.Polygon;
@@ -16,29 +16,29 @@ import ij.measure.CurveFitter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
-public class SkeletonFilter_ {
+public class FilamentFilter_ {
 	ImagePlus imp;
 	ImagePlus response;
 	ImagePlus input_image;
-	SkeletonFilterContext context;
+	FilamentFilterContext context;
 	
-	public SkeletonFilter_() {
+	public FilamentFilter_() {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public SkeletonFilter_(SkeletonFilterContext context) {
+	public FilamentFilter_(FilamentFilterContext context) {
 		this.context = context;
 		
 	}
 
-	public HashMap<Integer, ArrayList<Polygon>> filterLines(HashMap<Integer, ArrayList<Polygon>> lines, SkeletonFilterContext context, ImageStack input_images, ImageStack response_maps){
+	public HashMap<Integer, ArrayList<Polygon>> filterLines(HashMap<Integer, ArrayList<Polygon>> lines, FilamentFilterContext context, ImageStack input_images, ImageStack response_maps){
 		
 		HashMap<Integer, ArrayList<Polygon>> filtered_lines = new HashMap<Integer, ArrayList<Polygon>>();
 		/*
 		 * Process filter lines
 		 */
 
-		SkeletonFilter_ skeleton_filter = new SkeletonFilter_();
+		FilamentFilter_ skeleton_filter = new FilamentFilter_();
 		Iterator<Integer> slice_iterator = lines.keySet().iterator();
 		ImagePlus masks = context.getBinaryMask();
 		while(slice_iterator.hasNext()){
@@ -48,7 +48,7 @@ public class SkeletonFilter_ {
 			ByteProcessor line_image = new ByteProcessor(input_images.getWidth(), input_images.getHeight()); 
 			line_image.setLineWidth(1);
 			line_image.setColor(255);
-			SkeletonFilter_.drawLines(lines_frame_i, line_image);
+			FilamentFilter_.drawLines(lines_frame_i, line_image);
 			line_image.invert();
 			line_image.skeletonize();
 			line_image.invert();
@@ -84,7 +84,7 @@ public class SkeletonFilter_ {
 	 *  8. Remove parallel lines
 	 *  9. Length filter 2
 	 */
-	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, ImageProcessor mask, SkeletonFilterContext context){
+	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, ImageProcessor mask, FilamentFilterContext context){
 		
 		int border_diameter = context.getBorderDiameter();
 		setBorderToZero((ByteProcessor)line_image, border_diameter);

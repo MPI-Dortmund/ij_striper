@@ -887,7 +887,6 @@ public class HelicalPickerGUI implements Runnable {
 	
 	public void showProgress(boolean show_progress, String txt){
 		if(bar != null){
-			IJ.log("update");
 			bar.setStringPainted(show_progress);
 			bar.setIndeterminate(show_progress);
 		}

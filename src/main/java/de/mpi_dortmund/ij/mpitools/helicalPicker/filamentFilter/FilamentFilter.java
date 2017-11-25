@@ -16,17 +16,17 @@ import ij.measure.CurveFitter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
-public class FilamentFilter_ {
+public class FilamentFilter {
 	ImagePlus imp;
 	ImagePlus response;
 	ImagePlus input_image;
 	FilamentFilterContext context;
 	
-	public FilamentFilter_() {
+	public FilamentFilter() {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public FilamentFilter_(FilamentFilterContext context) {
+	public FilamentFilter(FilamentFilterContext context) {
 		this.context = context;
 		
 	}
@@ -38,7 +38,7 @@ public class FilamentFilter_ {
 		 * Process filter lines
 		 */
 
-		FilamentFilter_ skeleton_filter = new FilamentFilter_();
+		FilamentFilter filament_filter = new FilamentFilter();
 		Iterator<Integer> slice_iterator = lines.keySet().iterator();
 		ImagePlus masks = context.getBinaryMask();
 		while(slice_iterator.hasNext()){
@@ -48,7 +48,7 @@ public class FilamentFilter_ {
 			ByteProcessor line_image = new ByteProcessor(input_images.getWidth(), input_images.getHeight()); 
 			line_image.setLineWidth(1);
 			line_image.setColor(255);
-			FilamentFilter_.drawLines(lines_frame_i, line_image);
+			FilamentFilter.drawLines(lines_frame_i, line_image);
 			line_image.invert();
 			line_image.skeletonize();
 			line_image.invert();
@@ -60,7 +60,7 @@ public class FilamentFilter_ {
 			ImageProcessor ip = input_images.getProcessor(slice_position);
 			ImageProcessor response_map = response_maps.getProcessor(slice_position);
 	
-			ArrayList<Polygon> filteredLines = skeleton_filter.filterLineImage(line_image, 
+			ArrayList<Polygon> filteredLines = filament_filter.filterLineImage(line_image, 
 					ip, response_map, maskImage, context);
 			
 			filtered_lines.put(slice_position, filteredLines);
@@ -89,7 +89,7 @@ public class FilamentFilter_ {
 		int border_diameter = context.getBorderDiameter();
 		setBorderToZero((ByteProcessor)line_image, border_diameter);
 		//(new ImagePlus("after border to zero", line_image.duplicate())).show();
-		int removement_radius = context.getRemovementRadius();
+		int removement_radius = context.getJunctionRemovementRadius();
 		removeJunctions((ByteProcessor) line_image, removement_radius);
 		//(new ImagePlus("after remove junction", line_image.duplicate())).show();
 		if(mask != null){

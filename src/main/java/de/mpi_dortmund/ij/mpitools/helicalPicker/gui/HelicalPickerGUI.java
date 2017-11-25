@@ -922,7 +922,7 @@ public class HelicalPickerGUI implements Runnable {
 		context.setSigmaMaxResponse(sigma_max_response);
 		context.setDoubleFilamentInsensitivity(double_filament_detection_insensitivity);
 		context.setBorderDiameter(box_size/2);
-		context.setRemovementRadius(box_size/2);
+		context.setJunctionRemovementRadius(box_size/2);
 		context.setBinaryMask(masks);
 		context.setUserFilters(userFilters);
 		

@@ -12,7 +12,7 @@ import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThres
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetector;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter.FilamentFilterContext;
-import de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter.FilamentFilter_;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter.FilamentFilter;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import ij.IJ;
 import ij.ImagePlus;
@@ -77,7 +77,7 @@ public class PipelineRunner {
 		 */
 		
 		CentralLog.getInstance().info("Filter");
-		FilamentFilter_ lineFilter = new FilamentFilter_();
+		FilamentFilter lineFilter = new FilamentFilter();
 		filtered_lines = lineFilter.filterLines(lines_in_enhanced_substack, filterContext, getSubstack(input_images, slice_range).getStack(), enhanced_images);
 		
 		/*

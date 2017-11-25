@@ -3,6 +3,7 @@ package de.mpi_dortmund.ij.mpitools.helicalPicker.filamentFilter;
 import java.util.ArrayList;
 
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
+import ij.IJ;
 import ij.ImagePlus;
 
 public class FilamentFilterContext {
@@ -36,42 +37,92 @@ public class FilamentFilterContext {
 		mask = null;
 	}
 	
+	/**
+	 * @return Returns the minimum length of the filament 
+	 */
 	public int getMinimumFilamentLength() {
+		
 		return min_filament_length;
 	}
-
+	
+	/**
+	 * Sets the minimum length of a filament.
+	 * @param min_filament_length Minimum length of the filament
+	 */
 	public void setMinimumFilamentLength(int min_filament_length) {
 		this.min_filament_length = min_filament_length;
 	}
 
+	/**
+	 * Returns the minimum line straightness. All line with a lower straightness will be removed.
+	 * The line straightness measures the straightness of a line and take values 
+	 * between 0 (very random movement) and 1 (straight line)
+	 * @return Minimum value of line straightness.
+	 */
 	public double getMinimumLineStraightness() {
 		return min_line_straightness;
 	}
 
+	/**
+	 * Set the value of the minimum line straightness.The line straightness measures the straightness 
+	 * of a line and take values between 0 (very random movement) and 1 (straight line).
+	 * Parts of a line with a lower straightness will be removed and the line is splitted.
+	 * @param min_line_straightness
+	 */
 	public void setMinimumLineStraightness(double min_line_straightness) {
 		this.min_line_straightness = min_line_straightness;
 	}
 
+	/**
+	 * Returns the running window size for local straightness evaluation. The local evaluation is done by
+	 * a running window.
+	 * @return Running window size for local straightness evaluation
+	 */
 	public int getWindowWidthStraightness() {
 		return window_width_straightness;
 	}
 
+	/**
+	 * Sets the running window size for local straightness evaluation. The local evaluation is done by
+	 * a running window.
+	 * @param window_width_straightness Running window size for local straightness evaluation
+	 */
 	public void setWindowWidthStraightness(int window_width_straightness) {
 		this.window_width_straightness = window_width_straightness;
 	}
 
-	public int getRemovementRadius() {
+	/**
+	 * Returns the removement radius around a junction point. When a junction is removed, it will remove
+	 * all line points within radius.
+	 * @return The removement radius around a junction point.
+	 */
+	public int getJunctionRemovementRadius() {
 		return removement_radius;
 	}
 
-	public void setRemovementRadius(int removement_radius) {
+	/**
+	 * Sets the removement radius around a junction point. When a junction is removed, it will remove
+	 * all line points within radius.
+	 * @param removement_radius The removement radius around a junction point.
+	 */
+	public void setJunctionRemovementRadius(int removement_radius) {
 		this.removement_radius = removement_radius;
 	}
 
+	/**
+	 * Returns if the estimaton b of the mean / sd of the line response by model fitting  
+	 * during response filtering.
+	 * @return true if the estimation is done by model fitting.
+	 */
 	public boolean isFitDistribution() {
 		return fit_distribution;
 	}
 
+	/**
+	 * Activates/deactivates the estimaton b of the mean / sd of the line response by model fitting  
+	 * during response filtering. Default values is false.
+	 * @param fit_distribution true if the estimation is done by model fitting
+	 */
 	public void setFitDistribution(boolean fit_distribution) {
 		this.fit_distribution = fit_distribution;
 	}

@@ -21,11 +21,13 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
@@ -66,8 +68,8 @@ public class HelicalPickerGUI implements Runnable {
 	JSeparator seperator_upper;
 	JSeparator seperator_lower;
 	
-	JTextArea textpaneInformation;
-	
+	JTextPane textpaneInformation;
+	JScrollPane scrollPaneInfo;
 	
 	/*
 	 *  Detection pane elements
@@ -189,11 +191,15 @@ public class HelicalPickerGUI implements Runnable {
 		informationPane.setBorder(BorderFactory.createTitledBorder("Manual"));
 		informationPane.setLayout(new BorderLayout());
 
-		textpaneInformation = new JTextArea();
+		
+		textpaneInformation = new JTextPane();
 		textpaneInformation.setBackground(guiFrame.getBackground());
-		textpaneInformation.setLineWrap(true);
-		textpaneInformation.setWrapStyleWord(true);
+		//textpaneInformation.setLineWrap(true);
+		//textpaneInformation.setWrapStyleWord(true);
 		textpaneInformation.setText("Here are important information");
+		textpaneInformation.setContentType("text/html");
+		textpaneInformation.setFont((new JLabel()).getFont());
+		scrollPaneInfo = new JScrollPane(textpaneInformation);
 		
 		checkboxShowAdvancedSettings = new JCheckBox("Show advanced settings");
 		checkboxEqualize = new JCheckBox("");
@@ -241,7 +247,7 @@ public class HelicalPickerGUI implements Runnable {
 		 ((JSpinner.DefaultEditor)spinnerOverlappingFactor.getEditor()).getTextField().setColumns(4);
 		
 		 textfieldMinNumberBoxes = new JTextField("7",4);
-		 textfieldWindowSize = new JTextField("100",4);
+		 textfieldWindowSize = new JTextField("30",4);
 		 
 		 Vector<String> items = new Vector<String>();
 		 items.add("None");
@@ -271,7 +277,7 @@ public class HelicalPickerGUI implements Runnable {
 		/*
 		 * Detection parameter assistant
 		 */
-		JMenuItem detection_parameter_assistant = new JMenuItem("Start detection parameter assistant");
+		JMenuItem detection_parameter_assistant = new JMenuItem("Detection assistant");
 		detection_parameter_assistant.addActionListener(new ActionListener() {
 			RidgeDetectionOptimizerAssistant assistent = new RidgeDetectionOptimizerAssistant(Helical_Picker_.getInstance().getImage());
 			@Override
@@ -325,15 +331,59 @@ public class HelicalPickerGUI implements Runnable {
 	}
 	
 	public void setupListener(){
+		/*
+		 * Documentation detection pane
+		 */
 		UpdateInformationListener updateInformationListener = new UpdateInformationListener(textpaneInformation);
 		updateInformationListener.addDescription(checkboxShowAdvancedSettings, "Shows advanced settings. In most cases, you don't need to change them.");
-		updateInformationListener.addDescription(buttonShowPreview, "Shows you the result for the current image."
-				+ " Be careful: If you change the filament or mask width the update may be long time.");
-		updateInformationListener.addDescription(textfieldFilamentWidth, "The width of your filaments in pixel.");
-		buttonShowPreview.addMouseListener(updateInformationListener);
-		comboboxPreviewOptions.addMouseListener(updateInformationListener);
-		textfieldFilamentWidth.addMouseListener(updateInformationListener);
+		updateInformationListener.addDescription(textfieldFilamentWidth, "<html>The width of your filaments in pixel.</html>");
+		updateInformationListener.addDescription(textfieldMaskWidth, "As the response along the filament randomly fluctuates and sometimes disappear, it is important to average along "
+				+ "the filament.");
+		updateInformationListener.addDescription(textfieldLowerThreshold, "<html>Lower detection threshold. Filter responses lower than that value will be considered "
+				+ "as background and filament tracing stops here."
+				+ "Higher values lead to more segmented lines, as low contrast regions of a filament will be considered as background the line is splitted at this position.<br><br>"
+				+ "As there is no easy way to guess this parameter, it is <b>recommended</b> to use the detection assistant (<i>File -> Detection assistant</i>)</html>");
+		updateInformationListener.addDescription(textfieldUpperThreshold, "<html>Upper detection threshold. Filter responens higher than that will be considered as "
+				+ "valid filament starting point."
+				+ "With higher values the contrast of the filaments have to higher be to be picked.<br><br>"
+				+ "As there is no easy way to guess this parameter, it is <b>recommended</b> to use the detection assistant (<i>File -> Detection assistant</i>)</html>");
+		updateInformationListener.addDescription(buttonShowPreview, "Preview the detection on the current slice.");
+		updateInformationListener.addDescription(comboboxPreviewOptions, "<html>There are multiple preview options:<br>"
+				+ "<ul> <li><b>Boxes:</b> Shows the placed boxes after filtering.</li><br>"
+				+ "<li><b>Points:</b> Same as \"Boxes\" but for the sake of clarity is shows just points instead of boxes</li><br>"
+				+ "<li><b>Reponse map + detected lines:</b> Shows the the enhanced filaments and the detected filaments (without filtering).</li></ul></html>");
 		
+		updateInformationListener.addDescription(buttonApply, "Apply the detection and filtering procedure to the whole stack. "
+				+ "Don't forget to export your boxes after the process as finished (<i>File -> Export boxes</i>).");
+		updateInformationListener.addDescription(buttonCancel, "Close the plugin.");
+		updateInformationListener.addDescription(checkboxEqualize, "After enhancement of the filaments, all images are adjusted that filamants have a more similar absolute response. "
+				+ "Especially when the image contains high contrast contaminations, this option has a positive effect. By defaut this option is activated.");
+		
+		
+		/*
+		 * Documentation filtering pane
+		 */
+		updateInformationListener.addDescription(textfieldMinNumberBoxes, "The minimum number of boxes that have to be placed per line.");
+		updateInformationListener.addDescription(spinnerSigmaMinResponse, "The mean response M and the standard deviation S are estimated over all lines per image."
+				+ "If a line has a signficant number of line points below the threshold T = M-<b>F</b>*S it is considered as false-positiv (background) and is removed, whereas <b>F</b> is value to specifiy.</br>"
+				+ "By default, this filter is deactivated (set to 0). A resonable value lies typically between 2 - 3.");
+		updateInformationListener.addDescription(spinnerSigmaMaxResponse, "The mean response M and the standard deviation S are estimated over all lines per image."
+				+ "If a line has a signficant number of line points above the threshold T = M+<b>F</b>*S it is considered as false-positiv (ice,overlapping filament) and is removed, whereas <b>F</b> is value to specifiy.</br>"
+				+ "By default, this filter is deactivated (set to 0). A resonable value lies typically between 2 - 3.");
+		updateInformationListener.addDescription(spinnerOverlappingFactor, "Relative amount to what extend two boxes auf different filaments are allowed to overlap. "
+				+ "The default value 0.5 which is the maximum value that ensures that a box contains only one filament");
+		updateInformationListener.addDescription(spinnerMinStraightness, "Threshold value for minimum straightness. Line segments (see window size) with a straightness below "
+				+ "that threshold will be removed and the line is splitted. Higher values means that the filament have to be more straight, where 1 means a perfect straight line.");
+		updateInformationListener.addDescription(textfieldWindowSize, "The number of line points which are used to estimate the straightness. Larger values lead to more robustness against noise"
+				+ "but decrease to ability to detect small curves.");
+		
+		
+		/*
+		 * Documentation general pane
+		 */
+		updateInformationListener.addDescription(textfieldBoxSize, "Size the boxes in pixel. <br>During export you can rescale each box so that it fits the original image size");
+		updateInformationListener.addDescription(textfieldBoxDistance, "Distance between two boxes along the filament.");
+
 		checkboxShowAdvancedSettings.addActionListener(new ActionListener() {
 			
 			@Override
@@ -405,7 +455,7 @@ public class HelicalPickerGUI implements Runnable {
 		c.gridheight = 1;
 		c.gridx = 0;
 		c.gridy = basicPaneRow;
-		informationPane.add(textpaneInformation);
+		informationPane.add(scrollPaneInfo);
 		basicPane.add(informationPane, c);
 		basicPaneRow+=1;
 		c.weighty = 0;
@@ -718,6 +768,23 @@ public class HelicalPickerGUI implements Runnable {
 		straightnessConstr.gridx = 1;
 		straightnessConstr.gridy = 0;
 		straightnessFilterPanel.add(spinnerMinStraightness, straightnessConstr);
+		
+		straightnessConstr.fill = GridBagConstraints.HORIZONTAL;
+		straightnessConstr.insets = new Insets(0,5,0,5);      //make this component tall
+		straightnessConstr.weightx = 0.7;
+		straightnessConstr.gridwidth = 1;
+		straightnessConstr.gridx = 0;
+		straightnessConstr.gridy = 1;
+		straightnessFilterPanel.add(labelWindowSize, straightnessConstr);
+		
+		straightnessConstr.weightx = 0.3;
+		straightnessConstr.gridwidth = 2;
+		straightnessConstr.gridx = 1;
+		straightnessConstr.gridy = 1;
+		straightnessFilterPanel.add(textfieldWindowSize, straightnessConstr);
+		
+		
+		
 		straightnessFilterPanel.setVisible(false);
 		
 		c.fill = GridBagConstraints.HORIZONTAL;

@@ -2,38 +2,42 @@ package de.mpi_dortmund.ij.mpitools.RidgeDetectionOptimizer;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
 
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
-import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.HelicalPickerGUI;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Line;
-import ij.gui.PolygonRoi;
+import ij.gui.Overlay;
+import ij.gui.Roi;
 
 public class RidgeDetectionOptimizerAssistant {
 	
 	private JFrame guiFrame;
 	JPanel pane_step1;
 	ImagePlus target_image;
-	int measured_length = 1;
+	int measured_length = -1;
+	ArrayList<Roi> selected_filaments;
 	public RidgeDetectionOptimizerAssistant(ImagePlus target_image) {
 		this.target_image = target_image;
+		selected_filaments = new ArrayList<Roi>();
 	}
 	
 	public void showGUI(){
@@ -72,6 +76,8 @@ public class RidgeDetectionOptimizerAssistant {
 		//guiFrame.setLocationRelativeTo(imp.getWindow());
 		guiFrame.setSize(new Dimension(400, 400));
 		guiFrame.setVisible(true);
+		
+		target_image.setOverlay(null);
 
 	}
 	
@@ -102,7 +108,9 @@ public class RidgeDetectionOptimizerAssistant {
 	}
 	
 	public JPanel createPaneStep1(){
-		IJ.setTool("line");
+		if(IJ.getInstance()!=null){
+			IJ.setTool("line");
+		}
 		GridBagConstraints c = new GridBagConstraints();
 		JPanel pane_step1 = new JPanel();
 		
@@ -137,7 +145,20 @@ public class RidgeDetectionOptimizerAssistant {
 		pane_step1.add(informationPane, c);
 		paneRow+=1;
 		
+		final JLabel labelMeasuredLength = new JLabel("  Measured length:");
+		Font font = labelMeasuredLength.getFont();
+		labelMeasuredLength.setFont(font.deriveFont(font.getStyle() | Font.BOLD));
+		c.fill = GridBagConstraints.BOTH;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 0;
+		c.gridwidth = 3;
+		c.gridheight = 1;
+		c.gridx = 0;
+		c.gridy = paneRow;
+		pane_step1.add(labelMeasuredLength,c);
 		
+		paneRow+=1;
 		JButton btMeasure = new JButton("Measure");
 		c.fill = GridBagConstraints.BOTH;
 		c.insets = new Insets(0,5,0,5);      //make this component tall
@@ -157,7 +178,27 @@ public class RidgeDetectionOptimizerAssistant {
 				Line roi =  (Line)target_image.getRoi();
 				measured_length = (int)Math.round(roi.getLength());
 				Helical_Picker_.getGUI().updateFilamentWidth(measured_length);
+				labelMeasuredLength.setText("  Measured length: " + measured_length) ;
+				
+			}
+		});
+		
+		JButton btCancel = new JButton("Cancel");
+		c.fill = GridBagConstraints.BOTH;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 0;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.gridx = 0;
+		c.gridy = paneRow;
+		pane_step1.add(btCancel,c);
+		
+		btCancel.addActionListener(new ActionListener() {
 			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				guiFrame.dispose();
 				
 			}
 		});
@@ -167,9 +208,9 @@ public class RidgeDetectionOptimizerAssistant {
 		c.insets = new Insets(0,5,0,5);      //make this component tall
 		c.weightx = 0.0;
 		c.weighty = 0;
-		c.gridwidth = 1;
+		c.gridwidth = 2;
 		c.gridheight = 1;
-		c.gridx = 2;
+		c.gridx = 1;
 		c.gridy = paneRow;
 		pane_step1.add(btNext,c);
 		paneRow+=1;
@@ -186,7 +227,9 @@ public class RidgeDetectionOptimizerAssistant {
 	}
 	
 	public JPanel createPaneStep2(){
-		IJ.setTool("polyline");
+		if(IJ.getInstance() != null){
+			IJ.setTool("polyline");
+		}
 		Line.setWidth(measured_length);
 		GridBagConstraints c = new GridBagConstraints();
 		JPanel pane_step1 = new JPanel();
@@ -227,14 +270,54 @@ public class RidgeDetectionOptimizerAssistant {
 		paneRow+=1;
 		
 		
+		JButton btDelete = new JButton("Delete last filament");
+		c.fill = GridBagConstraints.BOTH;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 0;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.gridx = 0;
+		c.gridy = paneRow;
+		pane_step1.add(btDelete,c);
+		
+		btDelete.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				if(selected_filaments.size()>0){
+					//Find last filament with current position
+					int to_remove=-1;
+					for(int i = 0; i < selected_filaments.size(); i++){
+						if(selected_filaments.get(i).getPosition()==target_image.getCurrentSlice()){
+							to_remove = i;
+						}
+					}
+					
+					if(to_remove!=-1){
+						selected_filaments.remove(to_remove);
+					}
+					Overlay ov = new Overlay();
+					for (Roi roi : selected_filaments) {
+						ov.add(roi);
+					}
+					target_image.setOverlay(ov);
+				}
+
+				
+			}
+		});
+		
+		
 		JButton btAdd = new JButton("Add filament");
 		c.fill = GridBagConstraints.BOTH;
 		c.insets = new Insets(0,5,0,5);      //make this component tall
 		c.weightx = 0.0;
 		c.weighty = 0;
-		c.gridwidth = 3;
+		c.gridwidth = 2;
 		c.gridheight = 1;
-		c.gridx = 0;
+		c.gridx = 1;
 		c.gridy = paneRow;
 		pane_step1.add(btAdd,c);
 		paneRow+=1;
@@ -243,22 +326,31 @@ public class RidgeDetectionOptimizerAssistant {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
-				IJ.run(target_image, "Add Selection...", "");
+				Overlay ov = target_image.getOverlay();
+				if(ov==null){
+					ov = new Overlay();
+					target_image.setOverlay(ov);
+				}
+				Roi r = target_image.getRoi();
+				r.setPosition(target_image.getCurrentSlice());
+				selected_filaments.add(r);
+				ov.add(target_image.getRoi());
 				IJ.run(target_image, "Select None", "");
 
 				
 			}
 		});
 		
+		
+		
 		JButton btNext = new JButton("Next");
 		c.fill = GridBagConstraints.BOTH;
 		c.insets = new Insets(0,5,0,5);      //make this component tall
 		c.weightx = 0.0;
 		c.weighty = 0;
-		c.gridwidth = 1;
+		c.gridwidth = 3;
 		c.gridheight = 1;
-		c.gridx = 2;
+		c.gridx = 0;
 		c.gridy = paneRow;
 		pane_step1.add(btNext,c);
 		paneRow+=1;

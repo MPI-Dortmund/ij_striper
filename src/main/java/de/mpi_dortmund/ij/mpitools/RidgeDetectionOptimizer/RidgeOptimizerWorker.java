@@ -10,6 +10,7 @@ import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.IFilamentEnhancerWorker;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.custom.IWorker;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import ij.IJ;
 import ij.ImageStack;
 import ij.process.ImageProcessor;
@@ -40,7 +41,7 @@ public class RidgeOptimizerWorker extends Thread {
 		if(goodness > best_goodness){
 			best_para = para;
 			best_goodness = goodness;
-			IJ.log("############ Goodness: " + best_goodness + " LT: " + para.getLowerThreshold() + " UT: " + para.getUpperThreshold());
+			CentralLog.getInstance().info("############ Goodness: " + best_goodness + " LT: " + para.getLowerThreshold() + " UT: " + para.getUpperThreshold());
 			return true;
 		}
 		return false;

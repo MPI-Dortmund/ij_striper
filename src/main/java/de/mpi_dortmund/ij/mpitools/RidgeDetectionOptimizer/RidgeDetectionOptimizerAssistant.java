@@ -15,6 +15,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingWorker;
@@ -403,6 +404,19 @@ public JPanel createPaneStep3(){
 		pane_step1.add(informationPane, c);
 		paneRow+=1;
 		
+		final JProgressBar bar = new JProgressBar(0, 100);
+		bar.setVisible(false);
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 0;
+		c.gridwidth = 3;
+		c.gridheight = 1;
+		c.gridx = 0;
+		c.gridy = paneRow;
+		pane_step1.add(bar, c);
+		paneRow++;
+		
 		JButton btStart = new JButton("Start");
 		c.fill = GridBagConstraints.BOTH;
 		c.insets = new Insets(0,5,0,5);      //make this component tall
@@ -425,6 +439,8 @@ public JPanel createPaneStep3(){
 					DetectionThresholdRange best_range;
 					@Override
 					protected Boolean doInBackground() throws Exception {
+						bar.setIndeterminate(true);
+						bar.setVisible(true);
 						int mask_width = Helical_Picker_.getGUI().getFilamentEnhancerContext().getMaskWidth();
 						pparallelOptimizer = new Parallel_Ridge_Optimizer();
 						int global_runs = 20;

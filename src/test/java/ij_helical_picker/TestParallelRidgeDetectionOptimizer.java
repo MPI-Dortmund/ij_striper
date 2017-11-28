@@ -6,6 +6,12 @@ import java.net.URL;
 
 import org.junit.Test;
 
+import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancer;
+import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
+import de.mpi_dortmund.ij.mpitools.RidgeDetectionOptimizer.Parallel_Ridge_Optimizer;
+import de.mpi_dortmund.ij.mpitools.RidgeDetectionOptimizer.RidgeOptimizerWorker;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -54,6 +60,36 @@ public class TestParallelRidgeDetectionOptimizer {
 		mb.findConnectedComponents();
 		int thirdFrame =  mb.size();
 		assertEquals(3, firstFrame+thirdFrame);
+		
+	}
+	
+	@Test
+	public void test_Optimize() {
+		URL url = this.getClass().getClassLoader().getResource("3lines_with_selection.tif");
+		ImagePlus input = new ImagePlus(url.getPath());
+		/*
+		FilamentEnhancerContext enhancer_context = new FilamentEnhancerContext();
+		enhancer_context.setAngleStep(2);
+		enhancer_context.setEqualize(true);
+		enhancer_context.setMaskWidth(20);
+		enhancer_context.setFilamentWidth(10);
+		
+		FilamentEnhancer enhancer = new FilamentEnhancer(input.getImageStack(), enhancer_context);
+		ImageStack enhanced = enhancer.getEnhancedImages(new SliceRange(1, 1));
+		
+		url = this.getClass().getClassLoader().getResource("3lines_ground_truth.tif");
+		ImagePlus ground_truth = new ImagePlus(url.getPath());
+		*/
+		Parallel_Ridge_Optimizer optim = new Parallel_Ridge_Optimizer();
+		int GLOBAL_RUNS = 40;
+		int LOCAL_RUNS = 40;
+		int mask_width = 20;
+		int filament_width = 10;
+		DetectionThresholdRange start_params = null;//new DetectionThresholdRange(0.0, 9.228515625);
+		DetectionThresholdRange range = optim.optimize(input, start_params, filament_width, mask_width, GLOBAL_RUNS, LOCAL_RUNS);
+
+		assertEquals(2.279, range.getLowerThreshold(),0.01);
+		assertEquals(2.937, range.getUpperThreshold(),0.01);
 		
 	}
 

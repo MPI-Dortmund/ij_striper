@@ -102,5 +102,8 @@ public class TestPipelineRunner {
 		ArrayList<Polygon> lines_second = filtered_lines_map.get(2);
 		assertEquals(1, lines_second.size());
 	}
+	
+	
+
 
 }

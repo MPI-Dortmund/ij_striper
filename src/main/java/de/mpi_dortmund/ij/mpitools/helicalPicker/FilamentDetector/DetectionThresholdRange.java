@@ -17,5 +17,11 @@ public class DetectionThresholdRange {
 	public double getUpperThreshold(){
 		return upper_threshold;
 	}
+	
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return "Lower " + lower_threshold + " Upper: " + upper_threshold;
+	}
 
 }

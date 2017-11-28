@@ -13,6 +13,7 @@ import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerContext;
 import de.mpi_dortmund.ij.mpitools.FilamentEnhancer.FilamentEnhancerWorker;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
+import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.FilamentDetectorContext;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.custom.WorkerArrayCreator;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.HelicalPickerGUI;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
@@ -29,23 +30,37 @@ import ij.process.ImageProcessor;
 public class Parallel_Ridge_Optimizer {	
 	
 	public DetectionThresholdRange optimize(ImagePlus imp, int filament_width, int mask_width, int GLOBAL_RUNS, int LOCAL_RUNS){
+		return optimize(imp, null, filament_width, mask_width, GLOBAL_RUNS, LOCAL_RUNS);
+	}
+	
+	public DetectionThresholdRange optimize(ImagePlus imp, DetectionThresholdRange start_params, int filament_width, int mask_width, int GLOBAL_RUNS, int LOCAL_RUNS){
 		Overlay ov = imp.getOverlay();
 		HashSet<Integer> slicesWithSelectionSet = new HashSet<Integer>();
 		for(int i = 0; i < ov.size(); i++){
 			slicesWithSelectionSet.add(ov.get(i).getPosition());
 		}
 		Integer[] slicesWithSelection = slicesWithSelectionSet.toArray(new Integer[slicesWithSelectionSet.size()]);
+	
 		ImagePlus substack = getSubStack(imp, slicesWithSelection);
+		
 		ImageStack enhanced_substack = getEnhancedFilaments(substack, filament_width, mask_width);
+		
 		ImageStack binary_substack = getBinaryStack(imp);
-		DetectionThresholdRange start_params = searchRange(enhanced_substack, filament_width);
+		if(start_params==null){
+			start_params = searchRange(enhanced_substack, filament_width);
+		}
 		
 		int numberOfProcessors = Runtime.getRuntime().availableProcessors();
 		
 		RidgeOptimizerWorker[] workers = new RidgeOptimizerWorker[numberOfProcessors];
 		for(int i = 0; i < workers.length; i++){
-			workers[i] = new RidgeOptimizerWorker(enhanced_substack, binary_substack, start_params, filament_width, GLOBAL_RUNS, LOCAL_RUNS);
+			RidgeOptimizerWorker precursor = null;
+			if(i>0){
+				precursor = workers[i-1];
+			}
+			workers[i] = new RidgeOptimizerWorker(enhanced_substack, binary_substack, start_params, filament_width, GLOBAL_RUNS, LOCAL_RUNS,precursor);
 		}
+		
 		
 		ExecutorService pool = Executors.newFixedThreadPool(numberOfProcessors);
 		for (RidgeOptimizerWorker worker : workers) {
@@ -72,7 +87,13 @@ public class Parallel_Ridge_Optimizer {
 		Overlay ov = imp.getOverlay();
 		Overlay newOv = new Overlay();
 		for(int i = 0; i < slicesWithSelection.length; i++){
-			subStack.addSlice(imp.getStack().getProcessor(slicesWithSelection[i]));
+			ImageProcessor slice_with_selection = null;
+			if(slicesWithSelection[i]==0){
+				slice_with_selection = imp.getProcessor();
+			}else {
+				slice_with_selection = imp.getStack().getProcessor(slicesWithSelection[i]);
+			}
+			subStack.addSlice(slice_with_selection);
 			if(ov!=null){
 				for(int j = 0; j < ov.size(); j++){
 					if(ov.get(j).getPosition()==slicesWithSelection[i]){
@@ -146,7 +167,8 @@ public class Parallel_Ridge_Optimizer {
 		boolean doCorrectPosition = true;
 		boolean doEstimateWidth = false;
 		boolean doExtendLine = true;
-		double sigma = filament_width/(2*Math.sqrt(3)) + 0.5;
+		
+		double sigma = FilamentDetectorContext.filamentWidthToSigma((int) filament_width);
 		
 		do{
 			int N_FOUND = 0;

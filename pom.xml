@@ -104,6 +104,11 @@
                </goals>
             </execution>
          </executions>
+         <configuration>
+                <excludes>
+                    <exclude>**/*HelicalPickerGUI.java</exclude>
+                </excludes>
+         </configuration>
       </plugin>
 	 
    </plugins>

@@ -19,7 +19,6 @@ public class SliceRange {
 	
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
 		return "From: " + slice_from + "To: " + slice_to;
 	}
 

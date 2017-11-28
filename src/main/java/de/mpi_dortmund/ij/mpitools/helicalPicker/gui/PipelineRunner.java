@@ -24,12 +24,31 @@ public class PipelineRunner {
 	private ImageStack enhanced_images = null;
 	HashMap<Integer, ArrayList<Polygon>> filtered_lines = null;
 	HashMap<Integer, ArrayList<Polygon>> lines_in_enhanced_substack = null;
+	
+	/**
+	 * Runs the complete pipeline
+	 * @param input_images One or several images with filaments
+	 * @param slice_range Slice range for evaluation
+	 * @param filterContext Parameter context for filtering detected filaments
+	 * @param enhancer_context Parameters for filaments enhancement
+	 * @param detector_context Parameters for filaments detections
+	 */
 	public void run(ImagePlus input_images, SliceRange range, FilamentFilterContext line_filter_context, FilamentEnhancerContext enhancer_context, FilamentDetectorContext detector_context) {
 		boolean update = true;
 		boolean skip_line_filter = false;
 		run(input_images, range, line_filter_context, enhancer_context, detector_context, update,skip_line_filter);
 	}
 	
+	/**
+	 * Runs the complete pipeline
+	 * @param input_images One or several images with filaments
+	 * @param slice_range Slice range for evaluation
+	 * @param filterContext Parameter context for filtering detected filaments
+	 * @param enhancer_context Parameters for filaments enhancement
+	 * @param detector_context Parameters for filaments detections
+	 * @param update if true, the enhanced filaments will be recalculated. Used for speeding up the preview.
+	 * @param skip_line_filter if true, the line filtering will be skipped.
+	 */
 	public void run(ImagePlus input_images, SliceRange slice_range, FilamentFilterContext filterContext, FilamentEnhancerContext enhancer_context, FilamentDetectorContext detector_context, boolean update, boolean skip_line_filter) {
 		if(Helical_Picker_.getGUI()!=null){
 			Helical_Picker_.getGUI().showProgress(true, "Enhance filaments");
@@ -102,7 +121,12 @@ public class PipelineRunner {
 		
 	}
 	
-	
+	/**
+	 * Extracts a substack
+	 * @param imp Original image stack
+	 * @param range Range for substack
+	 * @return Substack of imp
+	 */
 	public ImagePlus getSubstack(ImagePlus imp, SliceRange range){
 		
 		ImageStack substack = new ImageStack(imp.getWidth(), imp.getHeight());
@@ -115,14 +139,25 @@ public class PipelineRunner {
 		
 	}
 	
+	/**
+	 * Returns a hashmap of filtered lines. The keys are the slice indicies and the values ArrayLists of polygons.
+	 * @return Hashmap of filtered lines
+	 */	
 	public HashMap<Integer, ArrayList<Polygon>> getFilteredLines(){
 		return filtered_lines;
 	}
 	
+	/**
+	 * Returns a hashmap of detected lines befor filtering. The keys are the slice indicies and the values ArrayLists of polygons.
+	 */
 	public HashMap<Integer, ArrayList<Polygon>> getLines(){
 		return lines_in_enhanced_substack;
 	}
 	
+	/**
+	 * 
+	 * @return Returns the enhanced imags.
+	 */
 	public ImageStack getEnhancedImage(){
 		return this.enhanced_images;
 	}

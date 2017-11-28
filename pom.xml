@@ -106,7 +106,7 @@
          </executions>
          <configuration>
                 <excludes>
-                    <exclude>**/*HelicalPickerGUI.java</exclude>
+                    <exclude>de/mpi_dortmund/ij/mpitools/helicalPicker/gui/HelicalPickerGUI.java</exclude>
                 </excludes>
          </configuration>
       </plugin>

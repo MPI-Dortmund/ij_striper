@@ -19,6 +19,7 @@ public class HeliconParticleExporter_ implements PlugIn {
 	ImagePlus imp;
 	
 	public static String last_path;
+	
 	public void run(String arg) {
 		this.imp = IJ.getImage();
 		ArrayList<Line> lines = getLinesFromOverlay(imp.getOverlay());
@@ -39,6 +40,10 @@ public class HeliconParticleExporter_ implements PlugIn {
 		
 	}
 	
+	/**
+	 * @param ov Overlay with lines
+	 * @return return list of lines extracted from overlay
+	 */
 	public ArrayList<Line> getLinesFromOverlay(Overlay ov){
 		
 		HashMap<Integer, Line> lineMap = new HashMap<Integer, Line>();
@@ -61,6 +66,15 @@ public class HeliconParticleExporter_ implements PlugIn {
 		return lines;
 	}
 	
+	/**
+	 * Export lines into boxfile in helicon format.
+	 * @param lines List of detected lines
+	 * @param labels Slice labels (basically the filenames)
+	 * @param path Path where to save the file
+	 * @param numberOfImages Number of images contained in lines
+	 * @param imageHeight Image height for rescaling
+	 * @param scale shrinking factor of the image
+	 */
 	public void export(ArrayList<Line> lines, String[] labels, String path, int numberOfImages, int imageHeight, double scale){
 		
 		for (int i = 0; i < numberOfImages; i++) {
@@ -83,14 +97,14 @@ public class HeliconParticleExporter_ implements PlugIn {
 					
 					
 					for (Line l : sliceLines) {
-						double[] startpoint = ct((int)l.get(0).getBounds().getCenterX(),(int)l.get(0).getBounds().getCenterY(),imageHeight,scale);
-						double[] endpoint = ct((int)l.get(l.size()-1).getBounds().getCenterX(),(int)l.get(l.size()-1).getBounds().getCenterY(),imageHeight,scale);
+						double[] startpoint = scale_coordinates((int)l.get(0).getBounds().getCenterX(),(int)l.get(0).getBounds().getCenterY(),imageHeight,scale);
+						double[] endpoint = scale_coordinates((int)l.get(l.size()-1).getBounds().getCenterX(),(int)l.get(l.size()-1).getBounds().getCenterY(),imageHeight,scale);
 						add = "#helix: (" + startpoint[0] + ", " + startpoint[1] + "),(" + endpoint[0] + ", " + endpoint[1] + "),"+boxsize/scale;
 						writer.writeNext(new String[]{add});
 						
 						for (Roi box : l) {
 							String[] values = new String[2];
-							double[] pos = ct((int)box.getBounds().x+boxsize/2, (int)(box.getBounds().y+boxsize/2),imageHeight,scale);
+							double[] pos = scale_coordinates((int)box.getBounds().x+boxsize/2, (int)(box.getBounds().y+boxsize/2),imageHeight,scale);
 							values[0] = "" + pos[0];
 							values[1] = "" + pos[1];
 						    writer.writeNext(values);
@@ -109,8 +123,9 @@ public class HeliconParticleExporter_ implements PlugIn {
 		}
 	}
 	
+	
 	// Coordinate transform
-	public double[] ct(int x, int y, int imageHeight, double scale){
+	public double[] scale_coordinates(int x, int y, int imageHeight, double scale){
 		
 		double originalImageHeight = imageHeight/scale;
 		

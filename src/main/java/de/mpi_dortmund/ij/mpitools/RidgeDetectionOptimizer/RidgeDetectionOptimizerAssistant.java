@@ -342,16 +342,35 @@ public class RidgeDetectionOptimizerAssistant {
 			}
 		});
 		
+		JButton btPrevious = new JButton("Previous");
+		c.fill = GridBagConstraints.BOTH;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 0;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.gridx = 0;
+		c.gridy = paneRow;
+		pane_step1.add(btPrevious,c);
 		
+		btPrevious.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				target_image.setOverlay(null);
+				JPanel panel1 = createPaneStep1();
+				updatePanel(panel1);
+			}
+		});
 		
 		JButton btNext = new JButton("Next");
 		c.fill = GridBagConstraints.BOTH;
 		c.insets = new Insets(0,5,0,5);      //make this component tall
 		c.weightx = 0.0;
 		c.weighty = 0;
-		c.gridwidth = 3;
+		c.gridwidth = 2;
 		c.gridheight = 1;
-		c.gridx = 0;
+		c.gridx = 1;
 		c.gridy = paneRow;
 		pane_step1.add(btNext,c);
 		paneRow+=1;
@@ -417,14 +436,34 @@ public JPanel createPaneStep3(){
 		pane_step1.add(bar, c);
 		paneRow++;
 		
-		JButton btStart = new JButton("Start");
+		JButton btPrevious = new JButton("Previous");
 		c.fill = GridBagConstraints.BOTH;
 		c.insets = new Insets(0,5,0,5);      //make this component tall
 		c.weightx = 0.0;
 		c.weighty = 0;
 		c.gridwidth = 1;
 		c.gridheight = 1;
-		c.gridx = 2;
+		c.gridx = 0;
+		c.gridy = paneRow;
+		pane_step1.add(btPrevious,c);
+		
+		btPrevious.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JPanel panel2 = createPaneStep2();
+				updatePanel(panel2);
+			}
+		});
+		
+		JButton btStart = new JButton("Start");
+		c.fill = GridBagConstraints.BOTH;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 0;
+		c.gridwidth = 2;
+		c.gridheight = 1;
+		c.gridx = 1;
 		c.gridy = paneRow;
 		pane_step1.add(btStart,c);
 		paneRow+=1;

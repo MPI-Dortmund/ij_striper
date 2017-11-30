@@ -119,12 +119,21 @@ public class HelicalPickerGUI implements Runnable {
 	
 	PreviewActionListener listenerPreview;
 	
-	public void createAndShowGUI(){
+	public HelicalPickerGUI() {
 		String version = getClass().getPackage().getImplementationVersion();
 		if(version==null){
 			version = "";
 		}
 		guiFrame = new JFrame("STRIPPER V"+version);
+	}
+	
+	public void setMainFrame(JFrame frame){
+		guiFrame = frame;
+	}
+	
+	public void createAndShowGUI(){
+		
+		
 		guiFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		guiFrame.setJMenuBar(createMenuBar());
 		guiFrame.setMinimumSize(new Dimension(320, 700));

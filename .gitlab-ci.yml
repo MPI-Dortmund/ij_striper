@@ -3,7 +3,7 @@ image: thorstenwagner/docker-java8-maven
 #maven:3-jdk-7
 
 before_script:
-  - "export JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk"
+  - "yum install java-1.8.0-openjdk-devel "
   - "yum install which -y"
   - "Xvfb :99 &"
   - "export DISPLAY=:99"

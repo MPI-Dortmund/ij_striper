@@ -1,5 +1,9 @@
 image: thorstenwagner/docker-java8-maven
 
+before_script:
+  - "Xvfb :99 &"
+  - "export DISPLAY=:99"
+
 maven_build:
   stage: build
   script:

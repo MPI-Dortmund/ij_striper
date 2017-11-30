@@ -1,12 +1,4 @@
 image: thorstenwagner/docker-java8-maven
-#image: kaiwinter/docker-java8-maven
-#maven:3-jdk-7
-
-before_script:
-  - "yum install java-1.8.0-openjdk-devel -y"
-  - "yum install which -y"
-  - "Xvfb :99 &"
-  - "export DISPLAY=:99"
 
 maven_build:
   stage: build

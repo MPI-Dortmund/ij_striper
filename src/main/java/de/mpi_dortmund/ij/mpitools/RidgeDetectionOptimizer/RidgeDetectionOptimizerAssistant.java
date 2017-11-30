@@ -17,9 +17,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.SpinnerModel;
 import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
+import javax.swing.event.ChangeListener;
+
+import org.apache.commons.lang3.StringUtils;
 
 import de.mpi_dortmund.ij.mpitools.helicalPicker.Helical_Picker_;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.FilamentDetector.DetectionThresholdRange;
@@ -27,6 +33,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Line;
 import ij.gui.Overlay;
+import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 
 public class RidgeDetectionOptimizerAssistant {
@@ -36,6 +43,8 @@ public class RidgeDetectionOptimizerAssistant {
 	ImagePlus target_image;
 	int measured_length = -1;
 	ArrayList<Roi> selected_filaments;
+	int number_global_runs = 20;
+	int number_local_runs = 20;
 	public RidgeDetectionOptimizerAssistant(ImagePlus target_image) {
 		this.target_image = target_image;
 		selected_filaments = new ArrayList<Roi>();
@@ -67,6 +76,11 @@ public class RidgeDetectionOptimizerAssistant {
 		//guiFrame.setMinimumSize(new Dimension(320, 320));
 		//guiFrame.setMaximumSize(new Dimension(320, 320));
 		
+		if(getNumberFilaments(target_image.getOverlay())>0){
+			importFilamentAndSettings(target_image.getOverlay());
+		}else{
+			target_image.setOverlay(null);
+		}
 		
 		guiFrame.setLayout(new GridBagLayout());
 		pane_step1 = createPaneStep1();
@@ -78,8 +92,35 @@ public class RidgeDetectionOptimizerAssistant {
 		guiFrame.setSize(new Dimension(400, 400));
 		guiFrame.setVisible(true);
 		
-		target_image.setOverlay(null);
+		
 
+	}
+	
+	private int getNumberFilaments(Overlay ov){
+		if(ov!=null){
+			int n = 0;
+			for(int i = 0; i < ov.size(); i++){
+				 if (ov.get(i) instanceof PolygonRoi) {
+					 n++;
+					
+				}
+			}
+			return n;
+		}
+		return 0;
+	}
+	
+	public void importFilamentAndSettings(Overlay ov){
+		
+		for(int i = 0; i < ov.size(); i++){
+			 
+			 if (ov.get(i) instanceof PolygonRoi) {
+				 selected_filaments.add(ov.get(i));
+				 measured_length = (int) ((PolygonRoi)ov.get(i)).getStrokeWidth();
+				 Helical_Picker_.getGUI().updateFilamentWidth(measured_length);
+				
+			}
+		}
 	}
 	
 	public void updatePanel(JPanel panel){
@@ -146,7 +187,11 @@ public class RidgeDetectionOptimizerAssistant {
 		pane_step1.add(informationPane, c);
 		paneRow+=1;
 		
-		final JLabel labelMeasuredLength = new JLabel("  Measured length:");
+		String lblTxt = "  Measured length:";
+		if(measured_length!=-1){
+			lblTxt += (" " + measured_length);
+		}
+		final JLabel labelMeasuredLength = new JLabel(lblTxt);
 		Font font = labelMeasuredLength.getFont();
 		labelMeasuredLength.setFont(font.deriveFont(font.getStyle() | Font.BOLD));
 		c.fill = GridBagConstraints.BOTH;
@@ -436,6 +481,79 @@ public JPanel createPaneStep3(){
 		pane_step1.add(bar, c);
 		paneRow++;
 		
+		JLabel labelTfNumberGlobalRuns = new JLabel("Number of global runs:");
+		c.fill = GridBagConstraints.BOTH;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 0;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.gridx = 0;
+		c.gridy = paneRow;
+		pane_step1.add(labelTfNumberGlobalRuns,c);
+		
+		final JTextField tfNumberGlobalRuns = new JTextField("20", 3);
+		c.fill = GridBagConstraints.BOTH;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 0;
+		c.gridwidth = 2;
+		c.gridheight = 1;
+		c.gridx = 1;
+		c.gridy = paneRow;
+		pane_step1.add(tfNumberGlobalRuns,c);
+		
+		tfNumberGlobalRuns.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String txt = tfNumberGlobalRuns.getText();
+				if(StringUtils.isNumeric(txt)){
+					number_global_runs = Integer.parseInt(txt);
+				}
+				
+			}
+		});
+		
+		paneRow++;
+		
+		
+		JLabel labelTfNumberLocalRuns = new JLabel("Number of local runs:");
+		c.fill = GridBagConstraints.BOTH;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 0;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.gridx = 0;
+		c.gridy = paneRow;
+		pane_step1.add(labelTfNumberLocalRuns,c);
+		
+		final JTextField tfNumberLocalRuns = new JTextField("20", 3);
+		c.fill = GridBagConstraints.BOTH;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0.0;
+		c.weighty = 0;
+		c.gridwidth = 2;
+		c.gridheight = 1;
+		c.gridx = 1;
+		c.gridy = paneRow;
+		pane_step1.add(tfNumberLocalRuns,c);
+		
+		tfNumberLocalRuns.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String txt = tfNumberLocalRuns.getText();
+				if(StringUtils.isNumeric(txt)){
+					number_local_runs = Integer.parseInt(txt);
+				}
+				
+			}
+		});
+		
+		paneRow++;
+		
 		JButton btPrevious = new JButton("Previous");
 		c.fill = GridBagConstraints.BOTH;
 		c.insets = new Insets(0,5,0,5);      //make this component tall
@@ -482,9 +600,8 @@ public JPanel createPaneStep3(){
 						bar.setVisible(true);
 						int mask_width = Helical_Picker_.getGUI().getFilamentEnhancerContext().getMaskWidth();
 						pparallelOptimizer = new Parallel_Ridge_Optimizer();
-						int global_runs = 20;
-						int local_runs = 20;
-						best_range = pparallelOptimizer.optimize(target_image, measured_length, mask_width, global_runs, local_runs);
+
+						best_range = pparallelOptimizer.optimize(target_image, measured_length, mask_width, number_global_runs, number_local_runs);
 						return false;
 					}
 

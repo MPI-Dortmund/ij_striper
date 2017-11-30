@@ -2,6 +2,7 @@ image: kaiwinter/docker-java8-maven
 #maven:3-jdk-7
 
 before_script:
+  - "apt-get install -y xvfb firefox"
   - "Xvfb :99 &"
   - "export DISPLAY=:99"
 

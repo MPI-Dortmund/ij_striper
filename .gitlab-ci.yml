@@ -8,5 +8,5 @@ before_script:
 maven_build:
   stage: build
   script:
-  - "mvn clean package"
+  - "mvn clean package -Djava.awt.headless=true"
   - "cat target/site/jacoco/index.html"

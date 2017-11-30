@@ -2,6 +2,8 @@ package ij_helical_picker;
 
 import static org.junit.Assert.*;
 
+import java.awt.HeadlessException;
+
 import org.junit.Test;
 
 import de.mpi_dortmund.ij.mpitools.RidgeDetectionOptimizer.RidgeDetectionOptimizerAssistant;
@@ -19,8 +21,12 @@ public class TestRidgeDetectionOptimizerAssistant {
 		JFrameFake fake_frame = new JFrameFake();
 		
 		ass.setMainFrame(fake_frame);
-		
+		try{
 		ass.showGUI();
+		}catch (HeadlessException e) {
+			// IGnore
+		}
+		
 		
 		assertTrue(fake_frame.isVisible());
 	}
@@ -32,8 +38,12 @@ public class TestRidgeDetectionOptimizerAssistant {
 		JFrameFake fake_frame = new JFrameFake();
 		
 		ass.setMainFrame(fake_frame);
-		
+		try{
 		ass.showGUI();
+		}catch (HeadlessException e) {
+			// IGnore
+		}
+		
 		
 		ass.getMeasureWidthPanelButtonNext().doClick();
 		ass.getSelectFilamentsPanelButtonNext().doClick();

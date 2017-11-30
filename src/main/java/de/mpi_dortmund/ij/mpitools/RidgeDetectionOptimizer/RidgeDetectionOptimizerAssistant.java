@@ -45,9 +45,28 @@ public class RidgeDetectionOptimizerAssistant {
 	ArrayList<Roi> selected_filaments;
 	int number_global_runs = 20;
 	int number_local_runs = 20;
+	
+	private JButton btNext_ToPanel2;
+	private JButton btNext_ToPanel3;
+	
+	
 	public RidgeDetectionOptimizerAssistant(ImagePlus target_image) {
 		this.target_image = target_image;
 		selected_filaments = new ArrayList<Roi>();
+		guiFrame= new JFrame("Filament detection assistant");
+	}
+	
+	public JButton getMeasureWidthPanelButtonNext(){
+		return btNext_ToPanel2;
+	}
+	
+	public JButton getSelectFilamentsPanelButtonNext(){
+		return btNext_ToPanel3;
+	}
+	
+	public void setMainFrame(JFrame guiFrame){
+		this.guiFrame = guiFrame;
+		
 	}
 	
 	public void showGUI(){
@@ -71,7 +90,7 @@ public class RidgeDetectionOptimizerAssistant {
 		 * will be transfered to main dialog. Press the button "Start" to start the optimization.
 		 */
 		
-		guiFrame= new JFrame("Filament detection assistant");
+		
 		guiFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		//guiFrame.setMinimumSize(new Dimension(320, 320));
 		//guiFrame.setMaximumSize(new Dimension(320, 320));
@@ -249,7 +268,7 @@ public class RidgeDetectionOptimizerAssistant {
 			}
 		});
 		
-		JButton btNext = new JButton("Next");
+		btNext_ToPanel2 = new JButton("Next");
 		c.fill = GridBagConstraints.BOTH;
 		c.insets = new Insets(0,5,0,5);      //make this component tall
 		c.weightx = 0.0;
@@ -258,10 +277,10 @@ public class RidgeDetectionOptimizerAssistant {
 		c.gridheight = 1;
 		c.gridx = 1;
 		c.gridy = paneRow;
-		pane_step1.add(btNext,c);
+		pane_step1.add(btNext_ToPanel2,c);
 		paneRow+=1;
 		
-		btNext.addActionListener(new ActionListener() {
+		btNext_ToPanel2.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -408,7 +427,7 @@ public class RidgeDetectionOptimizerAssistant {
 			}
 		});
 		
-		JButton btNext = new JButton("Next");
+		btNext_ToPanel3 = new JButton("Next");
 		c.fill = GridBagConstraints.BOTH;
 		c.insets = new Insets(0,5,0,5);      //make this component tall
 		c.weightx = 0.0;
@@ -417,10 +436,10 @@ public class RidgeDetectionOptimizerAssistant {
 		c.gridheight = 1;
 		c.gridx = 1;
 		c.gridy = paneRow;
-		pane_step1.add(btNext,c);
+		pane_step1.add(btNext_ToPanel3,c);
 		paneRow+=1;
 		
-		btNext.addActionListener(new ActionListener() {
+		btNext_ToPanel3.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {

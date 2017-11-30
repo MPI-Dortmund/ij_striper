@@ -1,6 +1,10 @@
 image: kaiwinter/docker-java8-maven
 #maven:3-jdk-7
 
+before_script:
+  - Xvfb :99 &
+  - export DISPLAY=:99
+
 maven_build:
   stage: build
   script:

@@ -3,7 +3,7 @@ image: thorstenwagner/docker-java8-maven
 #maven:3-jdk-7
 
 before_script:
-  - "yum install xvfb firefox"
+  - "yum install xvfb firefox -y"
   - "Xvfb :99 &"
   - "export DISPLAY=:99"
 

@@ -2,7 +2,7 @@ image: kaiwinter/docker-java8-maven
 #maven:3-jdk-7
 
 before_script:
-  - "yum install Xvfb firefox"
+  - yum install Xvfb firefox
 
 maven_build:
   stage: build

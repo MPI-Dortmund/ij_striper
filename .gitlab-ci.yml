@@ -1,8 +1,13 @@
-image: kaiwinter/docker-java8-maven
+image: kaiwinter/docker-java8-maven rickypc/docker-python-firefox-xvfb
 #maven:3-jdk-7
+
+before_script:
+  - "yum install Xvfb firefox"
 
 maven_build:
   stage: build
   script:
+  - "Xvfb :99 &"
+  - "export DISPLAY=:99"
   - "mvn clean package"
   - "cat target/site/jacoco/index.html"

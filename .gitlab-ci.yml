@@ -9,5 +9,5 @@ before_script:
 maven_build:
   stage: build
   script:
-  - "xvfb-run mvn clean package -Djava.awt.headless=true"
+  - "mvn clean package"
   - "cat target/site/jacoco/index.html"

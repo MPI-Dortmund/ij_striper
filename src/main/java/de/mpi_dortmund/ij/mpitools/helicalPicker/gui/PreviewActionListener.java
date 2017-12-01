@@ -135,10 +135,6 @@ public class PreviewActionListener implements ActionListener {
 
 	}
 	
-	public void setTargetImage(ImagePlus target_image){
-		this.target_image = target_image;
-	}
-	
 	public void showLinesAsPreview(ArrayList<Polygon> lines){
 
 		Overlay ovpoly = target_image.getOverlay();

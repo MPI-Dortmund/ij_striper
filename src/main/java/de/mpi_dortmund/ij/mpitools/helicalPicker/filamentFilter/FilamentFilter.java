@@ -122,7 +122,7 @@ public class FilamentFilter {
 		//lines = filterByResponseFixThresholds(lines, response.getProcessor(), min_response, max_response);
 		boolean doFitDistr = context.isFitDistribution();
 		double sigma_max_response = context.getSigmaMaxResponse();
-		double sigma_min_response = context.getMinimumSigmaResponse();
+		double sigma_min_response = context.getSigmaMinResponse();
 		double double_filament_insensitivity = context.getDoubleFilamentInsensitivity();
 		lines = filterByResponseMeanStd(lines, response_image,sigma_max_response, sigma_min_response,double_filament_insensitivity,doFitDistr);
 		

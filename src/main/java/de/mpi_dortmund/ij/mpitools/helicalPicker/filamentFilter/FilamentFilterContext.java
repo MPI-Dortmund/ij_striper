@@ -127,7 +127,7 @@ public class FilamentFilterContext {
 		this.fit_distribution = fit_distribution;
 	}
 
-	public double getMinimumSigmaResponse() {
+	public double getSigmaMinResponse() {
 		return sigma_min_response;
 	}
 

@@ -112,12 +112,29 @@ public class HelicalPickerGUI implements Runnable {
 	JSpinner spinnerOverlappingFactor;
 	
 	JTextField textfieldMinNumberBoxes;
-	JTextField textfieldWindowSize;
+	JTextField textfieldStraightnessWindowSize;
 	
 	JComboBox<String> comboboxCustomMask;
 	JComboBox<String> comboboxPreviewOptions;
 	
 	PreviewActionListener listenerPreview;
+	
+	
+	// DEFAULT VALUES
+	
+	public static final int DEFAULT_BOX_SIZE = 64;
+	public static final int DEFAULT_BOX_DISTANCE = 10;
+	public static final int DEFAULT_MASK_WIDTH = 100;
+	public static final int DEFAULT_FILAMENT_WIDTH = 16;
+	public static final double DEFAULT_LOWER_THRESHOLD = 0.6;
+	public static final double DEFAULT_UPPER_THRESHOLD = 1.2;
+	public static final int DEFAULT_MIN_NUM_BOXES = 7;
+	public static final int DEFAULT_WINDOW_STRAIGHTNESS_SIZE = 30;
+	public static final double DEFAULT_SIGMA_MAX_RESPONSE = 0;
+	public static final double DEFAULT_SIGMA_MIN_RESPONSE = 0;
+	public static final double DEFAULT_LOCAL_MIN_STRAIGHTNESS = 0;
+	public static final double DEFAULT_MIN_SENSITIVITY = 0.9;
+	public static final double DEFAULT_OVERLAPPING_FACTOR = 0.5;
 	
 	public HelicalPickerGUI() {
 		String version = getClass().getPackage().getImplementationVersion();
@@ -226,10 +243,10 @@ public class HelicalPickerGUI implements Runnable {
 		labelCheckboxEqualize = new JLabel("Equalize");
 		labelMaskWidth = new JLabel("Mask width:");
 		labelPreviewOptions = new JLabel("Preview options:");
-		textfieldFilamentWidth = new JTextField("64", 3);
-		textfieldLowerThreshold = new JTextField("0.6", 4);
-		textfieldUpperThreshold = new JTextField("1.2", 4);
-		textfieldMaskWidth = new JTextField("100",3);
+		textfieldFilamentWidth = new JTextField(""+DEFAULT_FILAMENT_WIDTH, 3);
+		textfieldLowerThreshold = new JTextField(""+DEFAULT_LOWER_THRESHOLD, 4);
+		textfieldUpperThreshold = new JTextField(""+DEFAULT_UPPER_THRESHOLD, 4);
+		textfieldMaskWidth = new JTextField(""+DEFAULT_MASK_WIDTH,3);
 		
 		/*
 		 * Filtering pane
@@ -244,19 +261,19 @@ public class HelicalPickerGUI implements Runnable {
 		 labelCustomMask = new JLabel("Custom mask:");
 		 
 		
-		 spinnerSigmaMinResponse = new JSpinner(new SpinnerNumberModel(0, 0, 4, 0.1));
+		 spinnerSigmaMinResponse = new JSpinner(new SpinnerNumberModel(DEFAULT_SIGMA_MIN_RESPONSE, 0, 4, 0.1));
 		 ((JSpinner.DefaultEditor)spinnerSigmaMinResponse.getEditor()).getTextField().setColumns(4);
-		 spinnerSigmaMaxResponse = new JSpinner(new SpinnerNumberModel(0, 0, 4, 0.1));
+		 spinnerSigmaMaxResponse = new JSpinner(new SpinnerNumberModel(DEFAULT_SIGMA_MAX_RESPONSE, 0, 4, 0.1));
 		 ((JSpinner.DefaultEditor)spinnerSigmaMaxResponse.getEditor()).getTextField().setColumns(4);
-		 spinnerSensitvity = new JSpinner(new SpinnerNumberModel(0.9, 0, 1, 0.1));
+		 spinnerSensitvity = new JSpinner(new SpinnerNumberModel(DEFAULT_MIN_SENSITIVITY, 0, 1, 0.1));
 		 ((JSpinner.DefaultEditor)spinnerSensitvity.getEditor()).getTextField().setColumns(4);
-		 spinnerMinStraightness = new JSpinner(new SpinnerNumberModel(0, 0, 1, 0.1));
+		 spinnerMinStraightness = new JSpinner(new SpinnerNumberModel(DEFAULT_LOCAL_MIN_STRAIGHTNESS, 0, 1, 0.1));
 		 ((JSpinner.DefaultEditor)spinnerMinStraightness.getEditor()).getTextField().setColumns(4);
-		 spinnerOverlappingFactor = new JSpinner(new SpinnerNumberModel(0.5, 0, 0.5, 0.1));
+		 spinnerOverlappingFactor = new JSpinner(new SpinnerNumberModel(DEFAULT_OVERLAPPING_FACTOR, 0, 0.5, 0.1));
 		 ((JSpinner.DefaultEditor)spinnerOverlappingFactor.getEditor()).getTextField().setColumns(4);
 		
-		 textfieldMinNumberBoxes = new JTextField("7",4);
-		 textfieldWindowSize = new JTextField("30",4);
+		 textfieldMinNumberBoxes = new JTextField(""+DEFAULT_MIN_NUM_BOXES,4);
+		 textfieldStraightnessWindowSize = new JTextField(""+DEFAULT_WINDOW_STRAIGHTNESS_SIZE,4);
 		 
 		 Vector<String> items = new Vector<String>();
 		 items.add("None");
@@ -271,8 +288,8 @@ public class HelicalPickerGUI implements Runnable {
 		 /*
 		  * General pane
 		  */
-		 textfieldBoxSize = new JTextField("64");
-		 textfieldBoxDistance = new JTextField("10");
+		 textfieldBoxSize = new JTextField(""+DEFAULT_BOX_SIZE);
+		 textfieldBoxDistance = new JTextField(""+DEFAULT_BOX_DISTANCE);
 		 
 		 labelBoxSize = new JLabel("Box size:");
 		 labelBoxDistance = new JLabel("Box distance:");
@@ -383,7 +400,7 @@ public class HelicalPickerGUI implements Runnable {
 				+ "The default value 0.5 which is the maximum value that ensures that a box contains only one filament");
 		updateInformationListener.addDescription(spinnerMinStraightness, "Threshold value for minimum straightness. Line segments (see window size) with a straightness below "
 				+ "that threshold will be removed and the line is splitted. Higher values means that the filament have to be more straight, where 1 means a perfect straight line.");
-		updateInformationListener.addDescription(textfieldWindowSize, "The number of line points which are used to estimate the straightness. Larger values lead to more robustness against noise"
+		updateInformationListener.addDescription(textfieldStraightnessWindowSize, "The number of line points which are used to estimate the straightness. Larger values lead to more robustness against noise"
 				+ "but decrease to ability to detect small curves.");
 		
 		
@@ -790,7 +807,7 @@ public class HelicalPickerGUI implements Runnable {
 		straightnessConstr.gridwidth = 2;
 		straightnessConstr.gridx = 1;
 		straightnessConstr.gridy = 1;
-		straightnessFilterPanel.add(textfieldWindowSize, straightnessConstr);
+		straightnessFilterPanel.add(textfieldStraightnessWindowSize, straightnessConstr);
 		
 		
 		
@@ -972,7 +989,7 @@ public class HelicalPickerGUI implements Runnable {
 	public FilamentFilterContext getLineFilterContext(){
 		int box_size = Integer.parseInt(textfieldBoxSize.getText());
 		double min_straightness = (Double)spinnerMinStraightness.getValue();
-		int straightness_windowsize = Integer.parseInt(textfieldWindowSize.getText());
+		int straightness_windowsize = Integer.parseInt(textfieldStraightnessWindowSize.getText());
 		int box_distance = Integer.parseInt(textfieldBoxDistance.getText());
 		int min_number_boxes = Integer.parseInt(textfieldMinNumberBoxes.getText());
 		int min_filament_length = (min_number_boxes-1)*box_distance+box_size;

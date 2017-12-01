@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;

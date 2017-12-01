@@ -134,6 +134,42 @@ public class TestSkeletonFilter {
 		assertEquals(150, filteredLines.get(0).npoints,1);
 	}
 	
+	
+	@Test
+	public void test_filterLineImage_onlySecondLine_ByResponse_withFitDistr() {
+		//3 lines
+		/* Line		 1		 2		 3
+		 * Length 	200		150		100
+		 * Response	150		100		50
+		 * Distance     ~96     ~90
+		 */
+		/*
+		 * Known mean: 116
+		 * Known SD: 57
+		 */
+		
+		FilamentFilterContext context = new FilamentFilterContext();
+		context.setMinimumFilamentLength(90);
+		context.setMinimumLineStraightness(0);
+		context.setWindowWidthStraightness(10);
+		context.setJunctionRemovementRadius(10);
+		context.setBorderDiameter(5);
+		context.setSigmaMinResponse(0.5);
+		context.setSigmaMaxResponse(0.5);
+		context.setFitDistribution(true);
+		context.setMinFilamentDistance(80);
+		context.setDoubleFilamentInsensitivity(0.3);
+		context.setUserFilters(null);
+
+		FilamentFilter filter = new FilamentFilter();
+		
+		ArrayList<Polygon> filteredLines = filter.filterLineImage(lines.getProcessor(), input.getProcessor(), response.getProcessor(), null, context);
+		
+		assertEquals(1, filteredLines.size());
+		assertEquals(150, filteredLines.get(0).npoints,1);
+	}
+	
+	
 	@Test
 	public void test_filterLineImage_removeSecondLine_ByMask() {
 		//3 lines

@@ -132,7 +132,7 @@ public class FilamentFilter {
 		int minimum_filament_distance = context.getMinFilamentDistance();
 		lines = removeParallelLines((ByteProcessor) line_image, lines, minimum_filament_distance);
 		
-		lines = filterByLength(lines, context.getMinimumNumberBoxes());
+		lines = filterByLength(lines, minimum_number_boxes);
 
 		return lines;
 	}

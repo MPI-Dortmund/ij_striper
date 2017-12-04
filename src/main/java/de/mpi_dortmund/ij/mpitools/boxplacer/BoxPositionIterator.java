@@ -5,6 +5,8 @@ import java.awt.Polygon;
 import java.awt.geom.Point2D;
 import java.util.Iterator;
 
+import ij.IJ;
+
 public class BoxPositionIterator implements Iterator<Point> {
 	Polygon p;
 	int boxsize;
@@ -16,7 +18,8 @@ public class BoxPositionIterator implements Iterator<Point> {
 		this.p = p;
 		boxToBoxDistSq = boxdista*boxdista;
 		distToEndSq = (boxsize*boxsize)/4.0; 
-		topleft= false;
+		this.topleft= topleft;
+		this.boxsize = boxsize;
 	}
 	
 	@Override

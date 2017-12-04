@@ -50,8 +50,10 @@ public class TestSkeletonFilter {
 		 */
 		
 		FilamentFilterContext context = new FilamentFilterContext();
-		context.setMinimumFilamentLength(90);
+		context.setMinimumNumberBoxes(9);
 		context.setMinimumLineStraightness(0);
+		context.setBoxSize(10);
+		context.setBoxDistance(10);
 		context.setWindowWidthStraightness(10);
 		context.setJunctionRemovementRadius(10);
 		context.setBorderDiameter(5);
@@ -62,7 +64,7 @@ public class TestSkeletonFilter {
 		context.setDoubleFilamentInsensitivity(1);
 		context.setUserFilters(null);
 
-		FilamentFilter filter = new FilamentFilter();
+		FilamentFilter filter = new FilamentFilter(context);
 		
 		ArrayList<Polygon> filteredLines = filter.filterLineImage(lines.getProcessor(), input.getProcessor(), response.getProcessor(), null,context);
 		
@@ -80,7 +82,9 @@ public class TestSkeletonFilter {
 		
 		
 		FilamentFilterContext context = new FilamentFilterContext();
-		context.setMinimumFilamentLength(151);
+		context.setBoxSize(10);
+		context.setBoxDistance(10);
+		context.setMinimumNumberBoxes(16);
 		context.setMinimumLineStraightness(0);
 		context.setWindowWidthStraightness(10);
 		context.setJunctionRemovementRadius(10);
@@ -92,7 +96,7 @@ public class TestSkeletonFilter {
 		context.setDoubleFilamentInsensitivity(1);
 		context.setUserFilters(null);
 
-		FilamentFilter filter = new FilamentFilter();
+		FilamentFilter filter = new FilamentFilter(context);
 		
 		ArrayList<Polygon> filteredLines = filter.filterLineImage(lines.getProcessor(), input.getProcessor(), response.getProcessor(), null,context);
 		
@@ -114,7 +118,9 @@ public class TestSkeletonFilter {
 		 */
 		
 		FilamentFilterContext context = new FilamentFilterContext();
-		context.setMinimumFilamentLength(90);
+		context.setBoxSize(10);
+		context.setBoxDistance(10);
+		context.setMinimumNumberBoxes(1);
 		context.setMinimumLineStraightness(0);
 		context.setWindowWidthStraightness(10);
 		context.setJunctionRemovementRadius(10);
@@ -149,7 +155,9 @@ public class TestSkeletonFilter {
 		 */
 		
 		FilamentFilterContext context = new FilamentFilterContext();
-		context.setMinimumFilamentLength(90);
+		context.setMinimumNumberBoxes(1);
+		context.setBoxSize(10);
+		context.setBoxDistance(10);
 		context.setMinimumLineStraightness(0);
 		context.setWindowWidthStraightness(10);
 		context.setJunctionRemovementRadius(10);
@@ -180,7 +188,9 @@ public class TestSkeletonFilter {
 		 */
 		
 		FilamentFilterContext context = new FilamentFilterContext();
-		context.setMinimumFilamentLength(90);
+		context.setMinimumNumberBoxes(1);
+		context.setBoxSize(10);
+		context.setBoxDistance(10);
 		context.setMinimumLineStraightness(0);
 		context.setWindowWidthStraightness(10);
 		context.setJunctionRemovementRadius(10);
@@ -193,7 +203,7 @@ public class TestSkeletonFilter {
 		context.setUserFilters(null);
 	
 		ImageProcessor mask = this.mask.getProcessor();
-		FilamentFilter filter = new FilamentFilter();
+		FilamentFilter filter = new FilamentFilter(context);
 		
 		ArrayList<Polygon> filteredLines = filter.filterLineImage(lines.getProcessor(), input.getProcessor(), response.getProcessor(), mask, context);
 		

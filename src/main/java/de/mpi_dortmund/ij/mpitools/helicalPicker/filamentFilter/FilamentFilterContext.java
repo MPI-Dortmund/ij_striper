@@ -7,7 +7,7 @@ import ij.IJ;
 import ij.ImagePlus;
 
 public class FilamentFilterContext {
-	private int min_filament_length ;
+	private int min_number_boxes ;
 	private double min_line_straightness; 
 	private int window_width_straightness;
 	private int removement_radius;
@@ -16,6 +16,8 @@ public class FilamentFilterContext {
 	private double sigma_max_response;
 	private int min_filament_distance;
 	private int border_diameter;
+	private int box_size;
+	private int box_distance;
 	private double double_filament_insensitivity;
 	
 	
@@ -23,7 +25,7 @@ public class FilamentFilterContext {
 	ImagePlus mask;
 	
 	public FilamentFilterContext() {
-		min_filament_length = 0;
+		min_number_boxes = 0;
 		min_line_straightness = 0;
 		window_width_straightness = 5;
 		removement_radius = 0;
@@ -34,23 +36,25 @@ public class FilamentFilterContext {
 		border_diameter = 0;
 		double_filament_insensitivity = 1;
 		userFilters = null;
+		box_size = 1;
+		box_distance = 1;
 		mask = null;
 	}
 	
 	/**
 	 * @return Returns the minimum length of the filament 
 	 */
-	public int getMinimumFilamentLength() {
+	public int getMinimumNumberBoxes() {
 		
-		return min_filament_length;
+		return min_number_boxes;
 	}
 	
 	/**
 	 * Sets the minimum length of a filament.
 	 * @param min_filament_length Minimum length of the filament
 	 */
-	public void setMinimumFilamentLength(int min_filament_length) {
-		this.min_filament_length = min_filament_length;
+	public void setMinimumNumberBoxes(int min_number_boxes) {
+		this.min_number_boxes = min_number_boxes;
 	}
 
 	/**
@@ -107,6 +111,24 @@ public class FilamentFilterContext {
 	 */
 	public void setJunctionRemovementRadius(int removement_radius) {
 		this.removement_radius = removement_radius;
+	}
+	
+	public void setBoxSize(int box_size){
+		this.box_size = box_size;
+	}
+	
+	
+	public int getBoxSize(){
+		return box_size;
+	}
+	
+	
+	public void setBoxDistance(int box_distance){
+		this.box_distance = box_distance;
+	}
+	
+	public int getBoxDistance(){
+		return box_distance;
 	}
 
 	/**
@@ -185,7 +207,7 @@ public class FilamentFilterContext {
 	
 	@Override
 	public String toString() {
-		min_filament_length = 0;
+		min_number_boxes = 0;
 		min_line_straightness = 0;
 		window_width_straightness = 5;
 		removement_radius = 0;
@@ -197,7 +219,7 @@ public class FilamentFilterContext {
 		double_filament_insensitivity = 1;
 		userFilters = null;
 		mask = null;
-		return "FilamentFilterContext ### Min. Filament length: " + min_filament_length + " Min. straightness " + min_line_straightness + " Min. window width: " + window_width_straightness + ""
+		return "FilamentFilterContext ### Min. Filament length: " + min_number_boxes + " Min. straightness " + min_line_straightness + " Min. window width: " + window_width_straightness + ""
 				+ " Removement radius: " + removement_radius + " Fit distr: " + fit_distribution + " Sigma min: " + sigma_min_response + " Sigma max: " + sigma_max_response + ""
 						+ " Min. filament distance " + min_filament_distance +  " Min. border diameter " + border_diameter + " Double filament insens: " + double_filament_insensitivity + ""
 								+ " UserFilters: " + !(userFilters==null) + " Mask: " + !(mask == null);

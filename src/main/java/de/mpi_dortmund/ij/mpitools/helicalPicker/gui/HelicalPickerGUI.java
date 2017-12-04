@@ -990,9 +990,7 @@ public class HelicalPickerGUI implements Runnable {
 		int box_size = Integer.parseInt(textfieldBoxSize.getText());
 		double min_straightness = (Double)spinnerMinStraightness.getValue();
 		int straightness_windowsize = Integer.parseInt(textfieldStraightnessWindowSize.getText());
-		int box_distance = Integer.parseInt(textfieldBoxDistance.getText());
 		int min_number_boxes = Integer.parseInt(textfieldMinNumberBoxes.getText());
-		int min_filament_length = (min_number_boxes-1)*box_distance+box_size;
 		double sigma_max_response = (double) spinnerSigmaMaxResponse.getValue();
 		double sigma_min_response = (double) spinnerSigmaMinResponse.getValue();
 		double double_filament_detection_insensitivity = 1-(double)spinnerSensitvity.getValue();
@@ -1010,7 +1008,7 @@ public class HelicalPickerGUI implements Runnable {
 		context.setMinimumLineStraightness(min_straightness);
 		context.setWindowWidthStraightness(straightness_windowsize);
 		context.setMinFilamentDistance(min_filament_distance);
-		context.setMinimumFilamentLength(min_filament_length);
+		context.setMinimumNumberBoxes(min_number_boxes);
 		context.setSigmaMinResponse(sigma_min_response);
 		context.setSigmaMaxResponse(sigma_max_response);
 		context.setDoubleFilamentInsensitivity(double_filament_detection_insensitivity);

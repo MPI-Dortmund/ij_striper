@@ -103,15 +103,15 @@ public class PreviewActionListener implements ActionListener {
 					ImageProcessor response_map = enhanced_images.getProcessor(1);
 					ImageRoi imgRoi = new ImageRoi(0, 0, response_map);
 					imgRoi.setPosition(slice_from);
-					Overlay ov = Helical_Picker_.getInstance().getImage().getOverlay();
+					Overlay ov = target_image.getOverlay();
 					if(ov==null){
 						ov = new Overlay();
-						Helical_Picker_.getInstance().getImage().setOverlay(ov);
+						target_image.setOverlay(ov);
 					}
 					ov.add(imgRoi);
 
 					HashMap<Integer, ArrayList<Polygon>> unfiltered_lines = runner.getLines();
-					showLinesAsPreview(unfiltered_lines.get(slice_from));
+					showLinesAsPreview(unfiltered_lines.get(1));
 				}
 				else{
 					BoxPlacer_ placer = new BoxPlacer_();
@@ -150,7 +150,6 @@ public class PreviewActionListener implements ActionListener {
 				
 				polyRoiMitte.setStrokeColor(Color.red);
 				int position = target_image.getCurrentSlice();
-			
 			
 				polyRoiMitte.setPosition(position);
 				ovpoly.add(polyRoiMitte);

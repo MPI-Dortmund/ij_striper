@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import de.mpi_dortmund.ij.mpitools.boxplacer.BoxPositionIterator;
 import de.mpi_dortmund.ij.mpitools.userfilter.IUserFilter;
 import ij.IJ;
 import ij.ImagePlus;
@@ -86,7 +87,7 @@ public class FilamentFilter {
 	 *  9. Length filter 2
 	 */
 	public ArrayList<Polygon> filterLineImage(ImageProcessor line_image, ImageProcessor input_image, ImageProcessor response_image, ImageProcessor mask, FilamentFilterContext context){
-		
+		this.context = context;
 		int border_diameter = context.getBorderDiameter();
 		setBorderToZero((ByteProcessor)line_image, border_diameter);
 		//(new ImagePlus("after border to zero", line_image.duplicate())).show();
@@ -115,8 +116,8 @@ public class FilamentFilter {
 			}
 		}
 		
-		int minimum_filament_length = context.getMinimumFilamentLength();
-		lines = filterByLength(lines, minimum_filament_length);
+		int minimum_number_boxes = context.getMinimumNumberBoxes();
+		lines = filterByLength(lines, minimum_number_boxes);
 		drawLines(lines, line_image);
 		
 		//lines = filterByResponseFixThresholds(lines, response.getProcessor(), min_response, max_response);
@@ -131,7 +132,7 @@ public class FilamentFilter {
 		int minimum_filament_distance = context.getMinFilamentDistance();
 		lines = removeParallelLines((ByteProcessor) line_image, lines, minimum_filament_distance);
 		
-		lines = filterByLength(lines, minimum_filament_length);
+		lines = filterByLength(lines, context.getMinimumNumberBoxes());
 
 		return lines;
 	}
@@ -249,14 +250,27 @@ public class FilamentFilter {
 		return distance/sum;
 	}
 	
-	private ArrayList<Polygon> filterByLength(ArrayList<Polygon> lines, int minlength){
+	private ArrayList<Polygon> filterByLength(ArrayList<Polygon> lines, int minimum_number_boxes){
 		ArrayList<Polygon> filtered = new ArrayList<Polygon>();
 		for (Polygon polygon : lines) {
-			if(polygon.npoints > minlength){
+			int num_box = calcNumberOfBoxes(polygon);
+			if(num_box >= minimum_number_boxes){
 				filtered.add(polygon);
 			}
 		}
 		return filtered;
+	}
+	
+	private int calcNumberOfBoxes(Polygon p){
+		BoxPositionIterator it = new BoxPositionIterator(p, context.getBoxSize(), context.getBoxDistance(), false);
+		int N = 0;
+		
+		while(it.hasNext()){
+			N++;
+			it.next();
+		}
+		
+		return N;
 	}
 	
 	

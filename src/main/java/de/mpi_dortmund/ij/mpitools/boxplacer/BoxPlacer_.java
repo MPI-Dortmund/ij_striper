@@ -1,6 +1,7 @@
 package de.mpi_dortmund.ij.mpitools.boxplacer;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -44,58 +45,30 @@ public class BoxPlacer_ {
 			targetImage.setOverlay(ov);
 		}
 		
-		int distancesq = placing_context.getBoxDistance()*placing_context.getBoxDistance();
-		Color[] colors = {Color.red,Color.BLUE,Color.GREEN,Color.yellow,Color.CYAN,Color.ORANGE, Color.magenta};
+
+		Color[] colors = {Color.red,Color.PINK,Color.BLUE,Color.GREEN,Color.yellow,Color.CYAN,Color.ORANGE, Color.magenta};
+
 		int boxsize = placing_context.getBoxSize();
 		for (Polygon p : lines) {
+			
+			
+			
 			increaseID();
+			BoxPositionIterator it = new BoxPositionIterator(p, boxsize, placing_context.getBoxDistance(), true);
 			Line l = new Line(running_id);
 			Color c = colors[running_id%colors.length];
-			int start_index = 0;
-			double d = 0;
-			do {
-				if(start_index+1<p.npoints){
-					start_index++;
-					d = Point2D.distanceSq(p.xpoints[0], p.ypoints[0], p.xpoints[start_index], p.ypoints[start_index]);
-				}else{
-					d = Double.POSITIVE_INFINITY;
+			while(it.hasNext()){
+				Point pos = it.next();
+				if(placing_context.isPlacePoints()){
+					boxsize=1;
 				}
+				Roi r = new Roi(pos.getX(), pos.getY(), boxsize, boxsize);
+				r.setProperty("id", ""+running_id);
 				
-			}while(d<Math.pow(boxsize/2, 2));
-			if(placing_context.isPlacePoints()){
-				boxsize=1;
-			}
-			int x = p.xpoints[start_index]-boxsize/2;
-			int y = p.ypoints[start_index]-boxsize/2;
-			
-			
-			
-			Roi r = new Roi(x, y, boxsize, boxsize);
-			r.setProperty("id", ""+running_id);
-			
-			r.setPosition(placing_context.getSlicePosition());
-			r.setStrokeColor(c);
-			ov.add(r);
-			l.add(r);
-			for(int i = start_index+1; i < p.npoints; i++){
-				int xc = p.xpoints[i]-boxsize/2;
-				int yc = p.ypoints[i]-boxsize/2;
-				
-				if(
-						Point2D.distanceSq(x, y, xc, yc)>=distancesq && 
-								Point2D.distanceSq(xc, yc, p.xpoints[p.npoints-1], p.ypoints[p.npoints-1])>Math.pow(placing_context.getBoxSize()/2, 2)
-						){
-					x = xc;
-					y = yc;
-				
-					r = new Roi(x, y, boxsize, boxsize);
-					r.setProperty("id", ""+running_id);
-					r.setStrokeColor(c);
-					
-					r.setPosition(placing_context.getSlicePosition());
-					ov.add(r);
-					l.add(r);
-				}
+				r.setPosition(placing_context.getSlicePosition());
+				r.setStrokeColor(c);
+				ov.add(r);
+				l.add(r);
 			}
 			allLines.add(l);
 		}

@@ -51,7 +51,7 @@ public class TransformedMaskProvider {
 		}
 	}
 	
-	public ArrayList<FHT> getTransformedMasks(int mask_size, int filament_width, int mask_width, int angle_step, int type){
+	public synchronized ArrayList<FHT> getTransformedMasks(int mask_size, int filament_width, int mask_width, int angle_step, int type){
 		
 		fillFFTFilters(mask_size, filament_width, mask_width, angle_step, type);
 		

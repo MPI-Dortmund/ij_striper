@@ -1,6 +1,8 @@
 package de.mpi_dortmund.ij.mpitools.RidgeDetectionOptimizer;
 
 import java.util.Random;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 import de.biomedical_imaging.ij.steger.Line;
 import de.biomedical_imaging.ij.steger.LineDetector;
@@ -15,6 +17,7 @@ import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
 import ij.IJ;
 import ij.ImageStack;
 import ij.plugin.filter.RankFilters;
+import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
 public class RidgeOptimizerWorker extends Thread {
@@ -32,6 +35,8 @@ public class RidgeOptimizerWorker extends Thread {
 	private int seed_base = 11;
 	private int seed;
 	private static int object_counter;
+	boolean normalize;
+	CyclicBarrier barr;
 	/**
 	 * Constructor for RidgeOptimizerWorker
 	 * @param enhanced_substack Imagestack with enhanced filaments
@@ -41,16 +46,21 @@ public class RidgeOptimizerWorker extends Thread {
 	 * @param number_global Number of global optimization runs
 	 * @param number_local Number of local optimization runs
 	 */
-	public RidgeOptimizerWorker(ImageStack enhanced_substack, ImageStack binary_substack, DetectionThresholdRange detection_range_start, int filament_width, int number_global, int number_local, RidgeOptimizerWorker precursor) {
+	public RidgeOptimizerWorker(ImageStack enhanced_substack, ImageStack binary_substack, DetectionThresholdRange detection_range_start, int filament_width, int number_global, int number_local, boolean normalize, CyclicBarrier barr) {
 		this.detection_range_start = detection_range_start;
 		this.enhanced_substack = enhanced_substack;
 		this.binary_substack = binary_substack;
 		this.number_of_global_runs = number_global;
 		this.number_of_local_runs = number_local;
 		this.filament_width = filament_width;
-		this.precursor = precursor;
+		this.barr = barr;
+		this.normalize = normalize;
 		seed = seed_base+object_counter;
 		object_counter++;
+	}
+	
+	public void setPrecursor(RidgeOptimizerWorker precursor){
+		this.precursor = precursor;
 	}
 	
 	/**
@@ -65,6 +75,9 @@ public class RidgeOptimizerWorker extends Thread {
 			best_goodness = goodness;
 			//IJ.log("############ Goodness: " + best_goodness + " LT: " + para.getLowerThreshold() + " UT: " + para.getUpperThreshold());
 			CentralLog.getInstance().info("############ Goodness: " + best_goodness + " LT: " + para.getLowerThreshold() + " UT: " + para.getUpperThreshold());
+			if(RidgeDetectionOptimizerAssistant.getInstance()!= null){
+				RidgeDetectionOptimizerAssistant.getInstance().updateBestResult(best_goodness, para);
+			}
 			return true;
 		}
 		return false;
@@ -77,12 +90,10 @@ public class RidgeOptimizerWorker extends Thread {
 		FilamentDetectorContext detection_context = new FilamentDetectorContext();
 		detection_context.setSigma(sigma);
 		for(int i = 0; i < numberOfRuns; i++){
-			
 			DetectionThresholdRange candidate_range = null;
 			
 			if(i<=number_of_global_runs){
 				candidate_range = nextParamterSet(detection_range_start);
-				//IJ.log("HIER " + i);
 			}
 			else{
 				int LRUN = i-number_of_global_runs;
@@ -92,14 +103,23 @@ public class RidgeOptimizerWorker extends Thread {
 			}
 			detection_context.setThresholdRange(candidate_range);
 			
-			double goodness = getGoodness(enhanced_substack, binary_substack, detection_context);
+			double goodness = getGoodness(enhanced_substack, binary_substack, detection_context,normalize);
 			updateBestResult(goodness,candidate_range);
-			
-			this.interrupt();
-			if(precursor!=null){
-				
-				precursor.notify();
+			try {
+				barr.await();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
+		//	this.interrupt();
+			//if(precursor!=null){
+ catch (BrokenBarrierException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+				
+			//	precursor.notify();
+		//	}
 			
 		}
 		
@@ -113,7 +133,7 @@ public class RidgeOptimizerWorker extends Thread {
 	 * @param detection_context Parameter context for line detection
 	 * @return Goodness value
 	 */
-	public double getGoodness(ImageStack enhanced_images, ImageStack binary_stack, FilamentDetectorContext detection_context){
+	public double getGoodness(ImageStack enhanced_images, ImageStack binary_stack, FilamentDetectorContext detection_context, boolean normalize){
 
 		LineDetector detect = new LineDetector();
 		int max_filament_length = 0;
@@ -123,29 +143,35 @@ public class RidgeOptimizerWorker extends Thread {
 		boolean doExtendLine = true;
 		double sigma = detection_context.getSigma();
 		
-		int numberCorrectLinePoints=0;
-		int numberIncorrectLinePoints=0;
-		
+		double numberCorrectLinePoints=0;
+		double numberIncorrectLinePoints=0;
+
 		for(int k = 0; k < enhanced_images.size(); k++){
 			
 			ImageProcessor ip = enhanced_images.getProcessor(k+1);
 			ImageProcessor selectionMap = binary_stack.getProcessor(k+1);
-		
+			int NORM_FACTOR =1 ;
+			if(normalize){
+			//	NORM_FACTOR = ((ByteProcessor)binary_stack.getProcessor(k+1)).getHistogram()[255];
+			}
 			Lines lines = detect.detectLines(ip, sigma, detection_context.getThresholdRange().getUpperThreshold(), detection_context.getThresholdRange().getLowerThreshold(), 0,max_filament_length, isDarkLine, doCorrectPosition, doEstimateWidth, doExtendLine, OverlapOption.NONE);
-			
+			double localNumberCorrectLinePoints = 0;
+			double localNumberIncorrectLinePoints = 0;
 			for (Line line : lines) {
 				float[] x  = line.getXCoordinates();
 				float[] y  = line.getYCoordinates();
 				for(int i = 0; i < x.length; i++){
 					int v = selectionMap.get((int)x[i], (int)y[i]);
 					if(v==255){
-						numberCorrectLinePoints++;
+						localNumberCorrectLinePoints++;
 					}else{
-						numberIncorrectLinePoints++;
+						localNumberIncorrectLinePoints++;
 					}
 				}
-				
 			}
+			
+			numberCorrectLinePoints += 1.0*localNumberCorrectLinePoints/NORM_FACTOR;
+			numberIncorrectLinePoints += 1.0*localNumberIncorrectLinePoints/NORM_FACTOR;
 		}
 		
 		return (0.8*numberCorrectLinePoints - 0.2*numberIncorrectLinePoints);

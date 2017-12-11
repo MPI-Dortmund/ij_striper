@@ -40,6 +40,7 @@ public class RidgeDetectionOptimizerAssistant {
 	
 	private JFrame guiFrame;
 	JPanel pane_step1;
+	JPanel pane_step3;
 	ImagePlus target_image;
 	int measured_length = -1;
 	ArrayList<Roi> selected_filaments;
@@ -48,9 +49,16 @@ public class RidgeDetectionOptimizerAssistant {
 	
 	private JButton btNext_ToPanel2;
 	private JButton btNext_ToPanel3;
+	private JLabel best_result;
+	private static RidgeDetectionOptimizerAssistant instance;
 	
+	public static RidgeDetectionOptimizerAssistant getInstance(){
+		
+		return instance;
+	}
 	
 	public RidgeDetectionOptimizerAssistant(ImagePlus target_image) {
+		instance = this;
 		this.target_image = target_image;
 		selected_filaments = new ArrayList<Roi>();
 		guiFrame= new JFrame("Filament detection assistant");
@@ -148,7 +156,6 @@ public class RidgeDetectionOptimizerAssistant {
 			if(guiFrame.getComponent(i) instanceof JPanel){
 				
 				guiFrame.remove(i);
-				IJ.log("Remove");
 				i--;
 			}
 		}
@@ -456,9 +463,9 @@ public class RidgeDetectionOptimizerAssistant {
 public JPanel createPaneStep3(){
 		
 		GridBagConstraints c = new GridBagConstraints();
-		JPanel pane_step1 = new JPanel();
+		pane_step3 = new JPanel();
 		
-		pane_step1.setLayout(new GridBagLayout());
+		pane_step3.setLayout(new GridBagLayout());
 		
 		JPanel informationPane = new JPanel();
 		informationPane.setBorder(BorderFactory.createTitledBorder("Instructions"));
@@ -484,7 +491,19 @@ public JPanel createPaneStep3(){
 		c.gridx = 0;
 		c.gridy = paneRow;
 		informationPane.add(mainJScrollPane);
-		pane_step1.add(informationPane, c);
+		pane_step3.add(informationPane, c);
+		paneRow+=1;
+		
+		best_result = new JLabel("Best: ");
+		c.fill = GridBagConstraints.BOTH;
+		c.insets = new Insets(0,5,0,5);      //make this component tall
+		c.weightx = 0;
+		c.weighty = 0;
+		c.gridwidth = 3;
+		c.gridheight = 1;
+		c.gridx = 0;
+		c.gridy = paneRow;
+		pane_step3.add(best_result, c);
 		paneRow+=1;
 		
 		final JProgressBar bar = new JProgressBar(0, 100);
@@ -497,7 +516,7 @@ public JPanel createPaneStep3(){
 		c.gridheight = 1;
 		c.gridx = 0;
 		c.gridy = paneRow;
-		pane_step1.add(bar, c);
+		pane_step3.add(bar, c);
 		paneRow++;
 		
 		JLabel labelTfNumberGlobalRuns = new JLabel("Number of global runs:");
@@ -509,7 +528,7 @@ public JPanel createPaneStep3(){
 		c.gridheight = 1;
 		c.gridx = 0;
 		c.gridy = paneRow;
-		pane_step1.add(labelTfNumberGlobalRuns,c);
+		pane_step3.add(labelTfNumberGlobalRuns,c);
 		
 		final JTextField tfNumberGlobalRuns = new JTextField("20", 3);
 		c.fill = GridBagConstraints.BOTH;
@@ -520,19 +539,8 @@ public JPanel createPaneStep3(){
 		c.gridheight = 1;
 		c.gridx = 1;
 		c.gridy = paneRow;
-		pane_step1.add(tfNumberGlobalRuns,c);
-		
-		tfNumberGlobalRuns.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String txt = tfNumberGlobalRuns.getText();
-				if(StringUtils.isNumeric(txt)){
-					number_global_runs = Integer.parseInt(txt);
-				}
-				
-			}
-		});
+		pane_step3.add(tfNumberGlobalRuns,c);
+	
 		
 		paneRow++;
 		
@@ -546,7 +554,7 @@ public JPanel createPaneStep3(){
 		c.gridheight = 1;
 		c.gridx = 0;
 		c.gridy = paneRow;
-		pane_step1.add(labelTfNumberLocalRuns,c);
+		pane_step3.add(labelTfNumberLocalRuns,c);
 		
 		final JTextField tfNumberLocalRuns = new JTextField("20", 3);
 		c.fill = GridBagConstraints.BOTH;
@@ -557,7 +565,7 @@ public JPanel createPaneStep3(){
 		c.gridheight = 1;
 		c.gridx = 1;
 		c.gridy = paneRow;
-		pane_step1.add(tfNumberLocalRuns,c);
+		pane_step3.add(tfNumberLocalRuns,c);
 		
 		tfNumberLocalRuns.addActionListener(new ActionListener() {
 			
@@ -582,7 +590,7 @@ public JPanel createPaneStep3(){
 		c.gridheight = 1;
 		c.gridx = 0;
 		c.gridy = paneRow;
-		pane_step1.add(btPrevious,c);
+		pane_step3.add(btPrevious,c);
 		
 		btPrevious.addActionListener(new ActionListener() {
 			
@@ -593,7 +601,7 @@ public JPanel createPaneStep3(){
 			}
 		});
 		
-		JButton btStart = new JButton("Start");
+		final JButton btStart = new JButton("Start");
 		c.fill = GridBagConstraints.BOTH;
 		c.insets = new Insets(0,5,0,5);      //make this component tall
 		c.weightx = 0.0;
@@ -602,7 +610,7 @@ public JPanel createPaneStep3(){
 		c.gridheight = 1;
 		c.gridx = 1;
 		c.gridy = paneRow;
-		pane_step1.add(btStart,c);
+		pane_step3.add(btStart,c);
 		paneRow+=1;
 		
 		btStart.addActionListener(new ActionListener() {
@@ -618,18 +626,31 @@ public JPanel createPaneStep3(){
 						bar.setIndeterminate(true);
 						bar.setVisible(true);
 						int mask_width = Helical_Picker_.getGUI().getFilamentEnhancerContext().getMaskWidth();
+						
+						String txt = tfNumberGlobalRuns.getText();
+						if(StringUtils.isNumeric(txt)){
+							number_global_runs = Integer.parseInt(txt);
+						}
+						
+						txt = tfNumberLocalRuns.getText();
+						if(StringUtils.isNumeric(txt)){
+							number_local_runs = Integer.parseInt(txt);
+						}
+						btStart.setEnabled(false);
 						pparallelOptimizer = new Parallel_Ridge_Optimizer();
-
-						best_range = pparallelOptimizer.optimize(target_image, measured_length, mask_width, number_global_runs, number_local_runs);
+						best_range = pparallelOptimizer.optimize(target_image, measured_length, mask_width, number_global_runs, number_local_runs,true);
 						return false;
 					}
 
 					@Override
 					protected void done() {
 						Helical_Picker_.getGUI().updateDetectionParameters(best_range);
+						Helical_Picker_.getGUI().getButtonShowPreview().doClick();
 						guiFrame.dispose();
 						target_image.setOverlay(null);
 						target_image.repaintWindow();
+						btStart.setEnabled(true);
+						
 						super.done();
 					}
 
@@ -638,8 +659,17 @@ public JPanel createPaneStep3(){
 			}
 		});
 		
-		return pane_step1;
+		return pane_step3;
 	}	
+
+	public void updateBestResult(double goodness, DetectionThresholdRange best_range){
+		if(best_result!=null){
+			best_result.setText("Best: (" + IJ.d2s(goodness,4) + 
+					") Lower Thresh.: " + IJ.d2s(best_range.getLowerThreshold(), 4) + 
+					" Upper Thresh.: " +IJ.d2s( best_range.getUpperThreshold(),4));
+			pane_step3.repaint();
+		}
+	}
 	
 	
 	

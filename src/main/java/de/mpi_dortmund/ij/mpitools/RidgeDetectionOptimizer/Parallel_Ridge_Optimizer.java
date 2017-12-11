@@ -1,6 +1,8 @@
 package de.mpi_dortmund.ij.mpitools.RidgeDetectionOptimizer;
 
 import java.util.HashSet;
+import java.util.Random;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -28,13 +30,14 @@ import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
 public class Parallel_Ridge_Optimizer {	
-	
-	public DetectionThresholdRange optimize(ImagePlus imp, int filament_width, int mask_width, int GLOBAL_RUNS, int LOCAL_RUNS){
-		return optimize(imp, null, filament_width, mask_width, GLOBAL_RUNS, LOCAL_RUNS);
+	Random rand;
+	public DetectionThresholdRange optimize(ImagePlus imp, int filament_width, int mask_width, int GLOBAL_RUNS, int LOCAL_RUNS, boolean normalize){
+		return optimize(imp, null, filament_width, mask_width, GLOBAL_RUNS, LOCAL_RUNS,normalize);
 	}
 	
-	public DetectionThresholdRange optimize(ImagePlus imp, DetectionThresholdRange start_params, int filament_width, int mask_width, int GLOBAL_RUNS, int LOCAL_RUNS){
+	public DetectionThresholdRange optimize(ImagePlus imp, DetectionThresholdRange start_params, int filament_width, int mask_width, int GLOBAL_RUNS, int LOCAL_RUNS, boolean normalize){
 		Overlay ov = imp.getOverlay();
+		rand = new Random(11);
 		HashSet<Integer> slicesWithSelectionSet = new HashSet<Integer>();
 		for(int i = 0; i < ov.size(); i++){
 			slicesWithSelectionSet.add(ov.get(i).getPosition());
@@ -42,23 +45,18 @@ public class Parallel_Ridge_Optimizer {
 		Integer[] slicesWithSelection = slicesWithSelectionSet.toArray(new Integer[slicesWithSelectionSet.size()]);
 	
 		ImagePlus substack = getSubStack(imp, slicesWithSelection);
-		
 		ImageStack enhanced_substack = getEnhancedFilaments(substack, filament_width, mask_width);
-		
 		ImageStack binary_substack = getBinaryStack(imp);
 		if(start_params==null){
-			start_params = searchRange(enhanced_substack, filament_width);
+			start_params = searchRange2(enhanced_substack, filament_width);
 		}
 		
 		int numberOfProcessors = Runtime.getRuntime().availableProcessors();
 		
 		RidgeOptimizerWorker[] workers = new RidgeOptimizerWorker[numberOfProcessors];
+		CyclicBarrier barr = new CyclicBarrier(numberOfProcessors);
 		for(int i = 0; i < workers.length; i++){
-			RidgeOptimizerWorker precursor = null;
-			if(i>0){
-				precursor = workers[i-1];
-			}
-			workers[i] = new RidgeOptimizerWorker(enhanced_substack, binary_substack, start_params, filament_width, GLOBAL_RUNS, LOCAL_RUNS,precursor);
+			workers[i] = new RidgeOptimizerWorker(enhanced_substack, binary_substack, start_params, filament_width, GLOBAL_RUNS, LOCAL_RUNS,normalize,barr);
 		}
 		
 		
@@ -148,6 +146,7 @@ public class Parallel_Ridge_Optimizer {
 		enhance_context.setEqualize(true);
 		enhance_context.setFilamentWidth(filament_width);
 		enhance_context.setMaskWidth(mask_width);
+		
 		FilamentEnhancer enhancer = new FilamentEnhancer(imp.getStack(), enhance_context);
 		SliceRange slice_range = new SliceRange(1, imp.getStackSize());
 		ImageStack enhanced = enhancer.getEnhancedImages(slice_range);
@@ -157,6 +156,7 @@ public class Parallel_Ridge_Optimizer {
 		
 	}
 	
+	@Deprecated
 	protected DetectionThresholdRange searchRange(ImageStack ips,double filament_width){
 		LineDetector detect = new LineDetector();
 		double lb = 0;
@@ -189,6 +189,51 @@ public class Parallel_Ridge_Optimizer {
 		}while(Math.abs(ub-last_ub_without_lines)>0.01);
 		
 		DetectionThresholdRange range = new DetectionThresholdRange(0, last_ub_without_lines);
+
+		return range;
+		
+	}
+	
+	private double nextRandUpper(double min, double max){
+		return (min+rand.nextDouble()*(max-min));
+	}
+	
+	protected DetectionThresholdRange searchRange2(ImageStack ips,double filament_width){
+		LineDetector detect = new LineDetector();
+		
+		double random_upper_min = 0;
+		double random_upper_max = 20;
+		double lb = 0;
+		double ub = nextRandUpper(random_upper_min, random_upper_max);
+		int max_filament_length = 0;
+		boolean isDarkLine = false;
+		boolean doCorrectPosition = true;
+		boolean doEstimateWidth = false;
+		boolean doExtendLine = true;
+		
+		double sigma = FilamentDetectorContext.filamentWidthToSigma((int) filament_width);
+		int ntry = 10;
+		int i =0;
+		do{
+			int N_FOUND = 0;
+			for(int k = 0; k < ips.getSize(); k++){
+				ImageProcessor ip = ips.getProcessor(k+1);			
+				Lines lines = detect.detectLines(ip, sigma, ub, lb, 0,max_filament_length, isDarkLine, doCorrectPosition, doEstimateWidth, doExtendLine, OverlapOption.NONE);
+				N_FOUND += lines.size();
+			}
+			if(N_FOUND==0){
+				random_upper_max = ub;
+				
+			}
+			else{
+				random_upper_min = ub;
+				
+			}
+			ub = nextRandUpper(random_upper_min, random_upper_max);
+			i++;
+		}while(i<ntry);
+		
+		DetectionThresholdRange range = new DetectionThresholdRange(0, random_upper_max);
 		return range;
 		
 	}

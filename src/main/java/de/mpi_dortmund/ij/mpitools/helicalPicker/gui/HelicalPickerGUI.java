@@ -269,7 +269,7 @@ public class HelicalPickerGUI implements Runnable {
 		 ((JSpinner.DefaultEditor)spinnerSensitvity.getEditor()).getTextField().setColumns(4);
 		 spinnerMinStraightness = new JSpinner(new SpinnerNumberModel(DEFAULT_LOCAL_MIN_STRAIGHTNESS, 0, 1, 0.1));
 		 ((JSpinner.DefaultEditor)spinnerMinStraightness.getEditor()).getTextField().setColumns(4);
-		 spinnerOverlappingFactor = new JSpinner(new SpinnerNumberModel(DEFAULT_OVERLAPPING_FACTOR, 0, 0.5, 0.1));
+		 spinnerOverlappingFactor = new JSpinner(new SpinnerNumberModel(DEFAULT_OVERLAPPING_FACTOR, 0, 1, 0.1));
 		 ((JSpinner.DefaultEditor)spinnerOverlappingFactor.getEditor()).getTextField().setColumns(4);
 		
 		 textfieldMinNumberBoxes = new JTextField(""+DEFAULT_MIN_NUM_BOXES,4);
@@ -996,7 +996,7 @@ public class HelicalPickerGUI implements Runnable {
 		double sigma_min_response = (double) spinnerSigmaMinResponse.getValue();
 		double double_filament_detection_insensitivity = 1-(double)spinnerSensitvity.getValue();
 		String selected_mask = (String) comboboxCustomMask.getSelectedItem();
-		double overlapping_factor = 0.5;
+		double overlapping_factor = (double)  spinnerOverlappingFactor.getValue();
 		int min_filament_distance = (int) Math.sqrt(Math.pow(overlapping_factor*box_size,2)+Math.pow(overlapping_factor*box_size,2))/2;
 		ImagePlus masks = null;
 		if(selected_mask.equals("None") == false){
@@ -1020,7 +1020,12 @@ public class HelicalPickerGUI implements Runnable {
 		context.setBinaryMask(masks);
 		context.setUserFilters(userFilters);
 		
+		
 		return context;
+	}
+	
+	public JButton getButtonShowPreview(){
+		return buttonShowPreview;
 	}
 	
 	public static void main(String[] args) {

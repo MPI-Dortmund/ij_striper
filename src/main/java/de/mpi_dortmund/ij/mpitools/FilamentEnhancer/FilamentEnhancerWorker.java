@@ -2,7 +2,6 @@ package de.mpi_dortmund.ij.mpitools.FilamentEnhancer;
 
 import java.awt.Color;
 import java.util.ArrayList;
-
 import de.mpi_dortmund.ij.mpitools.helicalPicker.custom.IWorker;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.gui.SliceRange;
 import de.mpi_dortmund.ij.mpitools.helicalPicker.logger.CentralLog;
@@ -25,6 +24,7 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 	SliceRange slice_range;
 	FilamentEnhancerContext context;
 	ImageStack ips;
+	private static Object lock_object = new Object();
 	
 	public FilamentEnhancerWorker(ImageStack ips, FilamentEnhancerContext context, SliceRange slice_range) {
 		this.ips = ips;
@@ -64,17 +64,27 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 			 */
 			
 			//ImagePlus help = new ImagePlus("", ip);
+			CentralLog.getInstance().info(CentralLog.m("Calc mean " + i));
 			int mean = (int) ip.getStatistics().mean;
-			Toolbar.setBackgroundColor(new Color(mean, mean, mean));
-			CentralLog.getInstance().info(CentralLog.m("Resize slice " + i + " new size: " + new_size));
-		
-			CanvasResizer resizer = new CanvasResizer();
-			int xoff = (new_size-old_width)/2;
-			int yoff = (new_size-old_height)/2;
-			ip = resizer.expandImage(ip, new_size, new_size, xoff, yoff);
+			CentralLog.getInstance().info(CentralLog.m("Set col" + i));
+			ImageProcessor ip_resize = null;
+			int xoff = 0;
+			int yoff = 0;
+			CanvasResizer resizer = null;
+			synchronized(lock_object){
+				Toolbar.setBackgroundColor(new Color(mean, mean, mean));
+				CentralLog.getInstance().info(CentralLog.m("Resize slice " + i + " new size: " + new_size));
+			
+				resizer = new CanvasResizer();
+				xoff = (new_size-old_width)/2;
+				yoff = (new_size-old_height)/2;
+				ip = resizer.expandImage(ip, new_size, new_size, xoff, yoff);
+			
 
-			ImageProcessor ip_resize = ip.resize(new_size, new_size);
-			CentralLog.getInstance().info(CentralLog.m("Resize slice " + i + " done"));
+				ip_resize = ip.resize(new_size, new_size);
+				CentralLog.getInstance().info(CentralLog.m("Resize slice " + i + " done"));
+			}
+			
 			// Fill new space with the mean value
 			for(int x = 0; x < ip_resize.getWidth(); x++){
 				for(int y = 0; y < ip_resize.getHeight(); y++){
@@ -136,8 +146,7 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 			bp = (ByteProcessor) resizer.expandImage(bp, old_width, old_height, xoff, yoff);
 
 			enhanced_maps.add(bp);
-			CentralLog.getInstance().info(CentralLog.m("Enhancement slice " + i + " done"));
-			
+			CentralLog.getInstance().info(CentralLog.m("Enhancement slice " + i + " done"));			
 		}
 	}
 	

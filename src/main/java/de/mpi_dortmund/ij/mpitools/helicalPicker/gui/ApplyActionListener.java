@@ -58,7 +58,7 @@ public class ApplyActionListener implements ActionListener {
 				
 				BoxPlacer_ boxPlacer = new BoxPlacer_();
 				boxPlacer.placeBoxes(filtered_lines, input_image, placing_context);
-				
+				input_image.updateAndRepaintWindow();
 				//picker_.placeBoxes(filtered_lines, placing_context);
 				return true;
 			}

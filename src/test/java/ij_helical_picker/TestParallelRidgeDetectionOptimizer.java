@@ -81,8 +81,8 @@ public class TestParallelRidgeDetectionOptimizer {
 		ImagePlus ground_truth = new ImagePlus(url.getPath());
 		*/
 		Parallel_Ridge_Optimizer optim = new Parallel_Ridge_Optimizer();
-		int GLOBAL_RUNS = 20;
-		int LOCAL_RUNS = 20;
+		int GLOBAL_RUNS = 40;
+		int LOCAL_RUNS = 40;
 		int mask_width = 20;
 		int filament_width = 20;
 		DetectionThresholdRange start_params = null;//new DetectionThresholdRange(0.0, 9.228515625);

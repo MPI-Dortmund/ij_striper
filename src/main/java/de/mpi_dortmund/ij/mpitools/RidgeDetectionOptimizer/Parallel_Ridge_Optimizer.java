@@ -34,8 +34,12 @@ public class Parallel_Ridge_Optimizer {
 	public DetectionThresholdRange optimize(ImagePlus imp, int filament_width, int mask_width, int GLOBAL_RUNS, int LOCAL_RUNS, boolean normalize){
 		return optimize(imp, null, filament_width, mask_width, GLOBAL_RUNS, LOCAL_RUNS,normalize);
 	}
-	
 	public DetectionThresholdRange optimize(ImagePlus imp, DetectionThresholdRange start_params, int filament_width, int mask_width, int GLOBAL_RUNS, int LOCAL_RUNS, boolean normalize){
+		int numberOfProcessors = Runtime.getRuntime().availableProcessors();
+		return optimize(imp, start_params, filament_width, mask_width, GLOBAL_RUNS, LOCAL_RUNS, numberOfProcessors, normalize);
+	}
+	
+	public DetectionThresholdRange optimize(ImagePlus imp, DetectionThresholdRange start_params, int filament_width, int mask_width, int GLOBAL_RUNS, int LOCAL_RUNS, int numberOfProcessors, boolean normalize){
 		Overlay ov = imp.getOverlay();
 		rand = new Random(11);
 		HashSet<Integer> slicesWithSelectionSet = new HashSet<Integer>();
@@ -51,7 +55,7 @@ public class Parallel_Ridge_Optimizer {
 			start_params = searchRange2(enhanced_substack, filament_width);
 		}
 		
-		int numberOfProcessors = Runtime.getRuntime().availableProcessors();
+
 		
 		RidgeOptimizerWorker[] workers = new RidgeOptimizerWorker[numberOfProcessors];
 		CyclicBarrier barr = new CyclicBarrier(numberOfProcessors);

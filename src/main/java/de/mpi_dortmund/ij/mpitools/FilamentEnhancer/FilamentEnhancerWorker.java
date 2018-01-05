@@ -55,7 +55,6 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 		CentralLog.getInstance().info(CentralLog.m("Transformed masks calculated"));
 		
 		enhanced_maps = new ArrayList<ImageProcessor>();
-		
 		for(int i = slice_range.getSliceFrom(); i <= slice_range.getSliceTo(); i++){
 			CentralLog.getInstance().info(CentralLog.m("Enhance slice " + i));
 			ImageProcessor ip = ips.getProcessor(i);
@@ -137,6 +136,7 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 				
 				
 			}
+	
 			ByteProcessor bp = maxProj.getProcessor().convertToByteProcessor();
 			CentralLog.getInstance().info(CentralLog.m("Resize"));
 			
@@ -144,7 +144,6 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 			xoff = (old_width-new_size)/2;
 			yoff = (old_height-new_size)/2;
 			bp = (ByteProcessor) resizer.expandImage(bp, old_width, old_height, xoff, yoff);
-
 			enhanced_maps.add(bp);
 			CentralLog.getInstance().info(CentralLog.m("Enhancement slice " + i + " done"));			
 		}
@@ -155,6 +154,8 @@ public class FilamentEnhancerWorker extends Thread implements IFilamentEnhancerW
 		// TODO Auto-generated method stub
 		return enhanced_maps;
 	}
+	
+
 	
 	public int nextPower2(int n){
 		int p = 2;

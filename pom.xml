@@ -52,6 +52,11 @@
 		    <artifactId>ij_ridge_detect</artifactId>
 		    <version>1.4.2-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+		  <groupId>javax.vecmath</groupId>
+		  <artifactId>vecmath</artifactId>
+		  <version>1.5.2</version>
+		</dependency>
 	</dependencies>
 	
   <properties>

@@ -33,6 +33,7 @@ public class PreviewActionListener implements ActionListener {
 	int last_mask_width = -1;
 	int last_slice_from = -1;
 	int last_slice_to = -1;
+	int last_equalize = -1;
 
 	public final static int PREVIEW_BOXES = 0;
 	public final static int PREVIEW_POINTS = 1;
@@ -61,12 +62,13 @@ public class PreviewActionListener implements ActionListener {
 				int slice_to = target_image.getCurrentSlice();
 				SliceRange slice_range = new SliceRange(slice_from, slice_to);
 				boolean update=false;
-			
+				int equalize = enhancer_context.doEqualization() ? 1 : 0;
 				if(
 						last_filament_width != enhancer_context.getFilamentWidth() ||
 						last_mask_width != enhancer_context.getMaskWidth() ||
 						last_slice_from != slice_range.getSliceFrom() ||
-						last_slice_to != slice_range.getSliceTo()
+						last_slice_to != slice_range.getSliceTo() ||
+						last_equalize != equalize
 						){
 					update = true;
 					
@@ -74,6 +76,7 @@ public class PreviewActionListener implements ActionListener {
 					last_mask_width = enhancer_context.getMaskWidth();
 					last_slice_from = slice_range.getSliceFrom();
 					last_slice_to = slice_range.getSliceTo();
+					last_equalize = equalize;
 				}
 				
 				boolean skip_line_filter = false;

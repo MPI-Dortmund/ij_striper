@@ -21,10 +21,7 @@ public class FilamentDetector {
 	/**
 	 * 
 	 * @param ips Enhanced filament stack
-	 * @param sigma parameter for detection. is proportional to the width
-	 * @param lower_threshold lower detection threshold
-	 * @param upper_threshold upper detection threshold
-	 * @param equalize helps to have the same signal for filaments with different contrast
+	 * @param context Parameters for the filament filtering
 	 */
 	public FilamentDetector(ImageStack ips, FilamentDetectorContext context) {
 		this.ips = ips;

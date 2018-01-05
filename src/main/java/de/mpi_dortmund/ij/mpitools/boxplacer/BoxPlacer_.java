@@ -95,6 +95,7 @@ public class BoxPlacer_ {
 			}
 			
 		}
+		target_image.repaintWindow();
 
 	}
 	

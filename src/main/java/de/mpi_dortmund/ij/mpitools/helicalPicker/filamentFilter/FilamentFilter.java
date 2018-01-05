@@ -54,7 +54,6 @@ public class FilamentFilter {
 			line_image.invert();
 			line_image.skeletonize();
 			line_image.invert();
-			
 			ImageProcessor maskImage = null;
 			if(masks!=null){
 				maskImage = masks.getStack().getProcessor(slice_position);

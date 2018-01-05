@@ -3,6 +3,7 @@ package de.mpi_dortmund.ij.mpitools.helicalPicker;
 import java.awt.Color;
 import java.awt.Polygon;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import de.biomedical_imaging.ij.steger.Line;
 import de.biomedical_imaging.ij.steger.Lines;
@@ -25,12 +26,21 @@ public class Helical_Picker_ implements PlugIn {
 	private static HelicalPickerGUI gui;
 	private ImagePlus input_image;
 	private static ArrayList<IUserFilter> userFilters;
+	private HashMap<Integer, ArrayList<Polygon>> detected_lines;
 	
 	public static synchronized Helical_Picker_ getInstance() {
 		if(instance==null){
 			instance = new Helical_Picker_();
 		}
 		return instance;
+	}
+	
+	public  HashMap<Integer, ArrayList<Polygon>> getDetectedLines(){
+		return detected_lines;
+	}
+	
+	public void setDetectedLines(HashMap<Integer, ArrayList<Polygon>> detected_lines){
+		this.detected_lines = detected_lines;
 	}
 	
 	@Override

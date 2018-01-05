@@ -44,6 +44,7 @@ public class ApplyActionListener implements ActionListener {
 				runner.run(input_image,slice_range, skeleton_filter_context,enhancer_context,detector_context);
 			
 				HashMap<Integer, ArrayList<Polygon>> filtered_lines = runner.getFilteredLines();
+				Helical_Picker_.getInstance().setDetectedLines(filtered_lines);
 				int box_size = Integer.parseInt(gui.textfieldBoxSize.getText());
 				int box_distance = Integer.parseInt(gui.textfieldBoxDistance.getText());
 				/*

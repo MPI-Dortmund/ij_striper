@@ -127,7 +127,7 @@ public class RidgeOptimizerWorker extends Thread {
 	
 	/**
 	 * Apply line detection to each image enhanced image, compare the detection with the binary ground truth image and calculate the the goodness value according
-	 * 0.8*NUMBER_OF_CORRECT_LINES_POINTS - 0.2*NUMBER_OF_INCORRECT_LINES_POINTS
+	 * (0.8*NUMBER_OF_CORRECT_LINES_POINTS - 0.2*NUMBER_OF_INCORRECT_LINES_POINTS)*MEAN_CORRECT_LINE_LENGTH
 	 * @param enhanced_images Imagestack with enhanced filaments
 	 * @param binary_stack Ground truth binary stack
 	 * @param detection_context Parameter context for line detection
@@ -145,7 +145,10 @@ public class RidgeOptimizerWorker extends Thread {
 		
 		double numberCorrectLinePoints=0;
 		double numberIncorrectLinePoints=0;
-
+		int currentCorrectInRow = 0;
+		int sumCorrectInRow = 0;
+		int correctSegements = 0;
+		
 		for(int k = 0; k < enhanced_images.size(); k++){
 			
 			ImageProcessor ip = enhanced_images.getProcessor(k+1);
@@ -157,24 +160,42 @@ public class RidgeOptimizerWorker extends Thread {
 			Lines lines = detect.detectLines(ip, sigma, detection_context.getThresholdRange().getUpperThreshold(), detection_context.getThresholdRange().getLowerThreshold(), 0,max_filament_length, isDarkLine, doCorrectPosition, doEstimateWidth, doExtendLine, OverlapOption.NONE);
 			double localNumberCorrectLinePoints = 0;
 			double localNumberIncorrectLinePoints = 0;
+			
 			for (Line line : lines) {
 				float[] x  = line.getXCoordinates();
 				float[] y  = line.getYCoordinates();
+				int lastv = 0;
 				for(int i = 0; i < x.length; i++){
 					int v = selectionMap.get((int)x[i], (int)y[i]);
 					if(v==255){
 						localNumberCorrectLinePoints++;
+						if(i>1 && lastv==v){
+							currentCorrectInRow++;
+						}
 					}else{
 						localNumberIncorrectLinePoints++;
+						if(currentCorrectInRow>0){
+							sumCorrectInRow += currentCorrectInRow;
+							correctSegements++;
+						}
+						currentCorrectInRow=0;
 					}
+					lastv = v;
 				}
 			}
 			
 			numberCorrectLinePoints += 1.0*localNumberCorrectLinePoints/NORM_FACTOR;
 			numberIncorrectLinePoints += 1.0*localNumberIncorrectLinePoints/NORM_FACTOR;
 		}
+		double meanSegmentLength = 1.0*sumCorrectInRow/correctSegements;
+		if(correctSegements == 0){
+			meanSegmentLength = 0;
+		}
+		double segNorm = Math.sqrt(enhanced_images.getWidth()*enhanced_images.getWidth()+enhanced_images.getHeight()*enhanced_images.getHeight());
+		meanSegmentLength = meanSegmentLength/segNorm;
+		double goodness = (0.8*numberCorrectLinePoints - 0.2*numberIncorrectLinePoints)*meanSegmentLength;
 		
-		return (0.8*numberCorrectLinePoints - 0.2*numberIncorrectLinePoints);
+		return goodness;
 	}
 	
 	

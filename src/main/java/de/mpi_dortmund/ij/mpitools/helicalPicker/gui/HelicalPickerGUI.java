@@ -277,6 +277,10 @@ public class HelicalPickerGUI implements Runnable {
 		 
 		 Vector<String> items = new Vector<String>();
 		 items.add("None");
+		 String[] titles = WindowManager.getImageTitles();
+		 for (String title : titles) {
+			items.addElement(title);
+		}
 		 comboboxCustomMask = new JComboBox<String>(items);
 		 
 		 items = new Vector<String>();
@@ -955,6 +959,8 @@ public class HelicalPickerGUI implements Runnable {
 		context.setFilamentWidth(filament_width);
 		context.setEqualize(checkboxEqualize.isSelected());
 		
+		
+		
 		return context;
 	}
 	
@@ -966,6 +972,7 @@ public class HelicalPickerGUI implements Runnable {
 		
 		context.setThresholdRange(range);
 		context.setSigma(sigma);
+		
 		
 		return context;
 	}

@@ -25,6 +25,13 @@ public class HeliconParticleExporter_ implements PlugIn {
 		ArrayList<Line> lines = getLinesFromOverlay(imp.getOverlay());
 		
 		String[] labels = imp.getStack().getSliceLabels();
+		if(labels==null){
+			// Bug fix for virtual stacks
+			labels = new String[imp.getStackSize()];
+			for(int i = 0; i < labels.length; i++){
+				labels[i] = imp.getStack().getSliceLabel(i+1);
+			}
+		}
 		
 		GenericDialogPlus gd = new GenericDialogPlus("Export box files");
 		gd.addNumericField("Resize factor", 0.25, 2);
@@ -36,6 +43,8 @@ public class HeliconParticleExporter_ implements PlugIn {
 		scale = gd.getNextNumber();
 		String path = gd.getNextString();
 		last_path = path;
+		
+		
 		export(lines, labels, path, imp.getStackSize(), imp.getHeight(), scale);
 		
 	}
